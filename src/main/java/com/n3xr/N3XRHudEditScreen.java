@@ -60,6 +60,7 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showArmor) drawBox(context, "ArmorHUD", N3XRConfig.armorX, N3XRConfig.armorY, "Armor".equals(dragging));
 		if (N3XRConfig.showCps) drawBox(context, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY, "CPS".equals(dragging));
 		if (N3XRConfig.showPing) drawBox(context, "Ping", N3XRConfig.pingX, N3XRConfig.pingY, "Ping".equals(dragging));
+		if (N3XRConfig.showKeystrokes) drawBox(context, "Keystrokes", N3XRConfig.keysX, N3XRConfig.keysY, "Keys".equals(dragging));
 
 		Text hint = Text.literal("Drag modules to reposition \u00b7 Right Shift to close");
 		int hw = this.textRenderer.getWidth(hint);
@@ -81,6 +82,7 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showArmor && inBox(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY)) { dragging = "Armor"; setOffset(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY); return true; }
 		if (N3XRConfig.showCps && inBox(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY)) { dragging = "CPS"; setOffset(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY); return true; }
 		if (N3XRConfig.showPing && inBox(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY)) { dragging = "Ping"; setOffset(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY); return true; }
+		if (N3XRConfig.showKeystrokes && inBox(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY)) { dragging = "Keys"; setOffset(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY); return true; }
 		return super.mouseClicked(mouseX, mouseY, button);
 	}
 
@@ -98,6 +100,7 @@ public class N3XRHudEditScreen extends Screen {
 				case "Armor" -> { N3XRConfig.armorX = nx; N3XRConfig.armorY = ny; }
 				case "CPS" -> { N3XRConfig.cpsX = nx; N3XRConfig.cpsY = ny; }
 				case "Ping" -> { N3XRConfig.pingX = nx; N3XRConfig.pingY = ny; }
+				case "Keys" -> { N3XRConfig.keysX = nx; N3XRConfig.keysY = ny; }
 			}
 			return true;
 		}
