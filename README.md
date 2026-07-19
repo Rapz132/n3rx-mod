@@ -6,8 +6,8 @@
 - `src/main/resources/assets/minecraft/textures/gui/title/` -> taruh PNG custom di sini buat ganti logo
 
 ## Ganti logo "Minecraft" & "Java Edition"
-1. Extract `minecraft.png` dan `edition.png` dari client jar 1.21.1
-   (biasanya di `.minecraft/versions/1.21.1/1.21.1.jar` -> `assets/minecraft/textures/gui/title/`)
+1. Extract `minecraft.png` dan `edition.png` dari client jar 1.21
+   (biasanya di `.minecraft/versions/1.21/1.21.jar` -> `assets/minecraft/textures/gui/title/`)
    buat tau ukuran pixel yang pas.
 2. Bikin gambar custom "N3XR" dengan ukuran SAMA PERSIS seperti file asli.
 3. Timpa file itu, taruh di:
