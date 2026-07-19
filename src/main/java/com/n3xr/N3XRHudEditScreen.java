@@ -22,17 +22,17 @@ public class N3XRHudEditScreen extends Screen {
 	protected void init() {
 		int cx = this.width / 2 - 100;
 
-		this.addDrawableChild(N3XRButton.of(cx, 60, 200, 20,
+		this.addDrawableChild(N3XRButton.of(cx, 92, 200, 20,
 			Text.literal("\u2699 N3XR Settings"),
 			b -> this.client.setScreen(new N3XRConfigScreen())
 		));
 
-		this.addDrawableChild(N3XRButton.of(cx, 86, 95, 18,
+		this.addDrawableChild(N3XRButton.of(cx, 118, 95, 18,
 			Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")),
 			b -> { N3XRConfig.snapEnabled = !N3XRConfig.snapEnabled; b.setMessage(Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF"))); }
 		));
 
-		this.addDrawableChild(N3XRButton.of(cx + 105, 86, 95, 18,
+		this.addDrawableChild(N3XRButton.of(cx + 105, 118, 95, 18,
 			Text.literal("+ Guides " + (N3XRConfig.guidesEnabled ? "ON" : "OFF")),
 			b -> { N3XRConfig.guidesEnabled = !N3XRConfig.guidesEnabled; b.setMessage(Text.literal("+ Guides " + (N3XRConfig.guidesEnabled ? "ON" : "OFF"))); }
 		));
@@ -42,7 +42,7 @@ public class N3XRHudEditScreen extends Screen {
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		super.render(context, mouseX, mouseY, delta);
 
-		int logoW = 100, logoH = 40;
+		int logoW = 80, logoH = 80;
 		int logoX = (this.width - logoW) / 2;
 		context.drawTexture(
 			Identifier.of("n3xr", "textures/gui/n3xr_logo.png"),
@@ -123,4 +123,4 @@ public class N3XRHudEditScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-				}
+}
