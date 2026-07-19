@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "n3xr",
+	"version": "${version}",
+	"name": "N3XR Client",
+	"description": "Custom title screen logo + Armor HUD + FPS Display",
+	"authors": ["44pzx"],
+	"contact": {},
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.n3xr.N3XRClient"
+		]
+	},
+	"mixins": [],
+	"depends": {
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
