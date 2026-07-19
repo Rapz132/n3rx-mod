@@ -1,10 +1,10 @@
 package com.n3xr;
 
 public class N3XRConfig {
-	public static boolean showFps = true;
-	public static boolean showArmor = true;
-	public static boolean showCps = true;
-	public static boolean showPing = true;
+	public static boolean showFps = false;
+	public static boolean showArmor = false;
+	public static boolean showCps = false;
+	public static boolean showPing = false;
 
 	public static boolean snapEnabled = false;
 	public static boolean guidesEnabled = true;
