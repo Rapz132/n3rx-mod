@@ -71,6 +71,7 @@ public class N3XRClient implements ClientModInitializer {
 			if (N3XRConfig.showArmor) renderArmorHud(context, mc);
 			if (N3XRConfig.showCps) renderCps(context, mc);
 			if (N3XRConfig.showPing) renderPing(context, mc);
+			if (N3XRConfig.showKeystrokes) renderKeystrokes(context, mc);
 		});
 	}
 
@@ -106,4 +107,33 @@ public class N3XRClient implements ClientModInitializer {
 		context.drawText(mc.textRenderer, Text.literal("Ping: " + ping + "ms"),
 			N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor(), true);
 	}
-}
+
+	private void renderKeystrokes(net.minecraft.client.gui.DrawContext context, MinecraftClient mc) {
+		int x = N3XRConfig.keysX;
+		int y = N3XRConfig.keysY;
+		int size = 18;
+		int gap = 2;
+
+		boolean w = mc.options.forwardKey.isPressed();
+		boolean a = mc.options.leftKey.isPressed();
+		boolean s = mc.options.backKey.isPressed();
+		boolean d = mc.options.rightKey.isPressed();
+
+		drawKey(context, mc, "W", x + size + gap, y, size, w);
+		drawKey(context, mc, "A", x, y + size + gap, size, a);
+		drawKey(context, mc, "S", x + size + gap, y + size + gap, size, s);
+		drawKey(context, mc, "D", x + (size + gap) * 2, y + size + gap, size, d);
+	}
+
+	private void drawKey(net.minecraft.client.gui.DrawContext context, MinecraftClient mc, String label, int x, int y, int size, boolean active) {
+		int bg = active ? 0xC0FF3333 : 0x80000000;
+		context.fill(x, y, x + size, y + size, bg);
+		context.fill(x, y, x + size, y + 1, 0xFFFFFFFF);
+		context.fill(x, y + size - 1, x + size, y + size, 0xFFFFFFFF);
+		context.fill(x, y, x + 1, y + size, 0xFFFFFFFF);
+		context.fill(x + size - 1, y, x + size, y + size, 0xFFFFFFFF);
+
+		int tw = mc.textRenderer.getWidth(label);
+		context.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
+	}
+				}
