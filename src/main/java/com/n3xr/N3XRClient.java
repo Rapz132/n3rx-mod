@@ -35,10 +35,9 @@ public class N3XRClient implements ClientModInitializer {
 				}
 			}
 
-			int presses = client.options.attackKey.getTimesPressed()
-				+ client.options.useKey.getTimesPressed();
 			long now = System.currentTimeMillis();
-			for (int i = 0; i < presses; i++) clickTimes.addLast(now);
+			while (client.options.attackKey.wasPressed()) clickTimes.addLast(now);
+			while (client.options.useKey.wasPressed()) clickTimes.addLast(now);
 			while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) {
 				clickTimes.pollFirst();
 			}
@@ -85,4 +84,4 @@ public class N3XRClient implements ClientModInitializer {
 		context.drawText(mc.textRenderer, Text.literal("Ping: " + ping + "ms"),
 			N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor(), true);
 	}
-			}
+}
