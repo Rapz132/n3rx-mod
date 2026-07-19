@@ -5,6 +5,7 @@ public class N3XRConfig {
 	public static boolean showArmor = false;
 	public static boolean showCps = false;
 	public static boolean showPing = false;
+	public static boolean showKeystrokes = false;
 
 	public static boolean nightVisionEnabled = false;
 
@@ -15,6 +16,7 @@ public class N3XRConfig {
 	public static int armorX = 5, armorY = 20;
 	public static int cpsX = 5, cpsY = 100;
 	public static int pingX = 5, pingY = 115;
+	public static int keysX = 5, keysY = 140;
 
 	public static final int[] COLOR_PALETTE = {
 		0xFFFFFF, 0xFF5555, 0xFFFF55, 0x55FF55, 0x55FFFF, 0xFF55FF
