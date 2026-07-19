@@ -18,7 +18,7 @@ public class N3XRConfig {
 		0xFFFFFF, 0xFF5555, 0xFFFF55, 0x55FF55, 0x55FFFF, 0xFF55FF
 	};
 	public static final String[] COLOR_NAMES = {
-		"Putih", "Merah", "Kuning", "Hijau", "Cyan", "Pink"
+		"White", "Red", "Yellow", "Green", "Cyan", "Pink"
 	};
 
 	public static int fpsColorIndex = 0;
