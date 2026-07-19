@@ -9,11 +9,13 @@ import java.util.List;
 
 public class N3XRConfigScreen extends Screen {
 
-	private enum Category { FPS, ARMOR, CPS, PING }
+	private enum Category { FPS, ARMOR, CPS, PING, NIGHT_VISION }
 	private Category selected = Category.FPS;
 
 	private final List<net.minecraft.client.gui.widget.ButtonWidget> sidebarButtons = new ArrayList<>();
 	private final List<net.minecraft.client.gui.widget.ButtonWidget> detailButtons = new ArrayList<>();
+
+	private int panelX1, panelY1, panelX2, panelY2;
 
 	public N3XRConfigScreen() {
 		super(Text.literal("N3XR Settings"));
@@ -25,9 +27,14 @@ public class N3XRConfigScreen extends Screen {
 		detailButtons.clear();
 
 		int sidebarX = this.width / 2 - 180;
-		int sidebarY = 40;
+		int sidebarY = 55;
 		int sidebarW = 110;
 		int gap = 24;
+
+		panelX1 = sidebarX - 15;
+		panelY1 = 10;
+		panelX2 = this.width / 2 + 165;
+		panelY2 = sidebarY + gap * 5 + 30;
 
 		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY, sidebarW, 20,
 			Text.literal("FPS"), b -> { selected = Category.FPS; rebuildDetail(); })));
@@ -41,7 +48,10 @@ public class N3XRConfigScreen extends Screen {
 		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 3, sidebarW, 20,
 			Text.literal("Ping"), b -> { selected = Category.PING; rebuildDetail(); })));
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 4 + 10, sidebarW, 20,
+		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 4, sidebarW, 20,
+			Text.literal("Night Vision"), b -> { selected = Category.NIGHT_VISION; rebuildDetail(); })));
+
+		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 5 + 6, sidebarW, 20,
 			Text.literal("Back"), b -> this.client.setScreen(new N3XRHudEditScreen()))));
 
 		rebuildDetail();
@@ -52,7 +62,7 @@ public class N3XRConfigScreen extends Screen {
 		detailButtons.clear();
 
 		int panelX = this.width / 2 - 50;
-		int panelY = 40;
+		int panelY = 55;
 		int gap = 24;
 
 		switch (selected) {
@@ -85,15 +95,40 @@ public class N3XRConfigScreen extends Screen {
 					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.pingColorIndex]),
 					b -> { N3XRConfig.pingColorIndex = (N3XRConfig.pingColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.pingColorIndex])); })));
 			}
+			case NIGHT_VISION -> {
+				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
+					Text.literal("Display: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF")),
+					b -> { N3XRConfig.nightVisionEnabled = !N3XRConfig.nightVisionEnabled; b.setMessage(Text.literal("Display: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF"))); })));
+				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap, 200, 20,
+					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.nightVisionColorIndex]),
+					b -> { N3XRConfig.nightVisionColorIndex = (N3XRConfig.nightVisionColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.nightVisionColorIndex])); })));
+				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap * 2, 200, 20,
+					Text.literal("Duration: " + N3XRConfig.DURATION_NAMES[N3XRConfig.nightVisionDurationIndex]),
+					b -> { N3XRConfig.nightVisionDurationIndex = (N3XRConfig.nightVisionDurationIndex + 1) % N3XRConfig.DURATION_NAMES.length; b.setMessage(Text.literal("Duration: " + N3XRConfig.DURATION_NAMES[N3XRConfig.nightVisionDurationIndex])); })));
+				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap * 3, 200, 20,
+					Text.literal("Level: " + N3XRConfig.LEVEL_NAMES[N3XRConfig.nightVisionLevelIndex]),
+					b -> { N3XRConfig.nightVisionLevelIndex = (N3XRConfig.nightVisionLevelIndex + 1) % N3XRConfig.LEVEL_NAMES.length; b.setMessage(Text.literal("Level: " + N3XRConfig.LEVEL_NAMES[N3XRConfig.nightVisionLevelIndex])); })));
+			}
 		}
 	}
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+		context.fill(panelX1, panelY1, panelX2, panelY2, 0xD0140A0C);
+		context.fill(panelX1, panelY1, panelX2, panelY1 + 28, 0xE01A0E10);
+
+		int red = 0xFFFF5555;
+		context.fill(panelX1 - 1, panelY1 - 1, panelX2 + 1, panelY1, red);
+		context.fill(panelX1 - 1, panelY2, panelX2 + 1, panelY2 + 1, red);
+		context.fill(panelX1 - 1, panelY1 - 1, panelX1, panelY2 + 1, red);
+		context.fill(panelX2, panelY1 - 1, panelX2 + 1, panelY2 + 1, red);
+		context.fill(panelX1, panelY1 + 27, panelX2, panelY1 + 28, red);
+
 		super.render(context, mouseX, mouseY, delta);
-		Text title = Text.literal("N3XR Client");
+
+		Text title = Text.literal("N3XR CLIENT").styled(style -> style.withBold(true));
 		int tw = this.textRenderer.getWidth(title);
-		context.drawText(this.textRenderer, title, this.width / 2 - 180, 20, 0xFFFFFFFF, true);
+		context.drawText(this.textRenderer, title, (this.width - tw) / 2, panelY1 + 10, 0xFFFF5555, true);
 	}
 
 	@Override
