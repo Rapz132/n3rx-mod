@@ -2,8 +2,8 @@ package com.n3xr;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class N3XRHudEditScreen extends Screen {
 
@@ -13,72 +13,74 @@ public class N3XRHudEditScreen extends Screen {
 
 	private String dragging = null;
 	private int dragOffX, dragOffY;
-	private boolean snapEnabled = false;
-	private boolean guidesEnabled = true;
-
-	private ButtonWidget snapButton;
-	private ButtonWidget guidesButton;
 
 	public N3XRHudEditScreen() {
-		super(Text.literal("Geser Posisi HUD"));
+		super(Text.literal("N3XR HUD"));
 	}
 
 	@Override
 	protected void init() {
-		snapButton = this.addDrawableChild(ButtonWidget.builder(
-			Text.literal("Snap: " + (snapEnabled ? "ON" : "OFF")),
-			button -> {
-				snapEnabled = !snapEnabled;
-				button.setMessage(Text.literal("Snap: " + (snapEnabled ? "ON" : "OFF")));
-			}
-		).dimensions(this.width / 2 - 110, 20, 100, 20).build());
+		int cx = this.width / 2 - 100;
 
-		guidesButton = this.addDrawableChild(ButtonWidget.builder(
-			Text.literal("Guides: " + (guidesEnabled ? "ON" : "OFF")),
-			button -> {
-				guidesEnabled = !guidesEnabled;
-				button.setMessage(Text.literal("Guides: " + (guidesEnabled ? "ON" : "OFF")));
-			}
-		).dimensions(this.width / 2 + 10, 20, 100, 20).build());
+		this.addDrawableChild(N3XRButton.of(cx, 60, 200, 20,
+			Text.literal("\u2699 N3XR Settings"),
+			b -> this.client.setScreen(new N3XRConfigScreen())
+		));
+
+		this.addDrawableChild(N3XRButton.of(cx, 86, 95, 18,
+			Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")),
+			b -> { N3XRConfig.snapEnabled = !N3XRConfig.snapEnabled; b.setMessage(Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF"))); }
+		));
+
+		this.addDrawableChild(N3XRButton.of(cx + 105, 86, 95, 18,
+			Text.literal("+ Guides " + (N3XRConfig.guidesEnabled ? "ON" : "OFF")),
+			b -> { N3XRConfig.guidesEnabled = !N3XRConfig.guidesEnabled; b.setMessage(Text.literal("+ Guides " + (N3XRConfig.guidesEnabled ? "ON" : "OFF"))); }
+		));
 	}
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		super.render(context, mouseX, mouseY, delta);
 
-		if (dragging != null && guidesEnabled) {
-			int cx = this.width / 2;
-			int cy = this.height / 2;
-			context.fill(cx, 0, cx + 1, this.height, 0x55FF5555);
-			context.fill(0, cy, this.width, cy + 1, 0x55FF5555);
+		int logoW = 100, logoH = 40;
+		int logoX = (this.width - logoW) / 2;
+		context.drawTexture(
+			Identifier.of("n3xr", "textures/gui/n3xr_logo.png"),
+			logoX, 4, 0, 0, logoW, logoH, logoW, logoH
+		);
+
+		if (dragging != null && N3XRConfig.guidesEnabled) {
+			int gcx = this.width / 2;
+			int gcy = this.height / 2;
+			context.fill(gcx, 0, gcx + 1, this.height, 0x55FF5555);
+			context.fill(0, gcy, this.width, gcy + 1, 0x55FF5555);
 		}
 
-		drawBox(context, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY, "FPS".equals(dragging));
-		drawBox(context, "Armor", N3XRConfig.armorX, N3XRConfig.armorY, "Armor".equals(dragging));
-		drawBox(context, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY, "CPS".equals(dragging));
-		drawBox(context, "Ping", N3XRConfig.pingX, N3XRConfig.pingY, "Ping".equals(dragging));
+		if (N3XRConfig.showFps) drawBox(context, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY, "FPS".equals(dragging));
+		if (N3XRConfig.showArmor) drawBox(context, "ArmorHUD", N3XRConfig.armorX, N3XRConfig.armorY, "Armor".equals(dragging));
+		if (N3XRConfig.showCps) drawBox(context, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY, "CPS".equals(dragging));
+		if (N3XRConfig.showPing) drawBox(context, "Ping", N3XRConfig.pingX, N3XRConfig.pingY, "Ping".equals(dragging));
 
-		Text hint = Text.literal("Tahan & geser kotak untuk pindahin \u00b7 Right Shift untuk tutup");
+		Text hint = Text.literal("Drag modules to reposition \u00b7 Right Shift to close");
 		int hw = this.textRenderer.getWidth(hint);
 		context.drawText(this.textRenderer, hint, (this.width - hw) / 2, this.height - 16, 0xAAAAAA, true);
 	}
 
 	private void drawBox(DrawContext context, String label, int x, int y, boolean active) {
-		int borderColor = active ? 0xFFFF5555 : 0x77FFFFFF;
+		int borderColor = active ? 0xFFFFFFFF : 0xFFFF5555;
 		context.fill(x - 1, y - 1, x + BOX_W + 1, y, borderColor);
 		context.fill(x - 1, y + BOX_H, x + BOX_W + 1, y + BOX_H + 1, borderColor);
 		context.fill(x - 1, y - 1, x, y + BOX_H + 1, borderColor);
 		context.fill(x + BOX_W, y - 1, x + BOX_W + 1, y + BOX_H + 1, borderColor);
-		context.fill(x, y, x + BOX_W, y + BOX_H, 0x88000000);
-		context.drawText(this.textRenderer, label, x + 3, y + 2, 0xFFFF00, true);
+		context.drawText(this.textRenderer, label, x + 3, y + 2, 0xFFFFFF, true);
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (inBox(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY)) { dragging = "FPS"; setOffset(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY); return true; }
-		if (inBox(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY)) { dragging = "Armor"; setOffset(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY); return true; }
-		if (inBox(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY)) { dragging = "CPS"; setOffset(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY); return true; }
-		if (inBox(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY)) { dragging = "Ping"; setOffset(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY); return true; }
+		if (N3XRConfig.showFps && inBox(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY)) { dragging = "FPS"; setOffset(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY); return true; }
+		if (N3XRConfig.showArmor && inBox(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY)) { dragging = "Armor"; setOffset(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY); return true; }
+		if (N3XRConfig.showCps && inBox(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY)) { dragging = "CPS"; setOffset(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY); return true; }
+		if (N3XRConfig.showPing && inBox(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY)) { dragging = "Ping"; setOffset(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY); return true; }
 		return super.mouseClicked(mouseX, mouseY, button);
 	}
 
@@ -87,7 +89,7 @@ public class N3XRHudEditScreen extends Screen {
 		if (dragging != null) {
 			int nx = (int) mouseX - dragOffX;
 			int ny = (int) mouseY - dragOffY;
-			if (snapEnabled) {
+			if (N3XRConfig.snapEnabled) {
 				nx = Math.round(nx / (float) SNAP_GRID) * SNAP_GRID;
 				ny = Math.round(ny / (float) SNAP_GRID) * SNAP_GRID;
 			}
@@ -121,4 +123,4 @@ public class N3XRHudEditScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-}
+				}
