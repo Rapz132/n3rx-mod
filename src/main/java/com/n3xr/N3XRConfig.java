@@ -6,6 +6,9 @@ public class N3XRConfig {
 	public static boolean showCps = true;
 	public static boolean showPing = true;
 
+	public static boolean snapEnabled = false;
+	public static boolean guidesEnabled = true;
+
 	public static int fpsX = 5, fpsY = 5;
 	public static int armorX = 5, armorY = 20;
 	public static int cpsX = 5, cpsY = 100;
