@@ -17,21 +17,18 @@ public class N3XRButton extends ButtonWidget {
 	@Override
 	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
 		boolean hovered = this.isHovered();
-		int bg = hovered ? 0xCC2A1418 : 0xCC1A1418;
-		int border = 0xFFFF5555;
+		int bg = hovered ? 0xFF201010 : 0xFF000000;
+		int underline = 0xFFFF3333;
 
 		context.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), bg);
-		context.fill(getX() - 1, getY() - 1, getX() + getWidth() + 1, getY(), border);
-		context.fill(getX() - 1, getY() + getHeight(), getX() + getWidth() + 1, getY() + getHeight() + 1, border);
-		context.fill(getX() - 1, getY() - 1, getX(), getY() + getHeight() + 1, border);
-		context.fill(getX() + getWidth(), getY() - 1, getX() + getWidth() + 1, getY() + getHeight() + 1, border);
+		context.fill(getX(), getY() + getHeight() - 2, getX() + getWidth(), getY() + getHeight(), underline);
 
-		int textColor = hovered ? 0xFFFF5555 : 0xFFFFFFFF;
+		int textColor = 0xFFFFFFFF;
 		context.drawCenteredTextWithShadow(
 			net.minecraft.client.MinecraftClient.getInstance().textRenderer,
 			this.getMessage(),
 			getX() + getWidth() / 2,
-			getY() + (getHeight() - 8) / 2,
+			getY() + (getHeight() - 2 - 8) / 2,
 			textColor
 		);
 	}
