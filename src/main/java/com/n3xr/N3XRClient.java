@@ -32,7 +32,7 @@ public class N3XRClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (openSettingsKey.wasPressed()) {
 				if (client.currentScreen == null) {
-					client.setScreen(new N3XRConfigScreen());
+					client.setScreen(new N3XRHudEditScreen());
 				}
 			}
 
@@ -93,4 +93,4 @@ public class N3XRClient implements ClientModInitializer {
 		context.drawText(mc.textRenderer, Text.literal("Ping: " + ping + "ms"),
 			N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor(), true);
 	}
-					}
+}
