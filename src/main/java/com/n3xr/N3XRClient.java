@@ -8,6 +8,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -42,6 +44,17 @@ public class N3XRClient implements ClientModInitializer {
 					clickTimes.addLast(System.currentTimeMillis());
 				}
 				wasSwinging = swinging;
+
+				if (N3XRConfig.nightVisionEnabled) {
+					int durationSec = N3XRConfig.DURATION_SECONDS[N3XRConfig.nightVisionDurationIndex];
+					int durationTicks = durationSec == -1 ? 999999 : durationSec * 20;
+					var current = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
+					if (current == null || current.getDuration() < 20) {
+						client.player.addStatusEffect(new StatusEffectInstance(
+							StatusEffects.NIGHT_VISION, durationTicks, N3XRConfig.nightVisionLevelIndex, true, false, false
+						));
+					}
+				}
 			}
 
 			long now = System.currentTimeMillis();
