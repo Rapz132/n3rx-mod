@@ -9,7 +9,7 @@ import java.util.List;
 
 public class N3XRConfigScreen extends Screen {
 
-	private enum Category { FPS, ARMOR, CPS, PING, NIGHT_VISION }
+	private enum Category { FPS, ARMOR, CPS, PING, KEYSTROKES, NIGHT_VISION }
 	private Category selected = Category.FPS;
 
 	private final List<net.minecraft.client.gui.widget.ButtonWidget> sidebarButtons = new ArrayList<>();
@@ -34,7 +34,7 @@ public class N3XRConfigScreen extends Screen {
 		panelX1 = sidebarX - 15;
 		panelY1 = 10;
 		panelX2 = this.width / 2 + 165;
-		panelY2 = sidebarY + gap * 5 + 30;
+		panelY2 = sidebarY + gap * 6 + 30;
 
 		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY, sidebarW, 20,
 			Text.literal("FPS"), b -> { selected = Category.FPS; rebuildDetail(); })));
@@ -49,9 +49,12 @@ public class N3XRConfigScreen extends Screen {
 			Text.literal("Ping"), b -> { selected = Category.PING; rebuildDetail(); })));
 
 		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 4, sidebarW, 20,
+			Text.literal("Keystrokes"), b -> { selected = Category.KEYSTROKES; rebuildDetail(); })));
+
+		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 5, sidebarW, 20,
 			Text.literal("Night Vision"), b -> { selected = Category.NIGHT_VISION; rebuildDetail(); })));
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 5 + 6, sidebarW, 20,
+		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 6 + 6, sidebarW, 20,
 			Text.literal("Back"), b -> this.client.setScreen(new N3XRHudEditScreen()))));
 
 		rebuildDetail();
@@ -95,10 +98,15 @@ public class N3XRConfigScreen extends Screen {
 					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.pingColorIndex]),
 					b -> { N3XRConfig.pingColorIndex = (N3XRConfig.pingColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.pingColorIndex])); })));
 			}
+			case KEYSTROKES -> {
+				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
+					Text.literal("Display: " + (N3XRConfig.showKeystrokes ? "ON" : "OFF")),
+					b -> { N3XRConfig.showKeystrokes = !N3XRConfig.showKeystrokes; b.setMessage(Text.literal("Display: " + (N3XRConfig.showKeystrokes ? "ON" : "OFF"))); })));
+			}
 			case NIGHT_VISION -> {
 				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Display: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF")),
-					b -> { N3XRConfig.nightVisionEnabled = !N3XRConfig.nightVisionEnabled; b.setMessage(Text.literal("Display: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF"))); })));
+					Text.literal("Effect: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF")),
+					b -> { N3XRConfig.nightVisionEnabled = !N3XRConfig.nightVisionEnabled; b.setMessage(Text.literal("Effect: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF"))); })));
 				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap, 200, 20,
 					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.nightVisionColorIndex]),
 					b -> { N3XRConfig.nightVisionColorIndex = (N3XRConfig.nightVisionColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.nightVisionColorIndex])); })));
@@ -135,4 +143,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-}
+																	  }
