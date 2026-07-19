@@ -72,8 +72,10 @@ public class N3XRClient implements ClientModInitializer {
 			if (!armor.isEmpty()) {
 				context.drawItem(armor, N3XRConfig.armorX, y);
 				context.drawItemInSlot(mc.textRenderer, armor, N3XRConfig.armorX, y);
-				y += 20;
+			} else {
+				context.fill(N3XRConfig.armorX, y, N3XRConfig.armorX + 16, y + 16, 0x40FFFFFF);
 			}
+			y += 20;
 		}
 	}
 
@@ -91,4 +93,4 @@ public class N3XRClient implements ClientModInitializer {
 		context.drawText(mc.textRenderer, Text.literal("Ping: " + ping + "ms"),
 			N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor(), true);
 	}
-}
+					}
