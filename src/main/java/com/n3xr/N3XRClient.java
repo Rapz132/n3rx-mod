@@ -18,6 +18,7 @@ public class N3XRClient implements ClientModInitializer {
 
 	private static KeyBinding openSettingsKey;
 	private final ArrayDeque<Long> clickTimes = new ArrayDeque<>();
+	private boolean wasSwinging = false;
 
 	@Override
 	public void onInitializeClient() {
@@ -35,9 +36,15 @@ public class N3XRClient implements ClientModInitializer {
 				}
 			}
 
+			if (client.player != null) {
+				boolean swinging = client.player.handSwinging;
+				if (swinging && !wasSwinging) {
+					clickTimes.addLast(System.currentTimeMillis());
+				}
+				wasSwinging = swinging;
+			}
+
 			long now = System.currentTimeMillis();
-			while (client.options.attackKey.wasPressed()) clickTimes.addLast(now);
-			while (client.options.useKey.wasPressed()) clickTimes.addLast(now);
 			while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) {
 				clickTimes.pollFirst();
 			}
