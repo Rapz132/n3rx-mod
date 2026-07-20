@@ -6,7 +6,6 @@ public class N3XRConfig {
 	public static boolean showCps = false;
 	public static boolean showPing = false;
 	public static boolean showKeystrokes = false;
-
 	public static boolean nightVisionEnabled = false;
 
 	public static boolean snapEnabled = false;
@@ -19,26 +18,10 @@ public class N3XRConfig {
 	public static int keysX = 5, keysY = 140;
 
 	public static final int[] COLOR_PALETTE = {
-		0xFFFFFF, 0xFF5555, 0xFFFF55, 0x55FF55, 0x55FFFF, 0xFF55FF
-	};
-	public static final String[] COLOR_NAMES = {
-		"White", "Red", "Yellow", "Green", "Cyan", "Pink"
+		0xFFFFFFFF, 0xFFFF5555, 0xFFFFFF55, 0xFF55FF55, 0xFF55FFFF, 0xFFFF55FF
 	};
 
-	public static int fpsColorIndex = 0;
-	public static int cpsColorIndex = 0;
-	public static int pingColorIndex = 0;
-	public static int nightVisionColorIndex = 3;
-
-	public static int fpsColor() { return COLOR_PALETTE[fpsColorIndex]; }
-	public static int cpsColor() { return COLOR_PALETTE[cpsColorIndex]; }
-	public static int pingColor() { return COLOR_PALETTE[pingColorIndex]; }
-	public static int nightVisionColor() { return COLOR_PALETTE[nightVisionColorIndex]; }
-
-	public static final int[] DURATION_SECONDS = { 30, 60, 120, 300, -1 };
-	public static final String[] DURATION_NAMES = { "30s", "60s", "2min", "5min", "Infinite" };
-	public static int nightVisionDurationIndex = 4;
-
-	public static final String[] LEVEL_NAMES = { "I", "II", "III", "IV", "V" };
-	public static int nightVisionLevelIndex = 0;
+	public static int fpsColor = 0xFFFFFFFF;
+	public static int cpsColor = 0xFFFFFFFF;
+	public static int pingColor = 0xFFFFFFFF;
 }
