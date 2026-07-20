@@ -4,16 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class N3XRConfigScreen extends Screen {
-
-	private enum Category { FPS, ARMOR, CPS, PING, KEYSTROKES, NIGHT_VISION }
-	private Category selected = Category.FPS;
-
-	private final List<net.minecraft.client.gui.widget.ButtonWidget> sidebarButtons = new ArrayList<>();
-	private final List<net.minecraft.client.gui.widget.ButtonWidget> detailButtons = new ArrayList<>();
 
 	private int panelX1, panelY1, panelX2, panelY2;
 
@@ -23,100 +14,59 @@ public class N3XRConfigScreen extends Screen {
 
 	@Override
 	protected void init() {
-		sidebarButtons.clear();
-		detailButtons.clear();
+		int colW = 220;
+		int col1X = this.width / 2 - colW - 10;
+		int col2X = this.width / 2 + 10;
+		int rowY = 50;
+		int rowGap = 90;
 
-		int sidebarX = this.width / 2 - 180;
-		int sidebarY = 55;
-		int sidebarW = 110;
-		int gap = 24;
-
-		panelX1 = sidebarX - 15;
+		panelX1 = col1X - 15;
 		panelY1 = 10;
-		panelX2 = this.width / 2 + 165;
-		panelY2 = sidebarY + gap * 6 + 30;
+		panelX2 = col2X + colW + 15;
+		panelY2 = rowY + rowGap * 3 + 20;
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY, sidebarW, 20,
-			Text.literal("FPS"), b -> { selected = Category.FPS; rebuildDetail(); })));
+		addModule(col1X, rowY, () -> N3XRConfig.showFps, v -> N3XRConfig.showFps = v,
+			() -> N3XRConfig.fpsColor, c -> N3XRConfig.fpsColor = c);
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap, sidebarW, 20,
-			Text.literal("Armor HUD"), b -> { selected = Category.ARMOR; rebuildDetail(); })));
+		addModule(col2X, rowY, () -> N3XRConfig.showArmor, v -> N3XRConfig.showArmor = v,
+			null, null);
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 2, sidebarW, 20,
-			Text.literal("CPS"), b -> { selected = Category.CPS; rebuildDetail(); })));
+		addModule(col1X, rowY + rowGap, () -> N3XRConfig.showCps, v -> N3XRConfig.showCps = v,
+			() -> N3XRConfig.cpsColor, c -> N3XRConfig.cpsColor = c);
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 3, sidebarW, 20,
-			Text.literal("Ping"), b -> { selected = Category.PING; rebuildDetail(); })));
+		addModule(col2X, rowY + rowGap, () -> N3XRConfig.showPing, v -> N3XRConfig.showPing = v,
+			() -> N3XRConfig.pingColor, c -> N3XRConfig.pingColor = c);
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 4, sidebarW, 20,
-			Text.literal("Keystrokes"), b -> { selected = Category.KEYSTROKES; rebuildDetail(); })));
+		addModule(col1X, rowY + rowGap * 2, () -> N3XRConfig.showKeystrokes, v -> N3XRConfig.showKeystrokes = v,
+			null, null);
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 5, sidebarW, 20,
-			Text.literal("Night Vision"), b -> { selected = Category.NIGHT_VISION; rebuildDetail(); })));
+		addModule(col2X, rowY + rowGap * 2, () -> N3XRConfig.nightVisionEnabled, v -> N3XRConfig.nightVisionEnabled = v,
+			null, null);
 
-		sidebarButtons.add(this.addDrawableChild(N3XRButton.of(sidebarX, sidebarY + gap * 6 + 6, sidebarW, 20,
-			Text.literal("Back"), b -> this.client.setScreen(new N3XRHudEditScreen()))));
-
-		rebuildDetail();
+		this.addDrawableChild(N3XRButton.of(this.width / 2 - 90, panelY2 - 26, 180, 20,
+			Text.literal("Back"),
+			b -> this.client.setScreen(new N3XRHudEditScreen())
+		));
 	}
 
-	private void rebuildDetail() {
-		for (var b : detailButtons) this.remove(b);
-		detailButtons.clear();
+	private interface BoolGetter { boolean get(); }
+	private interface BoolSetter { void set(boolean v); }
+	private interface ColorGetter { int get(); }
+	private interface ColorSetter { void set(int c); }
 
-		int panelX = this.width / 2 - 50;
-		int panelY = 55;
-		int gap = 24;
+	private void addModule(int x, int y, BoolGetter getter, BoolSetter setter, ColorGetter colorGetter, ColorSetter colorSetter) {
+		int toggleW = colorGetter != null ? 150 : 190;
 
-		switch (selected) {
-			case FPS -> {
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Display: " + (N3XRConfig.showFps ? "ON" : "OFF")),
-					b -> { N3XRConfig.showFps = !N3XRConfig.showFps; b.setMessage(Text.literal("Display: " + (N3XRConfig.showFps ? "ON" : "OFF"))); })));
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap, 200, 20,
-					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.fpsColorIndex]),
-					b -> { N3XRConfig.fpsColorIndex = (N3XRConfig.fpsColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.fpsColorIndex])); })));
-			}
-			case ARMOR -> {
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Display: " + (N3XRConfig.showArmor ? "ON" : "OFF")),
-					b -> { N3XRConfig.showArmor = !N3XRConfig.showArmor; b.setMessage(Text.literal("Display: " + (N3XRConfig.showArmor ? "ON" : "OFF"))); })));
-			}
-			case CPS -> {
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Display: " + (N3XRConfig.showCps ? "ON" : "OFF")),
-					b -> { N3XRConfig.showCps = !N3XRConfig.showCps; b.setMessage(Text.literal("Display: " + (N3XRConfig.showCps ? "ON" : "OFF"))); })));
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap, 200, 20,
-					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.cpsColorIndex]),
-					b -> { N3XRConfig.cpsColorIndex = (N3XRConfig.cpsColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.cpsColorIndex])); })));
-			}
-			case PING -> {
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Display: " + (N3XRConfig.showPing ? "ON" : "OFF")),
-					b -> { N3XRConfig.showPing = !N3XRConfig.showPing; b.setMessage(Text.literal("Display: " + (N3XRConfig.showPing ? "ON" : "OFF"))); })));
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap, 200, 20,
-					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.pingColorIndex]),
-					b -> { N3XRConfig.pingColorIndex = (N3XRConfig.pingColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.pingColorIndex])); })));
-			}
-			case KEYSTROKES -> {
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Display: " + (N3XRConfig.showKeystrokes ? "ON" : "OFF")),
-					b -> { N3XRConfig.showKeystrokes = !N3XRConfig.showKeystrokes; b.setMessage(Text.literal("Display: " + (N3XRConfig.showKeystrokes ? "ON" : "OFF"))); })));
-			}
-			case NIGHT_VISION -> {
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY, 200, 20,
-					Text.literal("Effect: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF")),
-					b -> { N3XRConfig.nightVisionEnabled = !N3XRConfig.nightVisionEnabled; b.setMessage(Text.literal("Effect: " + (N3XRConfig.nightVisionEnabled ? "ON" : "OFF"))); })));
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap, 200, 20,
-					Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.nightVisionColorIndex]),
-					b -> { N3XRConfig.nightVisionColorIndex = (N3XRConfig.nightVisionColorIndex + 1) % N3XRConfig.COLOR_PALETTE.length; b.setMessage(Text.literal("Color: " + N3XRConfig.COLOR_NAMES[N3XRConfig.nightVisionColorIndex])); })));
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap * 2, 200, 20,
-					Text.literal("Duration: " + N3XRConfig.DURATION_NAMES[N3XRConfig.nightVisionDurationIndex]),
-					b -> { N3XRConfig.nightVisionDurationIndex = (N3XRConfig.nightVisionDurationIndex + 1) % N3XRConfig.DURATION_NAMES.length; b.setMessage(Text.literal("Duration: " + N3XRConfig.DURATION_NAMES[N3XRConfig.nightVisionDurationIndex])); })));
-				detailButtons.add(this.addDrawableChild(N3XRButton.of(panelX, panelY + gap * 3, 200, 20,
-					Text.literal("Level: " + N3XRConfig.LEVEL_NAMES[N3XRConfig.nightVisionLevelIndex]),
-					b -> { N3XRConfig.nightVisionLevelIndex = (N3XRConfig.nightVisionLevelIndex + 1) % N3XRConfig.LEVEL_NAMES.length; b.setMessage(Text.literal("Level: " + N3XRConfig.LEVEL_NAMES[N3XRConfig.nightVisionLevelIndex])); })));
-			}
+		this.addDrawableChild(N3XRToggleButton.of(x, y + 16, toggleW, 20,
+			getter::get,
+			b -> setter.set(!getter.get())
+		));
+
+		if (colorGetter != null) {
+			this.addDrawableChild(N3XRButton.of(x + toggleW + 5, y + 16, 35, 20,
+				Text.literal("\u2699"),
+				b -> this.client.setScreen(new N3XRColorPickerScreen(this, colorSetter::set))
+			));
 		}
 	}
 
@@ -134,13 +84,26 @@ public class N3XRConfigScreen extends Screen {
 
 		super.render(context, mouseX, mouseY, delta);
 
-		Text title = Text.literal("N3XR CLIENT").styled(style -> style.withBold(true));
+		Text title = Text.literal("N3XR CLIENT").styled(s -> s.withBold(true));
 		int tw = this.textRenderer.getWidth(title);
 		context.drawText(this.textRenderer, title, (this.width - tw) / 2, panelY1 + 10, 0xFFFF5555, true);
+
+		int col1X = this.width / 2 - 220 - 10;
+		int col2X = this.width / 2 + 10;
+		drawLabel(context, col1X, 50, "FPS");
+		drawLabel(context, col2X, 50, "Armor HUD");
+		drawLabel(context, col1X, 140, "CPS");
+		drawLabel(context, col2X, 140, "Ping");
+		drawLabel(context, col1X, 230, "Keystrokes");
+		drawLabel(context, col2X, 230, "Night Vision");
+	}
+
+	private void drawLabel(DrawContext context, int x, int y, String text) {
+		context.drawText(this.textRenderer, Text.literal(text), x, y, 0xFFFFFFFF, true);
 	}
 
 	@Override
 	public boolean shouldPause() {
 		return false;
 	}
-																	  }
+}
