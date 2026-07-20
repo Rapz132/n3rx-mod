@@ -46,12 +46,10 @@ public class N3XRClient implements ClientModInitializer {
 				wasSwinging = swinging;
 
 				if (N3XRConfig.nightVisionEnabled) {
-					int durationSec = N3XRConfig.DURATION_SECONDS[N3XRConfig.nightVisionDurationIndex];
-					int durationTicks = durationSec == -1 ? 999999 : durationSec * 20;
 					var current = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
 					if (current == null || current.getDuration() < 20) {
 						client.player.addStatusEffect(new StatusEffectInstance(
-							StatusEffects.NIGHT_VISION, durationTicks, N3XRConfig.nightVisionLevelIndex, true, false, false
+							StatusEffects.NIGHT_VISION, 999999, 0, true, false, false
 						));
 					}
 				}
@@ -77,7 +75,7 @@ public class N3XRClient implements ClientModInitializer {
 
 	private void renderFps(net.minecraft.client.gui.DrawContext context, MinecraftClient mc) {
 		context.drawText(mc.textRenderer, Text.literal("FPS: " + mc.getCurrentFps()),
-			N3XRConfig.fpsX, N3XRConfig.fpsY, N3XRConfig.fpsColor(), true);
+			N3XRConfig.fpsX, N3XRConfig.fpsY, N3XRConfig.fpsColor, true);
 	}
 
 	private void renderArmorHud(net.minecraft.client.gui.DrawContext context, MinecraftClient mc) {
@@ -95,7 +93,7 @@ public class N3XRClient implements ClientModInitializer {
 
 	private void renderCps(net.minecraft.client.gui.DrawContext context, MinecraftClient mc) {
 		context.drawText(mc.textRenderer, Text.literal("CPS: " + clickTimes.size()),
-			N3XRConfig.cpsX, N3XRConfig.cpsY, N3XRConfig.cpsColor(), true);
+			N3XRConfig.cpsX, N3XRConfig.cpsY, N3XRConfig.cpsColor, true);
 	}
 
 	private void renderPing(net.minecraft.client.gui.DrawContext context, MinecraftClient mc) {
@@ -105,7 +103,7 @@ public class N3XRClient implements ClientModInitializer {
 			if (entry != null) ping = entry.getLatency();
 		}
 		context.drawText(mc.textRenderer, Text.literal("Ping: " + ping + "ms"),
-			N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor(), true);
+			N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor, true);
 	}
 
 	private void renderKeystrokes(net.minecraft.client.gui.DrawContext context, MinecraftClient mc) {
@@ -136,4 +134,4 @@ public class N3XRClient implements ClientModInitializer {
 		int tw = mc.textRenderer.getWidth(label);
 		context.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-				}
+}
