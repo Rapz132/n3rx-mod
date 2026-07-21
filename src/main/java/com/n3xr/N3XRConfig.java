@@ -17,11 +17,11 @@ public class N3XRConfig {
 	public static int pingX = 5, pingY = 115;
 	public static int keysX = 5, keysY = 140;
 
-	public static final int[] COLOR_PALETTE = {
-		0xFFFFFFFF, 0xFFFF5555, 0xFFFFFF55, 0xFF55FF55, 0xFF55FFFF, 0xFFFF55FF
-	};
+	public static int fpsColor = 0xFFFFFF;
+	public static int cpsColor = 0xFFFFFF;
+	public static int pingColor = 0xFFFFFF;
 
-	public static int fpsColor = 0xFFFFFFFF;
-	public static int cpsColor = 0xFFFFFFFF;
-	public static int pingColor = 0xFFFFFFFF;
+	public static final int[] PRESET_COLORS = {
+		0xFFFFFF, 0xFF5555, 0xFFFF55, 0x55FF55, 0x55FFFF, 0xFF55FF, 0xFFA500, 0x888888
+	};
 }
