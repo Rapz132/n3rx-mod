@@ -20,7 +20,7 @@ public class N3XRClient implements ClientModInitializer {
 
 	private static KeyBinding openSettingsKey;
 	private final ArrayDeque<Long> clickTimes = new ArrayDeque<>();
-	private boolean wasSwinging = false;
+	private boolean wasAttackPressed = false;
 
 	@Override
 	public void onInitializeClient() {
@@ -38,26 +38,24 @@ public class N3XRClient implements ClientModInitializer {
 				}
 			}
 
-			if (client.player != null) {
-				boolean swinging = client.player.handSwinging;
-				if (swinging && !wasSwinging) {
-					clickTimes.addLast(System.currentTimeMillis());
-				}
-				wasSwinging = swinging;
-
-				if (N3XRConfig.nightVisionEnabled) {
-					var current = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
-					if (current == null || current.getDuration() < 20) {
-						client.player.addStatusEffect(new StatusEffectInstance(
-							StatusEffects.NIGHT_VISION, 999999, 0, true, false, false
-						));
-					}
-				}
+			boolean pressed = client.options.attackKey.isPressed();
+			if (pressed && !wasAttackPressed) {
+				clickTimes.addLast(System.currentTimeMillis());
 			}
+			wasAttackPressed = pressed;
 
 			long now = System.currentTimeMillis();
 			while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) {
 				clickTimes.pollFirst();
+			}
+
+			if (client.player != null && N3XRConfig.nightVisionEnabled) {
+				var current = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
+				if (current == null || current.getDuration() < 20) {
+					client.player.addStatusEffect(new StatusEffectInstance(
+						StatusEffects.NIGHT_VISION, 999999, 0, true, false, false
+					));
+				}
 			}
 		});
 
