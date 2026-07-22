@@ -122,14 +122,17 @@ public class N3XRClient implements ClientModInitializer {
 	}
 
 	private void drawKey(net.minecraft.client.gui.DrawContext context, MinecraftClient mc, String label, int x, int y, int size, boolean active) {
-		int bg = active ? 0xC0FF3333 : 0x80000000;
+		int activeColor = N3XRConfig.keysColor | 0xC0000000;
+		int bg = active ? activeColor : 0x80000000;
+		int borderColor = active ? (N3XRConfig.keysColor | 0xFF000000) : 0xFFFFFFFF;
+
 		context.fill(x, y, x + size, y + size, bg);
-		context.fill(x, y, x + size, y + 1, 0xFFFFFFFF);
-		context.fill(x, y + size - 1, x + size, y + size, 0xFFFFFFFF);
-		context.fill(x, y, x + 1, y + size, 0xFFFFFFFF);
-		context.fill(x + size - 1, y, x + size, y + size, 0xFFFFFFFF);
+		context.fill(x, y, x + size, y + 1, borderColor);
+		context.fill(x, y + size - 1, x + size, y + size, borderColor);
+		context.fill(x, y, x + 1, y + size, borderColor);
+		context.fill(x + size - 1, y, x + size, y + size, borderColor);
 
 		int tw = mc.textRenderer.getWidth(label);
 		context.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-}
+			}
