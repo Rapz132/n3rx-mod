@@ -3,7 +3,7 @@
 	"id": "n3xr",
 	"version": "${version}",
 	"name": "N3XR Client",
-	"description": "Custom title screen logo + Armor HUD + FPS Display",
+	"description": "Client HUD For Minecraft",
 	"authors": ["44pzx"],
 	"contact": {},
 	"license": "MIT",
@@ -13,7 +13,9 @@
 			"com.n3xr.N3XRClient"
 		]
 	},
-	"mixins": [],
+	"mixins": [
+		"n3xr.mixins.json"
+	],
 	"depends": {
 		"fabricloader": ">=0.16.9",
 		"minecraft": "~1.21",
