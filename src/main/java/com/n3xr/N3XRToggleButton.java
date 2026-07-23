@@ -1,12 +1,12 @@
 package com.n3xr;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.text.Text;
 
 public class N3XRToggleButton {
 
 	public static final int GEAR_W = 22;
+	public static final int PAD = 4;
 
 	public static void render(DrawContext context, net.minecraft.client.font.TextRenderer tr,
 	                           int x, int y, int width, int height, boolean enabled) {
@@ -27,4 +27,4 @@ public class N3XRToggleButton {
 		context.fill(x + GEAR_W - 1, y, x + GEAR_W, y + height, 0xFFFF5555);
 		context.drawText(tr, "\u2699", x + 6, y + 4, 0xFFFFFFFF, true);
 	}
-                 }
+					 }
