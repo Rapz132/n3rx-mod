@@ -31,13 +31,13 @@ public class N3XRConfigScreen extends Screen {
 	private TextFieldWidget searchField;
 	private int scrollOffset = 0;
 
-	private static final int CARD_W = 250;
-	private static final int CARD_H = 90;
-	private static final int GAP = 10;
+	private static final int GAP = 8;
 	private static final int COLS = 3;
 	private static final int ICON_SIZE = 16;
-	private static final int PAD = 10;
+	private static final int PAD = 8;
+	private static final int CARD_H = 88;
 
+	private int cardW;
 	private int gridX, gridY, gridBottom, panelX1, panelX2;
 
 	public N3XRConfigScreen() {
@@ -81,7 +81,11 @@ public class N3XRConfigScreen extends Screen {
 		allModules.add(new ModuleDef("Compass", "Shows the direction you're facing.", Identifier.of("n3xr", "textures/icons/compass.png"), Category.UTILITY, true,
 			() -> N3XRConfig.showCompass, v -> N3XRConfig.showCompass = v, () -> N3XRConfig.compassColor, v -> N3XRConfig.compassColor = v, false));
 
-		int panelW = COLS * CARD_W + (COLS + 1) * GAP + 40;
+		int maxPanelW = this.width - 24;
+		int idealPanelW = COLS * 250 + (COLS + 1) * GAP + 40;
+		int panelW = Math.min(idealPanelW, maxPanelW);
+		cardW = (panelW - 40 - (COLS + 1) * GAP) / COLS;
+
 		panelX1 = this.width / 2 - panelW / 2;
 		panelX2 = this.width / 2 + panelW / 2;
 
@@ -89,7 +93,8 @@ public class N3XRConfigScreen extends Screen {
 		gridY = 130;
 		gridBottom = this.height - 60;
 
-		searchField = new TextFieldWidget(this.textRenderer, panelX1 + 200, 24, 200, 20, Text.literal("Search modules..."));
+		int searchW = Math.min(200, panelX2 - panelX1 - 320);
+		searchField = new TextFieldWidget(this.textRenderer, panelX1 + 200, 24, Math.max(searchW, 80), 20, Text.literal("Search modules..."));
 		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
 		this.addDrawableChild(searchField);
 
@@ -102,7 +107,7 @@ public class N3XRConfigScreen extends Screen {
 			() -> this.client.setScreen(new N3XRCreditsScreen(this))
 		};
 
-		int topBtnW = 66;
+		int topBtnW = Math.min(66, (panelX2 - panelX1 - 20) / topLabels.length - 4);
 		int topX = panelX2 - 10 - topLabels.length * (topBtnW + 4);
 		for (int i = 0; i < topLabels.length; i++) {
 			final Runnable action = topActions[i];
@@ -111,17 +116,17 @@ public class N3XRConfigScreen extends Screen {
 			topX += topBtnW + 4;
 		}
 
-		String[] catLabels = {"All Modules", "Performance", "HUD", "Visual", "Combat", "Utility", "Server"};
+		String[] catLabels = {"All", "Performance", "HUD", "Visual", "Combat", "Utility", "Server"};
 		Category[] cats = Category.values();
 		int tabX = panelX1 + 10;
 		int tabY = 60;
 		for (int i = 0; i < cats.length; i++) {
 			Category cat = cats[i];
-			int tw = this.textRenderer.getWidth(catLabels[i]) + 24;
+			int tw = Math.min(this.textRenderer.getWidth(catLabels[i]) + 20, 100);
 			final int fx = tabX;
 			this.addDrawableChild(N3XRButton.of(fx, tabY, tw, 22,
 				Text.literal(catLabels[i]), b -> { currentCategory = cat; scrollOffset = 0; applyFilter(); }));
-			tabX += tw + 6;
+			tabX += tw + 4;
 		}
 
 		this.addDrawableChild(N3XRButton.of(panelX2 - 30, gridY, 20, 20,
@@ -154,16 +159,16 @@ public class N3XRConfigScreen extends Screen {
 		for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
 			ModuleDef m = visibleModules.get(startIndex + i);
 			int col = i % COLS, row = i / COLS;
-			int cx = gridX + col * (CARD_W + GAP), cy = gridY + row * (CARD_H + GAP);
+			int cx = gridX + col * (cardW + GAP), cy = gridY + row * (CARD_H + GAP);
 
-			int starX1 = cx + CARD_W - 20, starY1 = cy + 8, starX2 = starX1 + 14, starY2 = starY1 + 14;
+			int starX1 = cx + cardW - 20, starY1 = cy + 8, starX2 = starX1 + 14, starY2 = starY1 + 14;
 			if (mouseX >= starX1 && mouseX <= starX2 && mouseY >= starY1 && mouseY <= starY2) {
 				if (favorites.contains(m.name())) favorites.remove(m.name()); else favorites.add(m.name());
 				return true;
 			}
 
 			int toggleW = 36, toggleH = 16;
-			int toggleX2 = m.hasColor() ? cx + CARD_W - PAD - N3XRToggleButton.GEAR_W - 6 : cx + CARD_W - PAD;
+			int toggleX2 = m.hasColor() ? cx + cardW - PAD - N3XRToggleButton.GEAR_W - 6 : cx + cardW - PAD;
 			int toggleX1 = toggleX2 - toggleW;
 			int toggleY1 = cy + CARD_H - PAD - toggleH;
 
@@ -172,7 +177,7 @@ public class N3XRConfigScreen extends Screen {
 				return true;
 			}
 			if (m.hasColor()) {
-				int gearX1 = cx + CARD_W - PAD - N3XRToggleButton.GEAR_W;
+				int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
 				int gearY1 = cy + CARD_H - PAD - toggleH;
 				if (mouseX >= gearX1 && mouseX <= gearX1 + N3XRToggleButton.GEAR_W && mouseY >= gearY1 && mouseY <= gearY1 + toggleH) {
 					this.client.setScreen(new N3XRColorPickerScreen(this, m.name(), m.getColor(), m.setColor(), m.supportsRainbow()));
@@ -203,29 +208,29 @@ public class N3XRConfigScreen extends Screen {
 		for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
 			ModuleDef m = visibleModules.get(startIndex + i);
 			int col = i % COLS, row = i / COLS;
-			int cx = gridX + col * (CARD_W + GAP), cy = gridY + row * (CARD_H + GAP);
+			int cx = gridX + col * (cardW + GAP), cy = gridY + row * (CARD_H + GAP);
 
 			boolean enabled = m.getEnabled().get();
 			int borderColor = enabled ? 0xFFFF5555 : 0xFF553333;
 
-			context.fill(cx, cy, cx + CARD_W, cy + CARD_H, 0xF0140A0C);
-			context.fill(cx, cy, cx + CARD_W, cy + 1, borderColor);
-			context.fill(cx, cy + CARD_H - 1, cx + CARD_W, cy + CARD_H, borderColor);
+			context.fill(cx, cy, cx + cardW, cy + CARD_H, 0xF0140A0C);
+			context.fill(cx, cy, cx + cardW, cy + 1, borderColor);
+			context.fill(cx, cy + CARD_H - 1, cx + cardW, cy + CARD_H, borderColor);
 			context.fill(cx, cy, cx + 1, cy + CARD_H, borderColor);
-			context.fill(cx + CARD_W - 1, cy, cx + CARD_W, cy + CARD_H, borderColor);
+			context.fill(cx + cardW - 1, cy, cx + cardW, cy + CARD_H, borderColor);
 
-			int iconBoxSize = 34;
+			int iconBoxSize = 32;
 			context.fill(cx + PAD, cy + PAD, cx + PAD + iconBoxSize, cy + PAD + iconBoxSize, 0xFF2A1414);
-			context.drawTexture(m.icon(), cx + PAD + 9, cy + PAD + 9, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+			context.drawTexture(m.icon(), cx + PAD + 8, cy + PAD + 8, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
-			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 10, cy + PAD, 0xFFFFFFFF, true);
-			context.drawText(this.textRenderer, m.desc(), cx + PAD + iconBoxSize + 10, cy + PAD + 12, 0xFF999999, false);
+			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 8, cy + PAD, 0xFFFFFFFF, true);
+			context.drawText(this.textRenderer, m.desc(), cx + PAD + iconBoxSize + 8, cy + PAD + 12, 0xFF999999, false);
 
 			boolean fav = favorites.contains(m.name());
-			context.drawText(this.textRenderer, Text.literal(fav ? "\u2605" : "\u2606"), cx + CARD_W - 18, cy + 8, fav ? 0xFFFFCC33 : 0xFF666666, false);
+			context.drawText(this.textRenderer, Text.literal(fav ? "\u2605" : "\u2606"), cx + cardW - 18, cy + 8, fav ? 0xFFFFCC33 : 0xFF666666, false);
 
 			int toggleW = 36, toggleH = 16;
-			int toggleX2 = m.hasColor() ? cx + CARD_W - PAD - N3XRToggleButton.GEAR_W - 6 : cx + CARD_W - PAD;
+			int toggleX2 = m.hasColor() ? cx + cardW - PAD - N3XRToggleButton.GEAR_W - 6 : cx + cardW - PAD;
 			int toggleX1 = toggleX2 - toggleW;
 			int toggleY1 = cy + CARD_H - PAD - toggleH;
 
@@ -236,7 +241,7 @@ public class N3XRConfigScreen extends Screen {
 			context.fill(knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF);
 
 			if (m.hasColor()) {
-				int gearX1 = cx + CARD_W - PAD - N3XRToggleButton.GEAR_W;
+				int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
 				context.fill(gearX1, toggleY1, gearX1 + N3XRToggleButton.GEAR_W, toggleY1 + toggleH, 0xFF2A2A2A);
 				context.drawText(this.textRenderer, "\u2699", gearX1 + 6, toggleY1 + 4, 0xFFFFFFFF, false);
 			}
