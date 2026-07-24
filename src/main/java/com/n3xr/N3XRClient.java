@@ -33,6 +33,8 @@ public class N3XRClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		N3XRConfigStorage.load();
+		
 		openSettingsKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.n3xr.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.n3xr"));
 		zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -68,6 +70,10 @@ public class N3XRClient implements ClientModInitializer {
 					client.player.addStatusEffect(new StatusEffectInstance(
 						StatusEffects.NIGHT_VISION, 999999, 0, true, false, false));
 				}
+			}
+
+			if (now % 5000 < 50) {
+				N3XRConfigStorage.save();
 			}
 		});
 
