@@ -89,9 +89,27 @@ public class N3XRConfigScreen extends Screen {
 		gridY = 130;
 		gridBottom = this.height - 60;
 
-		searchField = new TextFieldWidget(this.textRenderer, panelX1 + 200, 24, 260, 20, Text.literal("Search modules..."));
+		searchField = new TextFieldWidget(this.textRenderer, panelX1 + 200, 24, 200, 20, Text.literal("Search modules..."));
 		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
 		this.addDrawableChild(searchField);
+
+		String[] topLabels = {"Settings", "Profile", "Favorites", "Updates", "Credits"};
+		Runnable[] topActions = {
+			() -> this.client.setScreen(new N3XRGeneralSettingsScreen(this)),
+			() -> this.client.setScreen(new N3XRProfileScreen(this)),
+			() -> { N3XRConfig.showFavoritesOnly = !N3XRConfig.showFavoritesOnly; scrollOffset = 0; applyFilter(); },
+			() -> this.client.setScreen(new N3XRUpdatesScreen(this)),
+			() -> this.client.setScreen(new N3XRCreditsScreen(this))
+		};
+
+		int topBtnW = 66;
+		int topX = panelX2 - 10 - topLabels.length * (topBtnW + 4);
+		for (int i = 0; i < topLabels.length; i++) {
+			final Runnable action = topActions[i];
+			this.addDrawableChild(N3XRButton.of(topX, 22, topBtnW, 18,
+				Text.literal(topLabels[i]), b -> action.run()));
+			topX += topBtnW + 4;
+		}
 
 		String[] catLabels = {"All Modules", "Performance", "HUD", "Visual", "Combat", "Utility", "Server"};
 		Category[] cats = Category.values();
@@ -121,6 +139,7 @@ public class N3XRConfigScreen extends Screen {
 		String q = searchField.getText().toLowerCase();
 		visibleModules = allModules.stream()
 			.filter(m -> currentCategory == Category.ALL || m.category() == currentCategory)
+			.filter(m -> !N3XRConfig.showFavoritesOnly || favorites.contains(m.name()))
 			.filter(m -> m.name().toLowerCase().contains(q))
 			.toList();
 	}
@@ -200,7 +219,7 @@ public class N3XRConfigScreen extends Screen {
 			context.drawTexture(m.icon(), cx + PAD + 9, cy + PAD + 9, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
 			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 10, cy + PAD, 0xFFFFFFFF, true);
-			context.drawText(this.textRenderer, m.desc(), cx + PAD + iconBoxSize + 10, cy + PAD + 12, 0xFF999999, false, this.textRenderer.getWidth(m.desc()) > 0 ? null : null);
+			context.drawText(this.textRenderer, m.desc(), cx + PAD + iconBoxSize + 10, cy + PAD + 12, 0xFF999999, false);
 
 			boolean fav = favorites.contains(m.name());
 			context.drawText(this.textRenderer, Text.literal(fav ? "\u2605" : "\u2606"), cx + CARD_W - 18, cy + 8, fav ? 0xFFFFCC33 : 0xFF666666, false);
@@ -223,6 +242,12 @@ public class N3XRConfigScreen extends Screen {
 			}
 		}
 
+		if (visibleModules.isEmpty()) {
+			String msg = "No modules found";
+			int mw = this.textRenderer.getWidth(msg);
+			context.drawText(this.textRenderer, msg, (this.width - mw) / 2, gridY + 20, 0xFF888888, false);
+		}
+
 		int footerY = this.height - 40;
 		context.fill(panelX1, footerY, panelX2, footerY + 1, 0xFFFF3333);
 		context.drawText(this.textRenderer, Text.literal("N3XR CLIENT"), panelX1 + 12, footerY + 8, 0xFFFFFFFF, true);
@@ -234,4 +259,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-	}
+									 }
