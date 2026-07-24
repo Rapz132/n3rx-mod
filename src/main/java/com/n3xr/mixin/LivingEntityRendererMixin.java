@@ -2,6 +2,7 @@ package com.n3xr.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.n3xr.N3XRConfig;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -16,6 +17,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity> {
 
 	@Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
 	private void n3xr$before(T entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+		if (entity == MinecraftClient.getInstance().player) return;
+
 		int hurtTime = ((LivingEntityAccessor) entity).n3xr$getHurtTime();
 		if (N3XRConfig.hitColorEnabled && hurtTime > 0) {
 			int color = N3XRConfig.hitColor;
@@ -28,6 +31,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity> {
 
 	@Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("RETURN"))
 	private void n3xr$after(T entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+		if (entity == MinecraftClient.getInstance().player) return;
+
 		if (vertexConsumers instanceof VertexConsumerProvider.Immediate immediate) {
 			immediate.draw();
 		}
