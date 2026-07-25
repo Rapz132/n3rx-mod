@@ -4,7 +4,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
@@ -13,7 +12,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
@@ -29,25 +27,16 @@ public class N3XRClient implements ClientModInitializer {
 	private double savedFov = -1;
 	private boolean zoomActive = false;
 
-	private long hitFlashUntil = 0;
-
 	@Override
 	public void onInitializeClient() {
 		N3XRConfigStorage.load();
-		
+
 		openSettingsKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.n3xr.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.n3xr"));
 		zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.n3xr.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.n3xr"));
 
 		hookMouseClicks();
-
-		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-			if (N3XRConfig.hitColorEnabled) {
-				hitFlashUntil = System.currentTimeMillis() + 150;
-			}
-			return ActionResult.PASS;
-		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (openSettingsKey.wasPressed()) {
@@ -81,11 +70,7 @@ public class N3XRClient implements ClientModInitializer {
 			MinecraftClient mc = MinecraftClient.getInstance();
 			if (mc.player == null) return;
 
-			if (N3XRConfig.hitColorEnabled && System.currentTimeMillis() < hitFlashUntil) {
-				int a = 0x33000000;
-				context.fill(0, 0, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight(),
-					(a) | (N3XRConfig.hitColor & 0xFFFFFF));
-			}
+			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if (mc.options.hudHidden) return;
 
@@ -212,4 +197,4 @@ public class N3XRClient implements ClientModInitializer {
 		int tw = mc.textRenderer.getWidth(label);
 		c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-				}
+}
