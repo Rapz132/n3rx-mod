@@ -4,7 +4,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,7 +16,7 @@ public class N3XRConfigScreen extends Screen {
 
 	private enum Category { ALL, PERFORMANCE, HUD, VISUAL, COMBAT, UTILITY, SERVER }
 
-	private record ModuleDef(String name, String desc, Identifier icon, Category category, boolean hasColor,
+	private record ModuleDef(String name, String desc, Category category, boolean hasColor,
 	                          Supplier<Boolean> getEnabled, Consumer<Boolean> setEnabled,
 	                          Supplier<Integer> getColor, Consumer<Integer> setColor,
 	                          boolean supportsRainbow) {}
@@ -33,7 +32,6 @@ public class N3XRConfigScreen extends Screen {
 
 	private static final int GAP = 8;
 	private static final int COLS = 3;
-	private static final int ICON_SIZE = 16;
 	private static final int PAD = 8;
 	private static final int CARD_H = 88;
 
@@ -48,37 +46,37 @@ public class N3XRConfigScreen extends Screen {
 	protected void init() {
 		allModules.clear();
 
-		allModules.add(new ModuleDef("FPS", "Shows your FPS in real-time.", Identifier.of("n3xr", "textures/icons/fps.png"), Category.PERFORMANCE, true,
+		allModules.add(new ModuleDef("FPS", "Shows your FPS in real-time.", Category.PERFORMANCE, true,
 			() -> N3XRConfig.showFps, v -> N3XRConfig.showFps = v, () -> N3XRConfig.fpsColor, v -> N3XRConfig.fpsColor = v, false));
 
-		allModules.add(new ModuleDef("Armor HUD", "Displays your armor and durability.", Identifier.of("n3xr", "textures/icons/armor.png"), Category.HUD, false,
+		allModules.add(new ModuleDef("Armor HUD", "Displays your armor and durability.", Category.HUD, false,
 			() -> N3XRConfig.showArmor, v -> N3XRConfig.showArmor = v, () -> 0xFFFFFF, v -> {}, false));
 
-		allModules.add(new ModuleDef("CPS", "Shows your clicks per second.", Identifier.of("n3xr", "textures/icons/cps.png"), Category.COMBAT, true,
+		allModules.add(new ModuleDef("CPS", "Shows your clicks per second.", Category.COMBAT, true,
 			() -> N3XRConfig.showCps, v -> N3XRConfig.showCps = v, () -> N3XRConfig.cpsColor, v -> N3XRConfig.cpsColor = v, false));
 
-		allModules.add(new ModuleDef("Ping", "Displays your current ping.", Identifier.of("n3xr", "textures/icons/ping.png"), Category.SERVER, true,
+		allModules.add(new ModuleDef("Ping", "Displays your current ping.", Category.SERVER, true,
 			() -> N3XRConfig.showPing, v -> N3XRConfig.showPing = v, () -> N3XRConfig.pingColor, v -> N3XRConfig.pingColor = v, false));
 
-		allModules.add(new ModuleDef("Keystrokes", "Shows your keys in real-time.", Identifier.of("n3xr", "textures/icons/keystrokes.png"), Category.HUD, true,
+		allModules.add(new ModuleDef("Keystrokes", "Shows your keys in real-time.", Category.HUD, true,
 			() -> N3XRConfig.showKeystrokes, v -> N3XRConfig.showKeystrokes = v, () -> N3XRConfig.keysColor, v -> N3XRConfig.keysColor = v, true));
 
-		allModules.add(new ModuleDef("Night Vision", "Improves visibility in the dark.", Identifier.of("n3xr", "textures/icons/nightvision.png"), Category.VISUAL, false,
+		allModules.add(new ModuleDef("Night Vision", "Improves visibility in the dark.", Category.VISUAL, false,
 			() -> N3XRConfig.nightVisionEnabled, v -> N3XRConfig.nightVisionEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
-		allModules.add(new ModuleDef("Server IP", "Shows the server IP address.", Identifier.of("n3xr", "textures/icons/serverip.png"), Category.SERVER, true,
+		allModules.add(new ModuleDef("Server IP", "Shows the server IP address.", Category.SERVER, true,
 			() -> N3XRConfig.showServerIp, v -> N3XRConfig.showServerIp = v, () -> N3XRConfig.serverIpColor, v -> N3XRConfig.serverIpColor = v, false));
 
-		allModules.add(new ModuleDef("Hit Color", "Tints entities red when hit.", Identifier.of("n3xr", "textures/icons/hitcolor.png"), Category.COMBAT, true,
+		allModules.add(new ModuleDef("Hit Color", "Tints entities red when hit.", Category.COMBAT, true,
 			() -> N3XRConfig.hitColorEnabled, v -> N3XRConfig.hitColorEnabled = v, () -> N3XRConfig.hitColor, v -> N3XRConfig.hitColor = v, false));
 
-		allModules.add(new ModuleDef("Zoom", "Adds zoom capabilities.", Identifier.of("n3xr", "textures/icons/zoom.png"), Category.UTILITY, false,
+		allModules.add(new ModuleDef("Zoom", "Adds zoom capabilities.", Category.UTILITY, false,
 			() -> N3XRConfig.zoomEnabled, v -> N3XRConfig.zoomEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
-		allModules.add(new ModuleDef("TPS", "Shows ticks per second.", Identifier.of("n3xr", "textures/icons/tps.png"), Category.PERFORMANCE, true,
+		allModules.add(new ModuleDef("TPS", "Shows ticks per second.", Category.PERFORMANCE, true,
 			() -> N3XRConfig.showTps, v -> N3XRConfig.showTps = v, () -> N3XRConfig.tpsColor, v -> N3XRConfig.tpsColor = v, false));
 
-		allModules.add(new ModuleDef("Compass", "Shows the direction you're facing.", Identifier.of("n3xr", "textures/icons/compass.png"), Category.UTILITY, true,
+		allModules.add(new ModuleDef("Compass", "Shows the direction you're facing.", Category.UTILITY, true,
 			() -> N3XRConfig.showCompass, v -> N3XRConfig.showCompass = v, () -> N3XRConfig.compassColor, v -> N3XRConfig.compassColor = v, false));
 
 		int maxPanelW = this.width - 24;
@@ -98,7 +96,7 @@ public class N3XRConfigScreen extends Screen {
 		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
 		this.addDrawableChild(searchField);
 
-		String[] topLabels = {"Settings", "Profile", "Favorites", "Updates", "Credits"};
+		String[] topLabels = {"\u2699 Settings", "\u2302 Profile", "\u2605 Favorites", "\u266A Updates", "\u2139 Credits"};
 		Runnable[] topActions = {
 			() -> this.client.setScreen(new N3XRGeneralSettingsScreen(this)),
 			() -> this.client.setScreen(new N3XRProfileScreen(this)),
@@ -107,7 +105,7 @@ public class N3XRConfigScreen extends Screen {
 			() -> this.client.setScreen(new N3XRCreditsScreen(this))
 		};
 
-		int topBtnW = Math.min(66, (panelX2 - panelX1 - 20) / topLabels.length - 4);
+		int topBtnW = Math.min(90, (panelX2 - panelX1 - 20) / topLabels.length - 4);
 		int topX = panelX2 - 10 - topLabels.length * (topBtnW + 4);
 		for (int i = 0; i < topLabels.length; i++) {
 			final Runnable action = topActions[i];
@@ -196,11 +194,9 @@ public class N3XRConfigScreen extends Screen {
 		context.fill(panelX1, 10, panelX1 + 1, this.height - 10, 0xFFFF3333);
 		context.fill(panelX2 - 1, 10, panelX2, this.height - 10, 0xFFFF3333);
 
-		int logoSize = 34;
-		context.drawTexture(Identifier.of("n3xr", "textures/icons/nightvision.png"), panelX1 + 12, 18, 0, 0, logoSize, logoSize, logoSize, logoSize);
-		context.drawText(this.textRenderer, Text.literal("N3XR").styled(s -> s.withBold(true)), panelX1 + 55, 20, 0xFFFF3333, true);
-		context.drawText(this.textRenderer, Text.literal("CLIENT").styled(s -> s.withBold(true)), panelX1 + 90, 20, 0xFFFFFFFF, true);
-		context.drawText(this.textRenderer, Text.literal("PERFORMANCE CLIENT"), panelX1 + 55, 34, 0xFF888888, false);
+		context.drawText(this.textRenderer, Text.literal("N3XR").styled(s -> s.withBold(true)), panelX1 + 20, 20, 0xFFFF3333, true);
+		context.drawText(this.textRenderer, Text.literal("CLIENT").styled(s -> s.withBold(true)), panelX1 + 55, 20, 0xFFFFFFFF, true);
+		context.drawText(this.textRenderer, Text.literal("PERFORMANCE CLIENT"), panelX1 + 20, 34, 0xFF888888, false);
 
 		super.render(context, mouseX, mouseY, delta);
 
@@ -221,7 +217,7 @@ public class N3XRConfigScreen extends Screen {
 
 			int iconBoxSize = 32;
 			context.fill(cx + PAD, cy + PAD, cx + PAD + iconBoxSize, cy + PAD + iconBoxSize, 0xFF2A1414);
-			context.drawTexture(m.icon(), cx + PAD + 8, cy + PAD + 8, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+			drawModuleIcon(context, m.name(), cx + PAD + 8, cy + PAD + 8, 16);
 
 			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 8, cy + PAD, 0xFFFFFFFF, true);
 			context.drawText(this.textRenderer, m.desc(), cx + PAD + iconBoxSize + 8, cy + PAD + 12, 0xFF999999, false);
@@ -260,8 +256,68 @@ public class N3XRConfigScreen extends Screen {
 		context.drawText(this.textRenderer, Text.literal("Credits: @44pzx"), panelX2 - 130, footerY + 8, 0xFFAAAAAA, false);
 	}
 
+	private void drawModuleIcon(DrawContext context, String name, int x, int y, int size) {
+		int c = 0xFFFFFFFF;
+		int t = Math.max(1, size / 8);
+		switch (name) {
+			case "FPS" -> {
+				context.fill(x + t, y + t, x + size - t, y + size - 3 * t, c);
+				context.fill(x + t * 2, y + size - 3 * t, x + size - 2 * t, y + size - 2 * t, c);
+				context.fill(x + t, y + size - 2 * t, x + size - t, y + size - t, c);
+			}
+			case "Armor HUD" -> {
+				context.fill(x + 2 * t, y + t, x + size - 2 * t, y + 2 * t, c);
+				context.fill(x + t, y + 2 * t, x + size - t, y + 5 * t, c);
+				context.fill(x + 2 * t, y + 5 * t, x + size - 2 * t, y + size - t, c);
+			}
+			case "CPS" -> {
+				context.fill(x + 2 * t, y + t, x + size - 2 * t, y + size - t, c);
+				context.fill(x + 3 * t, y + 2 * t, x + size / 2, y + 4 * t, 0xFF552222);
+			}
+			case "Ping" -> {
+				context.fill(x, y + size - 2 * t, x + t, y + size - t, c);
+				context.fill(x + 2 * t, y + size - 3 * t, x + 3 * t, y + size - t, c);
+				context.fill(x + 4 * t, y + size - 5 * t, x + 5 * t, y + size - t, c);
+				context.fill(x + 6 * t, y + size - 7 * t, x + 7 * t, y + size - t, c);
+			}
+			case "Keystrokes" -> {
+				context.fill(x, y + 2 * t, x + size, y + size - 2 * t, c);
+				context.fill(x + t, y + 3 * t, x + size - t, y + size - 3 * t, 0xFF2A1414);
+			}
+			case "Night Vision" -> {
+				context.fill(x + t, y + 3 * t, x + size - t, y + 5 * t, c);
+				context.fill(x + 3 * t, y + t, x + 5 * t, y + size - t, c);
+				context.fill(x + 3 * t, y + 3 * t, x + 5 * t, y + 5 * t, 0xFF2A1414);
+			}
+			case "Server IP" -> {
+				context.fill(x + t, y + t, x + size - t, y + 3 * t, c);
+				context.fill(x + t, y + 4 * t, x + size - t, y + 6 * t, c);
+				context.fill(x + t, y + size - 3 * t, x + size - t, y + size - t, c);
+			}
+			case "Hit Color" -> {
+				context.fill(x + size / 2 - t / 2, y, x + size / 2 + t / 2, y + size, 0xFFFF5555);
+				context.fill(x, y + size / 2 - t / 2, x + size, y + size / 2 + t / 2, 0xFFFF5555);
+			}
+			case "Zoom" -> {
+				context.fill(x + t, y + t, x + size - 2 * t, y + size - 2 * t, c);
+				context.fill(x + 2 * t, y + 2 * t, x + size - 3 * t, y + size - 3 * t, 0xFF2A1414);
+				context.fill(x + size - 3 * t, y + size - 3 * t, x + size, y + size, c);
+			}
+			case "TPS" -> {
+				context.fill(x + t, y + t, x + size - t, y + size - t, c);
+				context.fill(x + 2 * t, y + 2 * t, x + size - 2 * t, y + size - 2 * t, 0xFF2A1414);
+				context.fill(x + size / 2 - t / 2, y + 2 * t, x + size / 2 + t / 2, y + size / 2, c);
+			}
+			case "Compass" -> {
+				context.fill(x + size / 2 - t / 2, y, x + size / 2 + t / 2, y + size / 2, 0xFFFF5555);
+				context.fill(x + size / 2 - t / 2, y + size / 2, x + size / 2 + t / 2, y + size, c);
+			}
+			default -> context.fill(x + t, y + t, x + size - t, y + size - t, c);
+		}
+	}
+
 	@Override
 	public boolean shouldPause() {
 		return false;
 	}
-									 }
+	}
