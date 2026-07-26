@@ -28,6 +28,9 @@ public class N3XRClient implements ClientModInitializer {
 	private double savedFov = -1;
 	private boolean zoomActive = false;
 
+	private double lastX, lastY, lastZ;
+	private double currentSpeed = 0;
+
 	@Override
 	public void onInitializeClient() {
 		N3XRConfigStorage.load();
@@ -58,11 +61,20 @@ public class N3XRClient implements ClientModInitializer {
 				while (!tickTimes.isEmpty() && now - tickTimes.peekFirst() > 1000) tickTimes.pollFirst();
 			}
 
-			if (client.player != null && N3XRConfig.nightVisionEnabled) {
-				var current = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
-				if (current == null || current.getDuration() < 20) {
-					client.player.addStatusEffect(new StatusEffectInstance(
-						StatusEffects.NIGHT_VISION, 999999, 0, true, false, false));
+			if (client.player != null) {
+				double dx = client.player.getX() - lastX;
+				double dz = client.player.getZ() - lastZ;
+				currentSpeed = Math.sqrt(dx * dx + dz * dz) * 20.0;
+				lastX = client.player.getX();
+				lastY = client.player.getY();
+				lastZ = client.player.getZ();
+
+				if (N3XRConfig.nightVisionEnabled) {
+					var current = client.player.getStatusEffect(StatusEffects.NIGHT_VISION);
+					if (current == null || current.getDuration() < 20) {
+						client.player.addStatusEffect(new StatusEffectInstance(
+							StatusEffects.NIGHT_VISION, 999999, 0, true, false, false));
+					}
 				}
 			}
 
@@ -77,6 +89,10 @@ public class N3XRClient implements ClientModInitializer {
 
 			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+			if (N3XRConfig.customCrosshairEnabled) {
+				renderCustomCrosshair(context, mc);
+			}
+
 			if (mc.options.hudHidden) return;
 
 			if (N3XRConfig.showFps) renderFps(context, mc);
@@ -87,6 +103,8 @@ public class N3XRClient implements ClientModInitializer {
 			if (N3XRConfig.showServerIp) renderServerIp(context, mc);
 			if (N3XRConfig.showTps) renderTps(context, mc);
 			if (N3XRConfig.showCompass) renderCompass(context, mc);
+			if (N3XRConfig.showSpeed) renderSpeed(context, mc);
+			if (N3XRConfig.showCoords) renderCoords(context, mc);
 		});
 	}
 
@@ -114,6 +132,15 @@ public class N3XRClient implements ClientModInitializer {
 			if (savedFov >= 0) client.options.getFov().setValue((int) savedFov);
 			zoomActive = false;
 		}
+	}
+
+	private void renderCustomCrosshair(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		int cx = mc.getWindow().getScaledWidth() / 2;
+		int cy = mc.getWindow().getScaledHeight() / 2;
+		int color = N3XRConfig.crosshairColor | 0xFF000000;
+		int len = 6, thick = 1;
+		c.fill(cx - len, cy - thick / 2, cx + len, cy - thick / 2 + 1, color);
+		c.fill(cx - thick / 2, cy - len, cx - thick / 2 + 1, cy + len, color);
 	}
 
 	private void renderFps(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
@@ -171,6 +198,15 @@ public class N3XRClient implements ClientModInitializer {
 		c.drawText(mc.textRenderer, Text.literal("Facing: " + dir), N3XRConfig.compassX, N3XRConfig.compassY, N3XRConfig.compassColor, true);
 	}
 
+	private void renderSpeed(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		c.drawText(mc.textRenderer, Text.literal(String.format("Speed: %.2f b/s", currentSpeed)), N3XRConfig.speedX, N3XRConfig.speedY, N3XRConfig.speedColor, true);
+	}
+
+	private void renderCoords(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		String txt = String.format("X: %.0f Y: %.0f Z: %.0f", mc.player.getX(), mc.player.getY(), mc.player.getZ());
+		c.drawText(mc.textRenderer, Text.literal(txt), N3XRConfig.coordsX, N3XRConfig.coordsY, N3XRConfig.coordsColor, true);
+	}
+
 	private void renderKeystrokes(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
 		int x = N3XRConfig.keysX, y = N3XRConfig.keysY, size = 18, gap = 2;
 		boolean w = mc.options.forwardKey.isPressed();
@@ -202,4 +238,4 @@ public class N3XRClient implements ClientModInitializer {
 		int tw = mc.textRenderer.getWidth(label);
 		c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-					}
+			}
