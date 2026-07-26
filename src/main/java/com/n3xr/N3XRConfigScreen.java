@@ -30,6 +30,7 @@ public class N3XRConfigScreen extends Screen {
 
 	private TextFieldWidget searchField;
 	private int scrollOffset = 0;
+	private boolean draggingScrollbar = false;
 
 	private static final int GAP = 8;
 	private static final int COLS = 3;
@@ -39,6 +40,7 @@ public class N3XRConfigScreen extends Screen {
 
 	private int cardW;
 	private int gridX, gridY, gridBottom, panelX1, panelX2;
+	private int scrollTrackY1, scrollTrackY2, scrollBarX;
 
 	public N3XRConfigScreen() {
 		super(Text.literal("N3XR Settings"));
@@ -93,10 +95,9 @@ public class N3XRConfigScreen extends Screen {
 		gridY = 130;
 		gridBottom = this.height - 60;
 
-		int searchW = Math.min(200, panelX2 - panelX1 - 320);
-		searchField = new TextFieldWidget(this.textRenderer, panelX1 + 200, 24, Math.max(searchW, 80), 20, Text.literal("Search modules..."));
-		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
-		this.addDrawableChild(searchField);
+		scrollBarX = panelX2 - 30;
+		scrollTrackY1 = gridY + 22;
+		scrollTrackY2 = gridBottom - 22;
 
 		String[] topIcons = {"\u2699", "\u2302", "\u2605", "\u266A", "\u2139"};
 		Runnable[] topActions = {
@@ -116,6 +117,12 @@ public class N3XRConfigScreen extends Screen {
 			topX += topBtnW + 4;
 		}
 
+		int searchX = panelX1 + 140;
+		int searchW = Math.min(150, topX - 10 - searchX);
+		searchField = new TextFieldWidget(this.textRenderer, searchX, 26, Math.max(searchW, 80), 16, Text.literal("Search..."));
+		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
+		this.addDrawableChild(searchField);
+
 		String[] catLabels = {"All", "Performance", "HUD", "Visual", "Combat", "Utility", "Server"};
 		Category[] cats = Category.values();
 		int tabX = panelX1 + 10;
@@ -129,12 +136,11 @@ public class N3XRConfigScreen extends Screen {
 			tabX += tw + 4;
 		}
 
-		this.addDrawableChild(N3XRButton.of(panelX2 - 30, gridY, 20, 20,
+		this.addDrawableChild(N3XRButton.of(scrollBarX, gridY, 20, 20,
 			Text.literal("^"), b -> { if (scrollOffset > 0) scrollOffset--; }));
-		this.addDrawableChild(N3XRButton.of(panelX2 - 30, gridBottom - 20, 20, 20,
+		this.addDrawableChild(N3XRButton.of(scrollBarX, gridBottom - 20, 20, 20,
 			Text.literal("v"), b -> {
-				int maxRows = (int) Math.ceil(visibleModules.size() / (double) COLS);
-				int maxOffset = Math.max(0, maxRows - rowsVisible());
+				int maxOffset = maxScrollOffset();
 				if (scrollOffset < maxOffset) scrollOffset++;
 			}));
 
@@ -144,6 +150,11 @@ public class N3XRConfigScreen extends Screen {
 		applyFilter();
 	}
 
+	private int maxScrollOffset() {
+		int maxRows = (int) Math.ceil(visibleModules.size() / (double) COLS);
+		return Math.max(0, maxRows - rowsVisible());
+	}
+
 	private void applyFilter() {
 		String q = searchField.getText().toLowerCase();
 		visibleModules = allModules.stream()
@@ -151,8 +162,7 @@ public class N3XRConfigScreen extends Screen {
 			.filter(m -> !N3XRConfig.showFavoritesOnly || favorites.contains(m.name()))
 			.filter(m -> m.name().toLowerCase().contains(q))
 			.toList();
-		int maxRows = (int) Math.ceil(visibleModules.size() / (double) COLS);
-		int maxOffset = Math.max(0, maxRows - rowsVisible());
+		int maxOffset = maxScrollOffset();
 		if (scrollOffset > maxOffset) scrollOffset = maxOffset;
 	}
 
@@ -162,6 +172,13 @@ public class N3XRConfigScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		int thumbY = getThumbY();
+		int thumbH = getThumbHeight();
+		if (mouseX >= scrollBarX && mouseX <= scrollBarX + 20 && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
+			draggingScrollbar = true;
+			return true;
+		}
+
 		int startIndex = scrollOffset * COLS;
 		for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
 			ModuleDef m = visibleModules.get(startIndex + i);
@@ -196,6 +213,43 @@ public class N3XRConfigScreen extends Screen {
 	}
 
 	@Override
+	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+		if (draggingScrollbar) {
+			int maxOffset = maxScrollOffset();
+			if (maxOffset <= 0) return true;
+			int trackH = scrollTrackY2 - scrollTrackY1 - getThumbHeight();
+			if (trackH <= 0) return true;
+			double ratio = (mouseY - scrollTrackY1 - getThumbHeight() / 2.0) / trackH;
+			ratio = Math.max(0, Math.min(1, ratio));
+			scrollOffset = (int) Math.round(ratio * maxOffset);
+			return true;
+		}
+		return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+	}
+
+	@Override
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+		draggingScrollbar = false;
+		return super.mouseReleased(mouseX, mouseY, button);
+	}
+
+	private int getThumbHeight() {
+		int trackH = scrollTrackY2 - scrollTrackY1;
+		int maxOffset = maxScrollOffset();
+		int totalRows = maxOffset + rowsVisible();
+		if (totalRows <= 0) return trackH;
+		int h = (int) (trackH * (rowsVisible() / (double) totalRows));
+		return Math.max(12, Math.min(trackH, h));
+	}
+
+	private int getThumbY() {
+		int maxOffset = maxScrollOffset();
+		if (maxOffset <= 0) return scrollTrackY1;
+		int trackH = scrollTrackY2 - scrollTrackY1 - getThumbHeight();
+		return scrollTrackY1 + (int) (trackH * (scrollOffset / (double) maxOffset));
+	}
+
+	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		context.fill(panelX1, 10, panelX2, this.height - 10, 0xE00A0505);
 		context.fill(panelX1, 10, panelX2, 11, 0xFFFF3333);
@@ -203,11 +257,11 @@ public class N3XRConfigScreen extends Screen {
 		context.fill(panelX1, 10, panelX1 + 1, this.height - 10, 0xFFFF3333);
 		context.fill(panelX2 - 1, 10, panelX2, this.height - 10, 0xFFFF3333);
 
+		super.render(context, mouseX, mouseY, delta);
+
 		context.drawText(this.textRenderer, Text.literal("N3XR").styled(s -> s.withBold(true)), panelX1 + 20, 20, 0xFFFF3333, true);
 		context.drawText(this.textRenderer, Text.literal("CLIENT").styled(s -> s.withBold(true)), panelX1 + 55, 20, 0xFFFFFFFF, true);
 		context.drawText(this.textRenderer, Text.literal("PERFORMANCE CLIENT"), panelX1 + 20, 34, 0xFF888888, false);
-
-		super.render(context, mouseX, mouseY, delta);
 
 		int startIndex = scrollOffset * COLS;
 		for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
@@ -258,6 +312,11 @@ public class N3XRConfigScreen extends Screen {
 			context.drawText(this.textRenderer, msg, (this.width - mw) / 2, gridY + 20, 0xFF888888, false);
 		}
 
+		context.fill(scrollBarX, scrollTrackY1, scrollBarX + 20, scrollTrackY2, 0xFF221111);
+		int thumbY = getThumbY();
+		int thumbH = getThumbHeight();
+		context.fill(scrollBarX + 2, thumbY, scrollBarX + 18, thumbY + thumbH, 0xFFFF5555);
+
 		int footerY = this.height - 40;
 		context.fill(panelX1, footerY, panelX2, footerY + 1, 0xFFFF3333);
 		context.drawText(this.textRenderer, Text.literal("N3XR CLIENT"), panelX1 + 12, footerY + 8, 0xFFFFFFFF, true);
@@ -269,4 +328,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-			}
+	}
