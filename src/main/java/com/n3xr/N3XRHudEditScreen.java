@@ -61,6 +61,8 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showCps) drawBox(context, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY, "CPS".equals(dragging));
 		if (N3XRConfig.showPing) drawBox(context, "Ping", N3XRConfig.pingX, N3XRConfig.pingY, "Ping".equals(dragging));
 		if (N3XRConfig.showKeystrokes) drawBox(context, "Keystrokes", N3XRConfig.keysX, N3XRConfig.keysY, "Keys".equals(dragging));
+		if (N3XRConfig.showSpeed) drawBox(context, "Speed", N3XRConfig.speedX, N3XRConfig.speedY, "Speed".equals(dragging));
+		if (N3XRConfig.showCoords) drawBox(context, "Coords", N3XRConfig.coordsX, N3XRConfig.coordsY, "Coords".equals(dragging));
 		if (N3XRConfig.showServerIp) drawBox(context, "ServerIP", N3XRConfig.serverIpX, N3XRConfig.serverIpY, "ServerIP".equals(dragging));
 		if (N3XRConfig.showTps) drawBox(context, "TPS", N3XRConfig.tpsX, N3XRConfig.tpsY, "TPS".equals(dragging));
 		if (N3XRConfig.showCompass) drawBox(context, "Compass", N3XRConfig.compassX, N3XRConfig.compassY, "Compass".equals(dragging));
@@ -86,6 +88,8 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showCps && inBox(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY)) { dragging = "CPS"; setOffset(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY); return true; }
 		if (N3XRConfig.showPing && inBox(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY)) { dragging = "Ping"; setOffset(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY); return true; }
 		if (N3XRConfig.showKeystrokes && inBox(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY)) { dragging = "Keys"; setOffset(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY); return true; }
+		if (N3XRConfig.showSpeed && inBox(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY)) { dragging = "Speed"; setOffset(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY); return true; }
+		if (N3XRConfig.showCoords && inBox(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY)) { dragging = "Coords"; setOffset(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY); return true; }
 		if (N3XRConfig.showServerIp && inBox(mouseX, mouseY, N3XRConfig.serverIpX, N3XRConfig.serverIpY)) { dragging = "ServerIP"; setOffset(mouseX, mouseY, N3XRConfig.serverIpX, N3XRConfig.serverIpY); return true; }
 		if (N3XRConfig.showTps && inBox(mouseX, mouseY, N3XRConfig.tpsX, N3XRConfig.tpsY)) { dragging = "TPS"; setOffset(mouseX, mouseY, N3XRConfig.tpsX, N3XRConfig.tpsY); return true; }
 		if (N3XRConfig.showCompass && inBox(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY)) { dragging = "Compass"; setOffset(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY); return true; }
@@ -107,6 +111,8 @@ public class N3XRHudEditScreen extends Screen {
 				case "CPS" -> { N3XRConfig.cpsX = nx; N3XRConfig.cpsY = ny; }
 				case "Ping" -> { N3XRConfig.pingX = nx; N3XRConfig.pingY = ny; }
 				case "Keys" -> { N3XRConfig.keysX = nx; N3XRConfig.keysY = ny; }
+				case "Speed" -> { N3XRConfig.speedX = nx; N3XRConfig.speedY = ny; }
+				case "Coords" -> { N3XRConfig.coordsX = nx; N3XRConfig.coordsY = ny; }
 				case "ServerIP" -> { N3XRConfig.serverIpX = nx; N3XRConfig.serverIpY = ny; }
 				case "TPS" -> { N3XRConfig.tpsX = nx; N3XRConfig.tpsY = ny; }
 				case "Compass" -> { N3XRConfig.compassX = nx; N3XRConfig.compassY = ny; }
