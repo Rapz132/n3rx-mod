@@ -12,6 +12,9 @@ public class N3XRConfig {
 	public static boolean zoomEnabled = false;
 	public static boolean showTps = false;
 	public static boolean showCompass = false;
+	public static boolean showSpeed = false;
+	public static boolean showCoords = false;
+	public static boolean customCrosshairEnabled = false;
 
 	public static boolean snapEnabled = false;
 	public static boolean guidesEnabled = true;
@@ -26,6 +29,8 @@ public class N3XRConfig {
 	public static int serverIpX = 5, serverIpY = 200;
 	public static int tpsX = 5, tpsY = 215;
 	public static int compassX = 5, compassY = 230;
+	public static int speedX = 5, speedY = 245;
+	public static int coordsX = 5, coordsY = 260;
 
 	public static int fpsColor = 0xFFFFFF;
 	public static int cpsColor = 0xFFFFFF;
@@ -35,6 +40,9 @@ public class N3XRConfig {
 	public static int hitColor = 0xFF3333;
 	public static int tpsColor = 0xFFFFFF;
 	public static int compassColor = 0xFFFFFF;
+	public static int speedColor = 0xFFFFFF;
+	public static int coordsColor = 0xFFFFFF;
+	public static int crosshairColor = 0xFFFFFF;
 
 	public static final int[] PRESET_COLORS = {
 		0xFFFFFF, 0xFF5555, 0xFF8800, 0xFFFF55, 0xAAFF55,
