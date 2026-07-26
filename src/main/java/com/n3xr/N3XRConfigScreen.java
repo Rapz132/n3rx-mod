@@ -283,7 +283,16 @@ public class N3XRConfigScreen extends Screen {
 			context.drawTexture(m.icon(), cx + PAD + 8, cy + PAD + 8, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
 			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 8, cy + PAD, 0xFFFFFFFF, true);
-			context.drawText(this.textRenderer, m.desc(), cx + PAD + iconBoxSize + 8, cy + PAD + 12, 0xFF999999, false);
+
+			int maxDescW = cardW - PAD - iconBoxSize - 8 - 10;
+			String desc = m.desc();
+			if (this.textRenderer.getWidth(desc) > maxDescW) {
+				while (this.textRenderer.getWidth(desc + "...") > maxDescW && desc.length() > 0) {
+					desc = desc.substring(0, desc.length() - 1);
+				}
+				desc = desc + "...";
+			}
+			context.drawText(this.textRenderer, desc, cx + PAD + iconBoxSize + 8, cy + PAD + 12, 0xFF999999, false);
 
 			boolean fav = favorites.contains(m.name());
 			context.drawText(this.textRenderer, Text.literal(fav ? "\u2605" : "\u2606"), cx + cardW - 18, cy + 8, fav ? 0xFFFFCC33 : 0xFF666666, false);
@@ -328,4 +337,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-	}
+			}
