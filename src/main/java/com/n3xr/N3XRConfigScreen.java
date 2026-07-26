@@ -37,6 +37,7 @@ public class N3XRConfigScreen extends Screen {
 	private static final int ICON_SIZE = 16;
 	private static final int PAD = 8;
 	private static final int CARD_H = 88;
+	private static final int BAR_W = 16;
 
 	private int cardW;
 	private int gridX, gridY, gridBottom, panelX1, panelX2;
@@ -83,19 +84,31 @@ public class N3XRConfigScreen extends Screen {
 		allModules.add(new ModuleDef("Compass", "Shows the direction you're facing.", Identifier.of("n3xr", "textures/icons/compass.png"), Category.UTILITY, true,
 			() -> N3XRConfig.showCompass, v -> N3XRConfig.showCompass = v, () -> N3XRConfig.compassColor, v -> N3XRConfig.compassColor = v, false));
 
+		allModules.add(new ModuleDef("Speed", "Shows your movement speed.", Identifier.of("n3xr", "textures/icons/speed.png"), Category.PERFORMANCE, true,
+			() -> N3XRConfig.showSpeed, v -> N3XRConfig.showSpeed = v, () -> N3XRConfig.speedColor, v -> N3XRConfig.speedColor = v, false));
+
+		allModules.add(new ModuleDef("Coordinates", "Shows your X, Y, Z position.", Identifier.of("n3xr", "textures/icons/coords.png"), Category.UTILITY, true,
+			() -> N3XRConfig.showCoords, v -> N3XRConfig.showCoords = v, () -> N3XRConfig.coordsColor, v -> N3XRConfig.coordsColor = v, false));
+
+		allModules.add(new ModuleDef("Crosshair", "Custom crosshair overlay.", Identifier.of("n3xr", "textures/icons/crosshair.png"), Category.VISUAL, true,
+			() -> N3XRConfig.customCrosshairEnabled, v -> N3XRConfig.customCrosshairEnabled = v, () -> N3XRConfig.crosshairColor, v -> N3XRConfig.crosshairColor = v, false));
+
+		int leftPad = 20, rightPad = 16, innerGap = 8;
 		int maxPanelW = this.width - 24;
-		int idealPanelW = COLS * 250 + (COLS + 1) * GAP + 40;
+		int idealCardW = 250;
+		int idealPanelW = leftPad + COLS * idealCardW + (COLS - 1) * GAP + innerGap + BAR_W + rightPad;
 		int panelW = Math.min(idealPanelW, maxPanelW);
-		cardW = (panelW - 40 - (COLS + 1) * GAP) / COLS;
+		int availableForCards = panelW - leftPad - rightPad - innerGap - BAR_W - (COLS - 1) * GAP;
+		cardW = availableForCards / COLS;
 
 		panelX1 = this.width / 2 - panelW / 2;
-		panelX2 = this.width / 2 + panelW / 2;
+		panelX2 = panelX1 + panelW;
 
-		gridX = panelX1 + 20 + GAP;
+		gridX = panelX1 + leftPad;
 		gridY = 130;
 		gridBottom = this.height - 60;
 
-		scrollBarX = panelX2 - 30;
+		scrollBarX = gridX + COLS * cardW + (COLS - 1) * GAP + innerGap;
 		scrollTrackY1 = gridY + 22;
 		scrollTrackY2 = gridBottom - 22;
 
@@ -136,9 +149,9 @@ public class N3XRConfigScreen extends Screen {
 			tabX += tw + 4;
 		}
 
-		this.addDrawableChild(N3XRButton.of(scrollBarX, gridY, 20, 20,
+		this.addDrawableChild(N3XRButton.of(scrollBarX, gridY, BAR_W, 20,
 			Text.literal("^"), b -> { if (scrollOffset > 0) scrollOffset--; }));
-		this.addDrawableChild(N3XRButton.of(scrollBarX, gridBottom - 20, 20, 20,
+		this.addDrawableChild(N3XRButton.of(scrollBarX, gridBottom - 20, BAR_W, 20,
 			Text.literal("v"), b -> {
 				int maxOffset = maxScrollOffset();
 				if (scrollOffset < maxOffset) scrollOffset++;
@@ -174,7 +187,7 @@ public class N3XRConfigScreen extends Screen {
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		int thumbY = getThumbY();
 		int thumbH = getThumbHeight();
-		if (mouseX >= scrollBarX && mouseX <= scrollBarX + 20 && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
+		if (mouseX >= scrollBarX && mouseX <= scrollBarX + BAR_W && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
 			draggingScrollbar = true;
 			return true;
 		}
@@ -239,7 +252,7 @@ public class N3XRConfigScreen extends Screen {
 		int totalRows = maxOffset + rowsVisible();
 		if (totalRows <= 0) return trackH;
 		int h = (int) (trackH * (rowsVisible() / (double) totalRows));
-		return Math.max(12, Math.min(trackH, h));
+		return Math.max(BAR_W, Math.min(trackH, h));
 	}
 
 	private int getThumbY() {
@@ -249,13 +262,24 @@ public class N3XRConfigScreen extends Screen {
 		return scrollTrackY1 + (int) (trackH * (scrollOffset / (double) maxOffset));
 	}
 
+	private void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
+		radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
+		if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
+		context.fill(x1 + radius, y1, x2 - radius, y2, color);
+		context.fill(x1, y1 + radius, x1 + radius, y2 - radius, color);
+		context.fill(x2 - radius, y1 + radius, x2, y2 - radius, color);
+		for (int i = 0; i < radius; i++) {
+			int dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - (radius - i) * (radius - i)));
+			context.fill(x1 + dx, y1 + i, x1 + radius, y1 + i + 1, color);
+			context.fill(x2 - radius, y1 + i, x2 - dx, y1 + i + 1, color);
+			context.fill(x1 + dx, y2 - i - 1, x1 + radius, y2 - i, color);
+			context.fill(x2 - radius, y2 - i - 1, x2 - dx, y2 - i, color);
+		}
+	}
+
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-		context.fill(panelX1, 10, panelX2, this.height - 10, 0xE00A0505);
-		context.fill(panelX1, 10, panelX2, 11, 0xFFFF3333);
-		context.fill(panelX1, this.height - 11, panelX2, this.height - 10, 0xFFFF3333);
-		context.fill(panelX1, 10, panelX1 + 1, this.height - 10, 0xFFFF3333);
-		context.fill(panelX2 - 1, 10, panelX2, this.height - 10, 0xFFFF3333);
+		fillRounded(context, panelX1, 10, panelX2, this.height - 10, 0xE00A0505, 6);
 
 		super.render(context, mouseX, mouseY, delta);
 
@@ -272,14 +296,14 @@ public class N3XRConfigScreen extends Screen {
 			boolean enabled = m.getEnabled().get();
 			int borderColor = enabled ? 0xFFFF5555 : 0xFF553333;
 
-			context.fill(cx, cy, cx + cardW, cy + CARD_H, 0xF0140A0C);
+			fillRounded(context, cx, cy, cx + cardW, cy + CARD_H, 0xF0140A0C, 5);
 			context.fill(cx, cy, cx + cardW, cy + 1, borderColor);
 			context.fill(cx, cy + CARD_H - 1, cx + cardW, cy + CARD_H, borderColor);
 			context.fill(cx, cy, cx + 1, cy + CARD_H, borderColor);
 			context.fill(cx + cardW - 1, cy, cx + cardW, cy + CARD_H, borderColor);
 
 			int iconBoxSize = 32;
-			context.fill(cx + PAD, cy + PAD, cx + PAD + iconBoxSize, cy + PAD + iconBoxSize, 0xFF2A1414);
+			fillRounded(context, cx + PAD, cy + PAD, cx + PAD + iconBoxSize, cy + PAD + iconBoxSize, 0xFF2A1414, 5);
 			context.drawTexture(m.icon(), cx + PAD + 8, cy + PAD + 8, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
 			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 8, cy + PAD, 0xFFFFFFFF, true);
@@ -303,14 +327,14 @@ public class N3XRConfigScreen extends Screen {
 			int toggleY1 = cy + CARD_H - PAD - toggleH;
 
 			int trackColor = enabled ? 0xFFCC3333 : 0xFF332222;
-			context.fill(toggleX1, toggleY1, toggleX2, toggleY1 + toggleH, trackColor);
+			fillRounded(context, toggleX1, toggleY1, toggleX2, toggleY1 + toggleH, trackColor, toggleH / 2);
 			int knobSize = toggleH - 4;
 			int knobX = enabled ? toggleX2 - knobSize - 2 : toggleX1 + 2;
-			context.fill(knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF);
+			fillRounded(context, knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF, knobSize / 2);
 
 			if (m.hasColor()) {
 				int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
-				context.fill(gearX1, toggleY1, gearX1 + N3XRToggleButton.GEAR_W, toggleY1 + toggleH, 0xFF2A2A2A);
+				fillRounded(context, gearX1, toggleY1, gearX1 + N3XRToggleButton.GEAR_W, toggleY1 + toggleH, 0xFF2A2A2A, 4);
 				context.drawText(this.textRenderer, "\u2699", gearX1 + 6, toggleY1 + 4, 0xFFFFFFFF, false);
 			}
 		}
@@ -321,10 +345,10 @@ public class N3XRConfigScreen extends Screen {
 			context.drawText(this.textRenderer, msg, (this.width - mw) / 2, gridY + 20, 0xFF888888, false);
 		}
 
-		context.fill(scrollBarX, scrollTrackY1, scrollBarX + 20, scrollTrackY2, 0xFF221111);
+		fillRounded(context, scrollBarX, scrollTrackY1, scrollBarX + BAR_W, scrollTrackY2, 0xFF221111, BAR_W / 2);
 		int thumbY = getThumbY();
 		int thumbH = getThumbHeight();
-		context.fill(scrollBarX + 2, thumbY, scrollBarX + 18, thumbY + thumbH, 0xFFFF5555);
+		fillRounded(context, scrollBarX + 2, thumbY, scrollBarX + BAR_W - 2, thumbY + thumbH, 0xFFFF5555, (BAR_W - 4) / 2);
 
 		int footerY = this.height - 40;
 		context.fill(panelX1, footerY, panelX2, footerY + 1, 0xFFFF3333);
@@ -337,4 +361,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-			}
+	}
