@@ -13,7 +13,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
@@ -137,11 +136,21 @@ public class N3XRClient implements ClientModInitializer {
 	}
 
 	private void renderCustomCrosshair(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
-		int size = 16;
-		int cx = mc.getWindow().getScaledWidth() / 2 - size / 2;
-		int cy = mc.getWindow().getScaledHeight() / 2 - size / 2;
-		c.drawTexture(Identifier.of("n3xr", "textures/misc/crosshair.png"),
-			cx, cy, 0, 0, size, size, size, size);
+		int grid = N3XRConfig.CROSSHAIR_GRID;
+		int startX = mc.getWindow().getScaledWidth() / 2 - grid / 2;
+		int startY = mc.getWindow().getScaledHeight() / 2 - grid / 2;
+
+		for (int row = 0; row < grid; row++) {
+			for (int col = 0; col < grid; col++) {
+				int idx = row * grid + col;
+				int pixel = N3XRConfig.crosshairPixels[idx];
+				if (pixel != 0) {
+					int x = startX + col;
+					int y = startY + row;
+					c.fill(x, y, x + 1, y + 1, pixel);
+				}
+			}
+		}
 	}
 
 	private void renderFps(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
@@ -250,4 +259,4 @@ public class N3XRClient implements ClientModInitializer {
 		int tw = mc.textRenderer.getWidth(label);
 		c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-	}
+				}
