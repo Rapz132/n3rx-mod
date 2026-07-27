@@ -90,8 +90,8 @@ public class N3XRConfigScreen extends Screen {
 		allModules.add(new ModuleDef("Coordinates", "Shows your X, Y, Z position.", Identifier.of("n3xr", "textures/icons/coords.png"), Category.UTILITY, true,
 			() -> N3XRConfig.showCoords, v -> N3XRConfig.showCoords = v, () -> N3XRConfig.coordsColor, v -> N3XRConfig.coordsColor = v, false));
 
-		allModules.add(new ModuleDef("Crosshair", "Custom crosshair overlay.", Identifier.of("n3xr", "textures/icons/crosshair.png"), Category.VISUAL, true,
-			() -> N3XRConfig.customCrosshairEnabled, v -> N3XRConfig.customCrosshairEnabled = v, () -> N3XRConfig.crosshairColor, v -> N3XRConfig.crosshairColor = v, false));
+		allModules.add(new ModuleDef("Crosshair", "Draw your own custom crosshair.", Identifier.of("n3xr", "textures/icons/crosshair.png"), Category.VISUAL, true,
+			() -> N3XRConfig.customCrosshairEnabled, v -> N3XRConfig.customCrosshairEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
 		allModules.add(new ModuleDef("Name Tag", "Shows an N3XR badge with your name.", Identifier.of("n3xr", "textures/icons/nametag.png"), Category.HUD, true,
 			() -> N3XRConfig.showNameTag, v -> N3XRConfig.showNameTag = v, () -> N3XRConfig.nameTagColor, v -> N3XRConfig.nameTagColor = v, false));
@@ -220,7 +220,11 @@ public class N3XRConfigScreen extends Screen {
 				int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
 				int gearY1 = cy + CARD_H - PAD - toggleH;
 				if (mouseX >= gearX1 && mouseX <= gearX1 + N3XRToggleButton.GEAR_W && mouseY >= gearY1 && mouseY <= gearY1 + toggleH) {
-					this.client.setScreen(new N3XRColorPickerScreen(this, m.name(), m.getColor(), m.setColor(), m.supportsRainbow()));
+					if (m.name().equals("Crosshair")) {
+						this.client.setScreen(new N3XRCrosshairEditorScreen(this));
+					} else {
+						this.client.setScreen(new N3XRColorPickerScreen(this, m.name(), m.getColor(), m.setColor(), m.supportsRainbow()));
+					}
 					return true;
 				}
 			}
@@ -364,4 +368,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-			}
+	}
