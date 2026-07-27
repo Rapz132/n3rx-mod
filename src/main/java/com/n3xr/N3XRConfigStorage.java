@@ -19,12 +19,13 @@ public class N3XRConfigStorage {
 	private static class Data {
 		boolean showFps, showArmor, showCps, showPing, showKeystrokes, nightVisionEnabled;
 		boolean showServerIp, hitColorEnabled, zoomEnabled, showTps, showCompass;
+		boolean showSpeed, showCoords, customCrosshairEnabled, showNameTag;
 		boolean snapEnabled, guidesEnabled, keysRainbow, showFavoritesOnly;
 
 		int fpsX, fpsY, armorX, armorY, cpsX, cpsY, pingX, pingY, keysX, keysY;
-		int serverIpX, serverIpY, tpsX, tpsY, compassX, compassY;
+		int serverIpX, serverIpY, tpsX, tpsY, compassX, compassY, speedX, speedY, coordsX, coordsY, nameTagX, nameTagY;
 
-		int fpsColor, cpsColor, pingColor, keysColor, serverIpColor, hitColor, tpsColor, compassColor;
+		int fpsColor, cpsColor, pingColor, keysColor, serverIpColor, hitColor, tpsColor, compassColor, speedColor, coordsColor, crosshairColor, nameTagColor;
 	}
 
 	public static void save() {
@@ -40,6 +41,10 @@ public class N3XRConfigStorage {
 		d.zoomEnabled = N3XRConfig.zoomEnabled;
 		d.showTps = N3XRConfig.showTps;
 		d.showCompass = N3XRConfig.showCompass;
+		d.showSpeed = N3XRConfig.showSpeed;
+		d.showCoords = N3XRConfig.showCoords;
+		d.customCrosshairEnabled = N3XRConfig.customCrosshairEnabled;
+		d.showNameTag = N3XRConfig.showNameTag;
 		d.snapEnabled = N3XRConfig.snapEnabled;
 		d.guidesEnabled = N3XRConfig.guidesEnabled;
 		d.keysRainbow = N3XRConfig.keysRainbow;
@@ -53,6 +58,9 @@ public class N3XRConfigStorage {
 		d.serverIpX = N3XRConfig.serverIpX; d.serverIpY = N3XRConfig.serverIpY;
 		d.tpsX = N3XRConfig.tpsX; d.tpsY = N3XRConfig.tpsY;
 		d.compassX = N3XRConfig.compassX; d.compassY = N3XRConfig.compassY;
+		d.speedX = N3XRConfig.speedX; d.speedY = N3XRConfig.speedY;
+		d.coordsX = N3XRConfig.coordsX; d.coordsY = N3XRConfig.coordsY;
+		d.nameTagX = N3XRConfig.nameTagX; d.nameTagY = N3XRConfig.nameTagY;
 
 		d.fpsColor = N3XRConfig.fpsColor;
 		d.cpsColor = N3XRConfig.cpsColor;
@@ -62,6 +70,10 @@ public class N3XRConfigStorage {
 		d.hitColor = N3XRConfig.hitColor;
 		d.tpsColor = N3XRConfig.tpsColor;
 		d.compassColor = N3XRConfig.compassColor;
+		d.speedColor = N3XRConfig.speedColor;
+		d.coordsColor = N3XRConfig.coordsColor;
+		d.crosshairColor = N3XRConfig.crosshairColor;
+		d.nameTagColor = N3XRConfig.nameTagColor;
 
 		try (Writer writer = Files.newBufferedWriter(CONFIG_PATH, StandardCharsets.UTF_8)) {
 			GSON.toJson(d, writer);
@@ -87,6 +99,10 @@ public class N3XRConfigStorage {
 			N3XRConfig.zoomEnabled = d.zoomEnabled;
 			N3XRConfig.showTps = d.showTps;
 			N3XRConfig.showCompass = d.showCompass;
+			N3XRConfig.showSpeed = d.showSpeed;
+			N3XRConfig.showCoords = d.showCoords;
+			N3XRConfig.customCrosshairEnabled = d.customCrosshairEnabled;
+			N3XRConfig.showNameTag = d.showNameTag;
 			N3XRConfig.snapEnabled = d.snapEnabled;
 			N3XRConfig.guidesEnabled = d.guidesEnabled;
 			N3XRConfig.keysRainbow = d.keysRainbow;
@@ -100,6 +116,9 @@ public class N3XRConfigStorage {
 			N3XRConfig.serverIpX = d.serverIpX; N3XRConfig.serverIpY = d.serverIpY;
 			N3XRConfig.tpsX = d.tpsX; N3XRConfig.tpsY = d.tpsY;
 			N3XRConfig.compassX = d.compassX; N3XRConfig.compassY = d.compassY;
+			N3XRConfig.speedX = d.speedX; N3XRConfig.speedY = d.speedY;
+			N3XRConfig.coordsX = d.coordsX; N3XRConfig.coordsY = d.coordsY;
+			N3XRConfig.nameTagX = d.nameTagX; N3XRConfig.nameTagY = d.nameTagY;
 
 			N3XRConfig.fpsColor = d.fpsColor;
 			N3XRConfig.cpsColor = d.cpsColor;
@@ -109,8 +128,12 @@ public class N3XRConfigStorage {
 			N3XRConfig.hitColor = d.hitColor;
 			N3XRConfig.tpsColor = d.tpsColor;
 			N3XRConfig.compassColor = d.compassColor;
+			N3XRConfig.speedColor = d.speedColor;
+			N3XRConfig.coordsColor = d.coordsColor;
+			N3XRConfig.crosshairColor = d.crosshairColor;
+			N3XRConfig.nameTagColor = d.nameTagColor;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-    }
+	}
