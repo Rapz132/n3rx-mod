@@ -13,6 +13,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
@@ -105,6 +106,7 @@ public class N3XRClient implements ClientModInitializer {
 			if (N3XRConfig.showCompass) renderCompass(context, mc);
 			if (N3XRConfig.showSpeed) renderSpeed(context, mc);
 			if (N3XRConfig.showCoords) renderCoords(context, mc);
+			if (N3XRConfig.showNameTag) renderNameTag(context, mc);
 		});
 	}
 
@@ -135,12 +137,11 @@ public class N3XRClient implements ClientModInitializer {
 	}
 
 	private void renderCustomCrosshair(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
-		int cx = mc.getWindow().getScaledWidth() / 2;
-		int cy = mc.getWindow().getScaledHeight() / 2;
-		int color = N3XRConfig.crosshairColor | 0xFF000000;
-		int len = 6, thick = 1;
-		c.fill(cx - len, cy - thick / 2, cx + len, cy - thick / 2 + 1, color);
-		c.fill(cx - thick / 2, cy - len, cx - thick / 2 + 1, cy + len, color);
+		int size = 16;
+		int cx = mc.getWindow().getScaledWidth() / 2 - size / 2;
+		int cy = mc.getWindow().getScaledHeight() / 2 - size / 2;
+		c.drawTexture(Identifier.of("n3xr", "textures/misc/crosshair.png"),
+			cx, cy, 0, 0, size, size, size, size);
 	}
 
 	private void renderFps(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
@@ -207,6 +208,17 @@ public class N3XRClient implements ClientModInitializer {
 		c.drawText(mc.textRenderer, Text.literal(txt), N3XRConfig.coordsX, N3XRConfig.coordsY, N3XRConfig.coordsColor, true);
 	}
 
+	private void renderNameTag(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		int x = N3XRConfig.nameTagX, y = N3XRConfig.nameTagY;
+		int badgeSize = 12;
+
+		c.fill(x, y, x + badgeSize, y + badgeSize, 0xFFFF3333);
+		c.fill(x + 2, y + 2, x + badgeSize - 2, y + badgeSize - 2, 0xFF1A0A0A);
+
+		String username = mc.getSession().getUsername();
+		c.drawText(mc.textRenderer, username, x + badgeSize + 4, y + 2, N3XRConfig.nameTagColor, true);
+	}
+
 	private void renderKeystrokes(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
 		int x = N3XRConfig.keysX, y = N3XRConfig.keysY, size = 18, gap = 2;
 		boolean w = mc.options.forwardKey.isPressed();
@@ -238,4 +250,4 @@ public class N3XRClient implements ClientModInitializer {
 		int tw = mc.textRenderer.getWidth(label);
 		c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-			}
+	}
