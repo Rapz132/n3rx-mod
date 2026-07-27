@@ -25,7 +25,9 @@ public class N3XRConfigStorage {
 		int fpsX, fpsY, armorX, armorY, cpsX, cpsY, pingX, pingY, keysX, keysY;
 		int serverIpX, serverIpY, tpsX, tpsY, compassX, compassY, speedX, speedY, coordsX, coordsY, nameTagX, nameTagY;
 
-		int fpsColor, cpsColor, pingColor, keysColor, serverIpColor, hitColor, tpsColor, compassColor, speedColor, coordsColor, crosshairColor, nameTagColor;
+		int fpsColor, cpsColor, pingColor, keysColor, serverIpColor, hitColor, tpsColor, compassColor, speedColor, coordsColor, nameTagColor;
+
+		int[] crosshairPixels;
 	}
 
 	public static void save() {
@@ -72,8 +74,9 @@ public class N3XRConfigStorage {
 		d.compassColor = N3XRConfig.compassColor;
 		d.speedColor = N3XRConfig.speedColor;
 		d.coordsColor = N3XRConfig.coordsColor;
-		d.crosshairColor = N3XRConfig.crosshairColor;
 		d.nameTagColor = N3XRConfig.nameTagColor;
+
+		d.crosshairPixels = N3XRConfig.crosshairPixels;
 
 		try (Writer writer = Files.newBufferedWriter(CONFIG_PATH, StandardCharsets.UTF_8)) {
 			GSON.toJson(d, writer);
@@ -130,10 +133,11 @@ public class N3XRConfigStorage {
 			N3XRConfig.compassColor = d.compassColor;
 			N3XRConfig.speedColor = d.speedColor;
 			N3XRConfig.coordsColor = d.coordsColor;
-			N3XRConfig.crosshairColor = d.crosshairColor;
 			N3XRConfig.nameTagColor = d.nameTagColor;
+
+			if (d.crosshairPixels != null) N3XRConfig.crosshairPixels = d.crosshairPixels;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	}
+			}
