@@ -22,6 +22,9 @@ public class N3XRConfig {
 	public static boolean keysRainbow = false;
 	public static boolean showFavoritesOnly = false;
 
+	public static final int CROSSHAIR_GRID = 12;
+	public static int[] crosshairPixels = new int[CROSSHAIR_GRID * CROSSHAIR_GRID];
+
 	public static int fpsX = 5, fpsY = 5;
 	public static int armorX = 5, armorY = 20;
 	public static int cpsX = 5, cpsY = 100;
@@ -44,7 +47,6 @@ public class N3XRConfig {
 	public static int compassColor = 0xFFFFFF;
 	public static int speedColor = 0xFFFFFF;
 	public static int coordsColor = 0xFFFFFF;
-	public static int crosshairColor = 0xFFFFFF;
 	public static int nameTagColor = 0xFFFFFF;
 
 	public static final int[] PRESET_COLORS = {
