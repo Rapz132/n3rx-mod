@@ -7,7 +7,9 @@
 		"LivingEntityRendererMixin",
 		"LivingEntityAccessor",
 		"PlayerListHudMixin",
-		"EntityHitboxMixin"
+		"EntityHitboxMixin",
+		"ScoreboardOverlayMixin",
+		"HudOverlayMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
