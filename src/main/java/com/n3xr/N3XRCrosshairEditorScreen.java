@@ -36,7 +36,7 @@ public class N3XRCrosshairEditorScreen extends Screen {
 			b -> { eraseMode = !eraseMode; b.setMessage(Text.literal(eraseMode ? "Eraser: ON" : "Eraser: OFF")); }));
 
 		this.addDrawableChild(N3XRButton.of(this.width / 2 - 55, btnY, 100, 20,
-			Text.literal("Clear All"),
+			Text.literal("Reset Settings"),
 			b -> {
 				for (int i = 0; i < N3XRConfig.crosshairPixels.length; i++) N3XRConfig.crosshairPixels[i] = 0;
 			}));
