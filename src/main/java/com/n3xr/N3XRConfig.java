@@ -18,6 +18,20 @@ public class N3XRConfig {
 	public static boolean showNameTag = false;
 	public static boolean hitboxEnabled = false;
 
+	public static boolean autoGgEnabled = false;
+	public static boolean scoreboardHideEnabled = false;
+	public static boolean showPlayerCount = false;
+	public static boolean blockOutlineEnabled = false;
+	public static boolean showMemoryUsage = false;
+	public static boolean showCpuUsage = false;
+	public static boolean showBiomeInfo = false;
+	public static boolean showPotions = false;
+	public static boolean showInventoryDisplay = false;
+	public static boolean showRealTime = false;
+	public static boolean itemUpdateEnabled = false;
+	public static boolean noPumpkinOverlay = false;
+	public static boolean noFireOverlay = false;
+
 	public static boolean snapEnabled = false;
 	public static boolean guidesEnabled = true;
 	public static boolean keysRainbow = false;
@@ -25,6 +39,10 @@ public class N3XRConfig {
 
 	public static final int CROSSHAIR_GRID = 12;
 	public static int[] crosshairPixels = new int[CROSSHAIR_GRID * CROSSHAIR_GRID];
+
+	public static final String[] TIMEZONE_NAMES = { "Indonesia (WIB)", "UTC", "New York", "London", "Tokyo" };
+	public static final String[] TIMEZONE_IDS = { "Asia/Jakarta", "UTC", "America/New_York", "Europe/London", "Asia/Tokyo" };
+	public static int timezoneIndex = 0;
 
 	public static int fpsX = 5, fpsY = 5;
 	public static int armorX = 5, armorY = 20;
@@ -37,6 +55,13 @@ public class N3XRConfig {
 	public static int speedX = 5, speedY = 245;
 	public static int coordsX = 5, coordsY = 260;
 	public static int nameTagX = 5, nameTagY = 275;
+	public static int playerCountX = 5, playerCountY = 290;
+	public static int memoryX = 5, memoryY = 305;
+	public static int cpuX = 5, cpuY = 320;
+	public static int biomeX = 5, biomeY = 335;
+	public static int potionsX = 5, potionsY = 350;
+	public static int inventoryDisplayX = 5, inventoryDisplayY = 400;
+	public static int realTimeX = 5, realTimeY = 365;
 
 	public static int fpsColor = 0xFFFFFF;
 	public static int cpsColor = 0xFFFFFF;
@@ -50,6 +75,13 @@ public class N3XRConfig {
 	public static int coordsColor = 0xFFFFFF;
 	public static int nameTagColor = 0xFFFFFF;
 	public static int hitboxColor = 0xFF3333;
+	public static int playerCountColor = 0xFFFFFF;
+	public static int memoryColor = 0xFFFFFF;
+	public static int cpuColor = 0xFFFFFF;
+	public static int biomeColor = 0xFFFFFF;
+	public static int potionsColor = 0xFFFFFF;
+	public static int realTimeColor = 0xFFFFFF;
+	public static int blockOutlineColor = 0xFF3333;
 
 	public static final int[] PRESET_COLORS = {
 		0xFFFFFF, 0xFF5555, 0xFF8800, 0xFFFF55, 0xAAFF55,
