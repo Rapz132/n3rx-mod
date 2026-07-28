@@ -6,6 +6,7 @@
 	"client": [
 		"LivingEntityRendererMixin",
 		"LivingEntityAccessor"
+		"PlayerListHudMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
