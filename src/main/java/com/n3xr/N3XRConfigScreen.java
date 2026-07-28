@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class N3XRConfigScreen extends Screen {
 
-	private enum Category { ALL, PERFORMANCE, HUD, VISUAL, COMBAT, UTILITY, SERVER }
+	private enum Category { ALL, PERFORMANCE, HUD, VISUAL, COMBAT, UTILITY, SERVER, CHAT }
 
 	private record ModuleDef(String name, String desc, Identifier icon, Category category, boolean hasColor,
 	                          Supplier<Boolean> getEnabled, Consumer<Boolean> setEnabled,
@@ -33,11 +33,12 @@ public class N3XRConfigScreen extends Screen {
 	private boolean draggingScrollbar = false;
 
 	private static final int GAP = 8;
-	private static final int COLS = 3;
+	private static final int COLS = 2;
 	private static final int ICON_SIZE = 16;
 	private static final int PAD = 8;
 	private static final int CARD_H = 88;
 	private static final int BAR_W = 16;
+	private static final int SIDEBAR_W = 100;
 
 	private int cardW;
 	private int gridX, gridY, gridBottom, panelX1, panelX2;
@@ -53,70 +54,83 @@ public class N3XRConfigScreen extends Screen {
 
 		allModules.add(new ModuleDef("FPS", "Shows your FPS in real-time.", Identifier.of("n3xr", "textures/icons/fps.png"), Category.PERFORMANCE, true,
 			() -> N3XRConfig.showFps, v -> N3XRConfig.showFps = v, () -> N3XRConfig.fpsColor, v -> N3XRConfig.fpsColor = v, false));
-
 		allModules.add(new ModuleDef("Armor HUD", "Displays your armor and durability.", Identifier.of("n3xr", "textures/icons/armor.png"), Category.HUD, false,
 			() -> N3XRConfig.showArmor, v -> N3XRConfig.showArmor = v, () -> 0xFFFFFF, v -> {}, false));
-
 		allModules.add(new ModuleDef("CPS", "Shows your clicks per second.", Identifier.of("n3xr", "textures/icons/cps.png"), Category.COMBAT, true,
 			() -> N3XRConfig.showCps, v -> N3XRConfig.showCps = v, () -> N3XRConfig.cpsColor, v -> N3XRConfig.cpsColor = v, false));
-
 		allModules.add(new ModuleDef("Ping", "Displays your current ping.", Identifier.of("n3xr", "textures/icons/ping.png"), Category.SERVER, true,
 			() -> N3XRConfig.showPing, v -> N3XRConfig.showPing = v, () -> N3XRConfig.pingColor, v -> N3XRConfig.pingColor = v, false));
-
 		allModules.add(new ModuleDef("Keystrokes", "Shows your keys in real-time.", Identifier.of("n3xr", "textures/icons/keystrokes.png"), Category.HUD, true,
 			() -> N3XRConfig.showKeystrokes, v -> N3XRConfig.showKeystrokes = v, () -> N3XRConfig.keysColor, v -> N3XRConfig.keysColor = v, true));
-
 		allModules.add(new ModuleDef("Night Vision", "Improves visibility in the dark.", Identifier.of("n3xr", "textures/icons/nightvision.png"), Category.VISUAL, false,
 			() -> N3XRConfig.nightVisionEnabled, v -> N3XRConfig.nightVisionEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-
 		allModules.add(new ModuleDef("Server IP", "Shows the server IP address.", Identifier.of("n3xr", "textures/icons/serverip.png"), Category.SERVER, true,
 			() -> N3XRConfig.showServerIp, v -> N3XRConfig.showServerIp = v, () -> N3XRConfig.serverIpColor, v -> N3XRConfig.serverIpColor = v, false));
-
 		allModules.add(new ModuleDef("Hit Color", "Tints entities red when hit.", Identifier.of("n3xr", "textures/icons/hitcolor.png"), Category.COMBAT, true,
 			() -> N3XRConfig.hitColorEnabled, v -> N3XRConfig.hitColorEnabled = v, () -> N3XRConfig.hitColor, v -> N3XRConfig.hitColor = v, false));
-
 		allModules.add(new ModuleDef("Zoom", "Adds zoom capabilities.", Identifier.of("n3xr", "textures/icons/zoom.png"), Category.UTILITY, false,
 			() -> N3XRConfig.zoomEnabled, v -> N3XRConfig.zoomEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-
 		allModules.add(new ModuleDef("TPS", "Shows ticks per second.", Identifier.of("n3xr", "textures/icons/tps.png"), Category.PERFORMANCE, true,
 			() -> N3XRConfig.showTps, v -> N3XRConfig.showTps = v, () -> N3XRConfig.tpsColor, v -> N3XRConfig.tpsColor = v, false));
-
 		allModules.add(new ModuleDef("Compass", "Shows the direction you're facing.", Identifier.of("n3xr", "textures/icons/compass.png"), Category.UTILITY, true,
 			() -> N3XRConfig.showCompass, v -> N3XRConfig.showCompass = v, () -> N3XRConfig.compassColor, v -> N3XRConfig.compassColor = v, false));
-
 		allModules.add(new ModuleDef("Speed", "Shows your movement speed.", Identifier.of("n3xr", "textures/icons/speed.png"), Category.PERFORMANCE, true,
 			() -> N3XRConfig.showSpeed, v -> N3XRConfig.showSpeed = v, () -> N3XRConfig.speedColor, v -> N3XRConfig.speedColor = v, false));
-
 		allModules.add(new ModuleDef("Coordinates", "Shows your X, Y, Z position.", Identifier.of("n3xr", "textures/icons/coords.png"), Category.UTILITY, true,
 			() -> N3XRConfig.showCoords, v -> N3XRConfig.showCoords = v, () -> N3XRConfig.coordsColor, v -> N3XRConfig.coordsColor = v, false));
-
 		allModules.add(new ModuleDef("Crosshair", "Draw your own custom crosshair.", Identifier.of("n3xr", "textures/icons/crosshair.png"), Category.VISUAL, true,
 			() -> N3XRConfig.customCrosshairEnabled, v -> N3XRConfig.customCrosshairEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-
 		allModules.add(new ModuleDef("Name Tag", "Shows an N3XR badge with your name.", Identifier.of("n3xr", "textures/icons/nametag.png"), Category.HUD, true,
 			() -> N3XRConfig.showNameTag, v -> N3XRConfig.showNameTag = v, () -> N3XRConfig.nameTagColor, v -> N3XRConfig.nameTagColor = v, false));
-
 		allModules.add(new ModuleDef("Hitbox", "Shows entity hitbox outlines.", Identifier.of("n3xr", "textures/icons/hitbox.png"), Category.COMBAT, true,
 			() -> N3XRConfig.hitboxEnabled, v -> N3XRConfig.hitboxEnabled = v, () -> N3XRConfig.hitboxColor, v -> N3XRConfig.hitboxColor = v, false));
 
-		int leftPad = 20, rightPad = 16, innerGap = 8;
+		allModules.add(new ModuleDef("Auto GG", "Sends GG after killing a player.", null, Category.CHAT, false,
+			() -> N3XRConfig.autoGgEnabled, v -> N3XRConfig.autoGgEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("Scoreboard Hide", "Hides the sidebar scoreboard.", null, Category.CHAT, false,
+			() -> N3XRConfig.scoreboardHideEnabled, v -> N3XRConfig.scoreboardHideEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("Player Count", "Shows online player count.", null, Category.CHAT, true,
+			() -> N3XRConfig.showPlayerCount, v -> N3XRConfig.showPlayerCount = v, () -> N3XRConfig.playerCountColor, v -> N3XRConfig.playerCountColor = v, false));
+		allModules.add(new ModuleDef("Block Outline", "Custom block breaking outline color.", null, Category.CHAT, true,
+			() -> N3XRConfig.blockOutlineEnabled, v -> N3XRConfig.blockOutlineEnabled = v, () -> N3XRConfig.blockOutlineColor, v -> N3XRConfig.blockOutlineColor = v, false));
+		allModules.add(new ModuleDef("Memory Usage", "Shows RAM usage.", null, Category.CHAT, true,
+			() -> N3XRConfig.showMemoryUsage, v -> N3XRConfig.showMemoryUsage = v, () -> N3XRConfig.memoryColor, v -> N3XRConfig.memoryColor = v, false));
+		allModules.add(new ModuleDef("CPU Usage", "Shows CPU usage.", null, Category.CHAT, true,
+			() -> N3XRConfig.showCpuUsage, v -> N3XRConfig.showCpuUsage = v, () -> N3XRConfig.cpuColor, v -> N3XRConfig.cpuColor = v, false));
+		allModules.add(new ModuleDef("Biome Info", "Shows current biome name.", null, Category.CHAT, true,
+			() -> N3XRConfig.showBiomeInfo, v -> N3XRConfig.showBiomeInfo = v, () -> N3XRConfig.biomeColor, v -> N3XRConfig.biomeColor = v, false));
+		allModules.add(new ModuleDef("Potions", "Shows active potion effects.", null, Category.CHAT, true,
+			() -> N3XRConfig.showPotions, v -> N3XRConfig.showPotions = v, () -> N3XRConfig.potionsColor, v -> N3XRConfig.potionsColor = v, false));
+		allModules.add(new ModuleDef("Inventory Display", "Shows your inventory on screen.", null, Category.CHAT, false,
+			() -> N3XRConfig.showInventoryDisplay, v -> N3XRConfig.showInventoryDisplay = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("Real Time", "Shows time from selected region.", null, Category.CHAT, true,
+			() -> N3XRConfig.showRealTime, v -> N3XRConfig.showRealTime = v, () -> N3XRConfig.realTimeColor, v -> N3XRConfig.realTimeColor = v, false));
+		allModules.add(new ModuleDef("Item Update", "Shows items when picked up.", null, Category.CHAT, false,
+			() -> N3XRConfig.itemUpdateEnabled, v -> N3XRConfig.itemUpdateEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+
+		allModules.add(new ModuleDef("No Pumpkin Overlay", "Removes the pumpkin head overlay.", null, Category.VISUAL, false,
+			() -> N3XRConfig.noPumpkinOverlay, v -> N3XRConfig.noPumpkinOverlay = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("No Fire Overlay", "Removes the fire/low health overlay.", null, Category.VISUAL, false,
+			() -> N3XRConfig.noFireOverlay, v -> N3XRConfig.noFireOverlay = v, () -> 0xFFFFFF, v -> {}, false));
+
+		int rightPad = 16, innerGap = 8;
 		int maxPanelW = this.width - 24;
-		int idealCardW = 250;
-		int idealPanelW = leftPad + COLS * idealCardW + (COLS - 1) * GAP + innerGap + BAR_W + rightPad;
+		int idealCardW = 220;
+		int idealPanelW = SIDEBAR_W + COLS * idealCardW + (COLS - 1) * GAP + innerGap + BAR_W + rightPad + 10;
 		int panelW = Math.min(idealPanelW, maxPanelW);
-		int availableForCards = panelW - leftPad - rightPad - innerGap - BAR_W - (COLS - 1) * GAP;
+		int availableForCards = panelW - SIDEBAR_W - rightPad - innerGap - BAR_W - (COLS - 1) * GAP - 10;
 		cardW = availableForCards / COLS;
 
 		panelX1 = this.width / 2 - panelW / 2;
 		panelX2 = panelX1 + panelW;
 
-		gridX = panelX1 + leftPad;
-		gridY = 130;
+		gridX = panelX1 + SIDEBAR_W + 10;
+		gridY = 50;
 		gridBottom = this.height - 60;
 
 		scrollBarX = gridX + COLS * cardW + (COLS - 1) * GAP + innerGap;
-		scrollTrackY1 = gridY + 22;
-		scrollTrackY2 = gridBottom - 22;
+		scrollTrackY1 = gridY;
+		scrollTrackY2 = gridBottom;
 
 		String[] topIcons = {"\u2699", "\u2302", "\u2605", "\u266A", "\u2139"};
 		Runnable[] topActions = {
@@ -126,33 +140,28 @@ public class N3XRConfigScreen extends Screen {
 			() -> this.client.setScreen(new N3XRUpdatesScreen(this)),
 			() -> this.client.setScreen(new N3XRCreditsScreen(this))
 		};
-
 		int topBtnW = 28;
 		int topX = panelX2 - 10 - topIcons.length * (topBtnW + 4);
 		for (int i = 0; i < topIcons.length; i++) {
 			final Runnable action = topActions[i];
-			this.addDrawableChild(N3XRButton.of(topX, 22, topBtnW, 22,
+			this.addDrawableChild(N3XRButton.of(topX, 12, topBtnW, 20,
 				Text.literal(topIcons[i]), b -> action.run()));
 			topX += topBtnW + 4;
 		}
 
-		int searchX = panelX1 + 140;
-		int searchW = Math.min(150, topX - 10 - searchX);
-		searchField = new TextFieldWidget(this.textRenderer, searchX, 26, Math.max(searchW, 80), 16, Text.literal("Search..."));
+		searchField = new TextFieldWidget(this.textRenderer, panelX1 + SIDEBAR_W + 10, 14, Math.min(140, topX - 10 - (panelX1 + SIDEBAR_W + 10)), 16, Text.literal("Search..."));
 		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
 		this.addDrawableChild(searchField);
 
-		String[] catLabels = {"All", "Performance", "HUD", "Visual", "Combat", "Utility", "Server"};
+		String[] catLabels = {"All", "Performance", "HUD", "Visual", "Combat", "Utility", "Server", "Chat"};
 		Category[] cats = Category.values();
-		int tabX = panelX1 + 10;
-		int tabY = 60;
+		int sideY = 40;
 		for (int i = 0; i < cats.length; i++) {
 			Category cat = cats[i];
-			int tw = Math.min(this.textRenderer.getWidth(catLabels[i]) + 20, 100);
-			final int fx = tabX;
-			this.addDrawableChild(N3XRButton.of(fx, tabY, tw, 22,
+			final int fy = sideY;
+			this.addDrawableChild(N3XRButton.of(panelX1 + 10, fy, SIDEBAR_W - 20, 20,
 				Text.literal(catLabels[i]), b -> { currentCategory = cat; scrollOffset = 0; applyFilter(); }));
-			tabX += tw + 4;
+			sideY += 24;
 		}
 
 		this.addDrawableChild(N3XRButton.of(scrollBarX, gridY, BAR_W, 20,
@@ -290,12 +299,9 @@ public class N3XRConfigScreen extends Screen {
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		fillRounded(context, panelX1, 10, panelX2, this.height - 10, 0xE00A0505, 6);
+		context.fill(panelX1 + SIDEBAR_W, 10, panelX1 + SIDEBAR_W + 1, this.height - 10, 0xFFFF3333);
 
 		super.render(context, mouseX, mouseY, delta);
-
-		context.drawText(this.textRenderer, Text.literal("N3XR").styled(s -> s.withBold(true)), panelX1 + 20, 20, 0xFFFF3333, true);
-		context.drawText(this.textRenderer, Text.literal("CLIENT").styled(s -> s.withBold(true)), panelX1 + 55, 20, 0xFFFFFFFF, true);
-		context.drawText(this.textRenderer, Text.literal("PERFORMANCE CLIENT"), panelX1 + 20, 34, 0xFF888888, false);
 
 		int startIndex = scrollOffset * COLS;
 		for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
@@ -314,7 +320,9 @@ public class N3XRConfigScreen extends Screen {
 
 			int iconBoxSize = 32;
 			fillRounded(context, cx + PAD, cy + PAD, cx + PAD + iconBoxSize, cy + PAD + iconBoxSize, 0xFF2A1414, 5);
-			context.drawTexture(m.icon(), cx + PAD + 8, cy + PAD + 8, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+			if (m.icon() != null) {
+				context.drawTexture(m.icon(), cx + PAD + 8, cy + PAD + 8, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+			}
 
 			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 8, cy + PAD, 0xFFFFFFFF, true);
 
@@ -352,7 +360,7 @@ public class N3XRConfigScreen extends Screen {
 		if (visibleModules.isEmpty()) {
 			String msg = "No modules found";
 			int mw = this.textRenderer.getWidth(msg);
-			context.drawText(this.textRenderer, msg, (this.width - mw) / 2, gridY + 20, 0xFF888888, false);
+			context.drawText(this.textRenderer, msg, gridX + (COLS * cardW + (COLS - 1) * GAP) / 2 - mw / 2, gridY + 20, 0xFF888888, false);
 		}
 
 		fillRounded(context, scrollBarX, scrollTrackY1, scrollBarX + BAR_W, scrollTrackY2, 0xFF221111, BAR_W / 2);
@@ -371,4 +379,4 @@ public class N3XRConfigScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-	}
+}
