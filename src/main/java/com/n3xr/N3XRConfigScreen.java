@@ -96,6 +96,9 @@ public class N3XRConfigScreen extends Screen {
 		allModules.add(new ModuleDef("Name Tag", "Shows an N3XR badge with your name.", Identifier.of("n3xr", "textures/icons/nametag.png"), Category.HUD, true,
 			() -> N3XRConfig.showNameTag, v -> N3XRConfig.showNameTag = v, () -> N3XRConfig.nameTagColor, v -> N3XRConfig.nameTagColor = v, false));
 
+		allModules.add(new ModuleDef("Hitbox", "Shows entity hitbox outlines.", Identifier.of("n3xr", "textures/icons/hitbox.png"), Category.COMBAT, true,
+			() -> N3XRConfig.hitboxEnabled, v -> N3XRConfig.hitboxEnabled = v, () -> N3XRConfig.hitboxColor, v -> N3XRConfig.hitboxColor = v, false));
+
 		int leftPad = 20, rightPad = 16, innerGap = 8;
 		int maxPanelW = this.width - 24;
 		int idealCardW = 250;
