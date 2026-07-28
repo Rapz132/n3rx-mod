@@ -16,6 +16,7 @@ public class N3XRConfig {
 	public static boolean showCoords = false;
 	public static boolean customCrosshairEnabled = false;
 	public static boolean showNameTag = false;
+	public static boolean hitboxEnabled = false;
 
 	public static boolean snapEnabled = false;
 	public static boolean guidesEnabled = true;
@@ -48,6 +49,7 @@ public class N3XRConfig {
 	public static int speedColor = 0xFFFFFF;
 	public static int coordsColor = 0xFFFFFF;
 	public static int nameTagColor = 0xFFFFFF;
+	public static int hitboxColor = 0xFF3333;
 
 	public static final int[] PRESET_COLORS = {
 		0xFFFFFF, 0xFF5555, 0xFF8800, 0xFFFF55, 0xAAFF55,
