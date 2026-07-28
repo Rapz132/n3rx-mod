@@ -5,18 +5,29 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
+import java.lang.management.ManagementFactory;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 
 public class N3XRClient implements ClientModInitializer {
 
@@ -31,6 +42,10 @@ public class N3XRClient implements ClientModInitializer {
 	private double lastX, lastY, lastZ;
 	private double currentSpeed = 0;
 
+	private final List<String> lastInventorySnapshot = new ArrayList<>();
+	private final List<String> itemUpdateQueue = new ArrayList<>();
+	private long itemUpdateShownUntil = 0;
+
 	@Override
 	public void onInitializeClient() {
 		N3XRConfigStorage.load();
@@ -44,6 +59,20 @@ public class N3XRClient implements ClientModInitializer {
 
 		WorldRenderEvents.END.register(context -> {
 			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+		});
+
+		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+			if (N3XRConfig.hitColorEnabled) {
+				// handled by mixin
+			}
+			if (N3XRConfig.autoGgEnabled && entity instanceof PlayerEntity && entity != player) {
+				MinecraftClient.getInstance().execute(() -> {
+					if (entity.isRemoved() && MinecraftClient.getInstance().getNetworkHandler() != null) {
+						MinecraftClient.getInstance().getNetworkHandler().sendChatMessage("GG");
+					}
+				});
+			}
+			return ActionResult.PASS;
 		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -76,6 +105,8 @@ public class N3XRClient implements ClientModInitializer {
 							StatusEffects.NIGHT_VISION, 999999, 0, true, false, false));
 					}
 				}
+
+				if (N3XRConfig.itemUpdateEnabled) checkItemUpdates(client);
 			}
 
 			if (now % 5000 < 50) {
@@ -89,9 +120,8 @@ public class N3XRClient implements ClientModInitializer {
 
 			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-			if (N3XRConfig.customCrosshairEnabled) {
-				renderCustomCrosshair(context, mc);
-			}
+			if (N3XRConfig.customCrosshairEnabled) renderCustomCrosshair(context, mc);
+			if (N3XRConfig.itemUpdateEnabled) renderItemUpdatePopup(context, mc);
 
 			if (mc.options.hudHidden) return;
 
@@ -106,6 +136,13 @@ public class N3XRClient implements ClientModInitializer {
 			if (N3XRConfig.showSpeed) renderSpeed(context, mc);
 			if (N3XRConfig.showCoords) renderCoords(context, mc);
 			if (N3XRConfig.showNameTag) renderNameTag(context, mc);
+			if (N3XRConfig.showPlayerCount) renderPlayerCount(context, mc);
+			if (N3XRConfig.showMemoryUsage) renderMemory(context, mc);
+			if (N3XRConfig.showCpuUsage) renderCpu(context, mc);
+			if (N3XRConfig.showBiomeInfo) renderBiome(context, mc);
+			if (N3XRConfig.showPotions) renderPotions(context, mc);
+			if (N3XRConfig.showRealTime) renderRealTime(context, mc);
+			if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
 		});
 	}
 
@@ -135,11 +172,36 @@ public class N3XRClient implements ClientModInitializer {
 		}
 	}
 
+	private void checkItemUpdates(MinecraftClient client) {
+		List<String> current = new ArrayList<>();
+		for (ItemStack stack : client.player.getInventory().main) {
+			if (!stack.isEmpty()) current.add(stack.getItem().getName().getString() + " x" + stack.getCount());
+		}
+		for (String s : current) {
+			if (!lastInventorySnapshot.contains(s)) {
+				itemUpdateQueue.add(s);
+				itemUpdateShownUntil = System.currentTimeMillis() + 2500;
+				if (itemUpdateQueue.size() > 3) itemUpdateQueue.remove(0);
+			}
+		}
+		lastInventorySnapshot.clear();
+		lastInventorySnapshot.addAll(current);
+	}
+
+	private void renderItemUpdatePopup(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		if (System.currentTimeMillis() > itemUpdateShownUntil) { itemUpdateQueue.clear(); return; }
+		int x = mc.getWindow().getScaledWidth() / 2 - 60;
+		int y = mc.getWindow().getScaledHeight() / 2 + 40;
+		for (String s : itemUpdateQueue) {
+			c.drawText(mc.textRenderer, Text.literal("+ " + s), x, y, 0xFF55FF55, true);
+			y += 10;
+		}
+	}
+
 	private void renderCustomCrosshair(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
 		int grid = N3XRConfig.CROSSHAIR_GRID;
 		int startX = mc.getWindow().getScaledWidth() / 2 - grid / 2;
 		int startY = mc.getWindow().getScaledHeight() / 2 - grid / 2;
-
 		for (int row = 0; row < grid; row++) {
 			for (int col = 0; col < grid; col++) {
 				int idx = row * grid + col;
@@ -220,12 +282,74 @@ public class N3XRClient implements ClientModInitializer {
 	private void renderNameTag(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
 		int x = N3XRConfig.nameTagX, y = N3XRConfig.nameTagY;
 		int badgeSize = 12;
-
 		c.fill(x, y, x + badgeSize, y + badgeSize, 0xFFFF3333);
 		c.fill(x + 2, y + 2, x + badgeSize - 2, y + badgeSize - 2, 0xFF1A0A0A);
-
 		String username = mc.getSession().getUsername();
 		c.drawText(mc.textRenderer, username, x + badgeSize + 4, y + 2, N3XRConfig.nameTagColor, true);
+	}
+
+	private void renderPlayerCount(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		int count = mc.getNetworkHandler() != null ? mc.getNetworkHandler().getPlayerList().size() : 0;
+		c.drawText(mc.textRenderer, Text.literal("Players: " + count), N3XRConfig.playerCountX, N3XRConfig.playerCountY, N3XRConfig.playerCountColor, true);
+	}
+
+	private void renderMemory(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		Runtime rt = Runtime.getRuntime();
+		long usedMb = (rt.totalMemory() - rt.freeMemory()) / 1048576L;
+		long maxMb = rt.maxMemory() / 1048576L;
+		c.drawText(mc.textRenderer, Text.literal("Mem: " + usedMb + "/" + maxMb + " MB"), N3XRConfig.memoryX, N3XRConfig.memoryY, N3XRConfig.memoryColor, true);
+	}
+
+	private void renderCpu(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		String txt = "CPU: N/A";
+		try {
+			var osBean = ManagementFactory.getOperatingSystemMXBean();
+			if (osBean instanceof com.sun.management.OperatingSystemMXBean sunBean) {
+				double load = sunBean.getProcessCpuLoad();
+				if (load >= 0) txt = String.format("CPU: %.1f%%", load * 100);
+			}
+		} catch (Exception ignored) {}
+		c.drawText(mc.textRenderer, Text.literal(txt), N3XRConfig.cpuX, N3XRConfig.cpuY, N3XRConfig.cpuColor, true);
+	}
+
+	private void renderBiome(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		String biomeName = "Unknown";
+		try {
+			var biomeEntry = mc.world.getBiome(mc.player.getBlockPos());
+			biomeName = biomeEntry.getKey().map(k -> k.getValue().getPath()).orElse("Unknown");
+		} catch (Exception ignored) {}
+		c.drawText(mc.textRenderer, Text.literal("Biome: " + biomeName), N3XRConfig.biomeX, N3XRConfig.biomeY, N3XRConfig.biomeColor, true);
+	}
+
+	private void renderPotions(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		int y = N3XRConfig.potionsY;
+		for (StatusEffectInstance effect : mc.player.getStatusEffects()) {
+			String name = effect.getEffectType().value().getName().getString();
+			c.drawText(mc.textRenderer, Text.literal(name + " " + StatusEffectUtil.getDurationText(effect, 1.0f, 20).getString()), N3XRConfig.potionsX, y, N3XRConfig.potionsColor, true);
+			y += 10;
+		}
+	}
+
+	private void renderRealTime(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		ZoneId zone = ZoneId.of(N3XRConfig.TIMEZONE_IDS[N3XRConfig.timezoneIndex]);
+		String time = ZonedDateTime.now(zone).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+		c.drawText(mc.textRenderer, Text.literal(N3XRConfig.TIMEZONE_NAMES[N3XRConfig.timezoneIndex] + ": " + time), N3XRConfig.realTimeX, N3XRConfig.realTimeY, N3XRConfig.realTimeColor, true);
+	}
+
+	private void renderInventoryDisplay(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		int x = N3XRConfig.inventoryDisplayX, y = N3XRConfig.inventoryDisplayY;
+		int slotSize = 18;
+		var inv = mc.player.getInventory();
+		for (int i = 0; i < 36; i++) {
+			int col = i % 9, row = i / 9;
+			int sx = x + col * slotSize, sy = y + row * slotSize;
+			c.fill(sx, sy, sx + 16, sy + 16, 0x40000000);
+			ItemStack stack = inv.main.get(i);
+			if (!stack.isEmpty()) {
+				c.drawItem(stack, sx, sy);
+				c.drawItemInSlot(mc.textRenderer, stack, sx, sy);
+			}
+		}
 	}
 
 	private void renderKeystrokes(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
@@ -259,4 +383,4 @@ public class N3XRClient implements ClientModInitializer {
 		int tw = mc.textRenderer.getWidth(label);
 		c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-				}
+	}
