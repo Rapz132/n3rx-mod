@@ -8,7 +8,6 @@
 		"LivingEntityAccessor",
 		"PlayerListHudMixin",
 		"EntityHitboxMixin",
-		"ScoreboardOverlayMixin",
 		"HudOverlayMixin"
 	],
 	"injectors": {
