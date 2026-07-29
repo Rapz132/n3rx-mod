@@ -33,12 +33,11 @@ public class N3XRConfigScreen extends Screen {
 	private boolean draggingScrollbar = false;
 
 	private static final int GAP = 8;
-	private static final int COLS = 2;
+	private static final int COLS = 3;
 	private static final int ICON_SIZE = 16;
 	private static final int PAD = 8;
 	private static final int CARD_H = 88;
 	private static final int BAR_W = 16;
-	private static final int SIDEBAR_W = 100;
 
 	private int cardW;
 	private int gridX, gridY, gridBottom, panelX1, panelX2;
@@ -113,24 +112,24 @@ public class N3XRConfigScreen extends Screen {
 		allModules.add(new ModuleDef("No Fire Overlay", "Removes the fire/low health overlay.", null, Category.VISUAL, false,
 			() -> N3XRConfig.noFireOverlay, v -> N3XRConfig.noFireOverlay = v, () -> 0xFFFFFF, v -> {}, false));
 
-		int rightPad = 16, innerGap = 8;
+		int leftPad = 20, rightPad = 16, innerGap = 8;
 		int maxPanelW = this.width - 24;
-		int idealCardW = 220;
-		int idealPanelW = SIDEBAR_W + COLS * idealCardW + (COLS - 1) * GAP + innerGap + BAR_W + rightPad + 10;
+		int idealCardW = 250;
+		int idealPanelW = leftPad + COLS * idealCardW + (COLS - 1) * GAP + innerGap + BAR_W + rightPad;
 		int panelW = Math.min(idealPanelW, maxPanelW);
-		int availableForCards = panelW - SIDEBAR_W - rightPad - innerGap - BAR_W - (COLS - 1) * GAP - 10;
+		int availableForCards = panelW - leftPad - rightPad - innerGap - BAR_W - (COLS - 1) * GAP;
 		cardW = availableForCards / COLS;
 
 		panelX1 = this.width / 2 - panelW / 2;
 		panelX2 = panelX1 + panelW;
 
-		gridX = panelX1 + SIDEBAR_W + 10;
-		gridY = 50;
+		gridX = panelX1 + leftPad;
+		gridY = 130;
 		gridBottom = this.height - 60;
 
 		scrollBarX = gridX + COLS * cardW + (COLS - 1) * GAP + innerGap;
-		scrollTrackY1 = gridY;
-		scrollTrackY2 = gridBottom;
+		scrollTrackY1 = gridY + 22;
+		scrollTrackY2 = gridBottom - 22;
 
 		String[] topIcons = {"\u2699", "\u2302", "\u2605", "\u266A", "\u2139"};
 		Runnable[] topActions = {
@@ -144,25 +143,41 @@ public class N3XRConfigScreen extends Screen {
 		int topX = panelX2 - 10 - topIcons.length * (topBtnW + 4);
 		for (int i = 0; i < topIcons.length; i++) {
 			final Runnable action = topActions[i];
-			this.addDrawableChild(N3XRButton.of(topX, 12, topBtnW, 20,
+			this.addDrawableChild(N3XRButton.of(topX, 22, topBtnW, 22,
 				Text.literal(topIcons[i]), b -> action.run()));
 			topX += topBtnW + 4;
 		}
 
-		searchField = new TextFieldWidget(this.textRenderer, panelX1 + SIDEBAR_W + 10, 14, Math.min(140, topX - 10 - (panelX1 + SIDEBAR_W + 10)), 16, Text.literal("Search..."));
+		int searchX = panelX1 + 140;
+		int searchW = Math.min(150, topX - 10 - searchX);
+		searchField = new TextFieldWidget(this.textRenderer, searchX, 26, Math.max(searchW, 80), 16, Text.literal("Search..."));
 		searchField.setChangedListener(s -> { scrollOffset = 0; applyFilter(); });
 		this.addDrawableChild(searchField);
 
 		String[] catLabels = {"All", "Performance", "HUD", "Visual", "Combat", "Utility", "Server", "Chat"};
 		Category[] cats = Category.values();
-		int sideY = 40;
+		int tabX = panelX1 + 10;
+		int tabY = 60;
+		int rowW = panelX2 - panelX1 - 20;
+		int usedW = 0;
 		for (int i = 0; i < cats.length; i++) {
 			Category cat = cats[i];
-			final int fy = sideY;
-			this.addDrawableChild(N3XRButton.of(panelX1 + 10, fy, SIDEBAR_W - 20, 20,
+			int tw = Math.min(this.textRenderer.getWidth(catLabels[i]) + 20, 100);
+			if (usedW + tw > rowW) {
+				tabX = panelX1 + 10;
+				tabY += 26;
+				usedW = 0;
+			}
+			final int fx = tabX;
+			final int fy = tabY;
+			this.addDrawableChild(N3XRButton.of(fx, fy, tw, 22,
 				Text.literal(catLabels[i]), b -> { currentCategory = cat; scrollOffset = 0; applyFilter(); }));
-			sideY += 24;
+			tabX += tw + 4;
+			usedW += tw + 4;
 		}
+
+		gridY = tabY + 32;
+		scrollTrackY1 = gridY + 22;
 
 		this.addDrawableChild(N3XRButton.of(scrollBarX, gridY, BAR_W, 20,
 			Text.literal("^"), b -> { if (scrollOffset > 0) scrollOffset--; }));
@@ -299,9 +314,12 @@ public class N3XRConfigScreen extends Screen {
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		fillRounded(context, panelX1, 10, panelX2, this.height - 10, 0xE00A0505, 6);
-		context.fill(panelX1 + SIDEBAR_W, 10, panelX1 + SIDEBAR_W + 1, this.height - 10, 0xFFFF3333);
 
 		super.render(context, mouseX, mouseY, delta);
+
+		context.drawText(this.textRenderer, Text.literal("N3XR").styled(s -> s.withBold(true)), panelX1 + 20, 20, 0xFFFF3333, true);
+		context.drawText(this.textRenderer, Text.literal("CLIENT").styled(s -> s.withBold(true)), panelX1 + 55, 20, 0xFFFFFFFF, true);
+		context.drawText(this.textRenderer, Text.literal("PERFORMANCE CLIENT"), panelX1 + 20, 34, 0xFF888888, false);
 
 		int startIndex = scrollOffset * COLS;
 		for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
@@ -360,7 +378,7 @@ public class N3XRConfigScreen extends Screen {
 		if (visibleModules.isEmpty()) {
 			String msg = "No modules found";
 			int mw = this.textRenderer.getWidth(msg);
-			context.drawText(this.textRenderer, msg, gridX + (COLS * cardW + (COLS - 1) * GAP) / 2 - mw / 2, gridY + 20, 0xFF888888, false);
+			context.drawText(this.textRenderer, msg, (this.width - mw) / 2, gridY + 20, 0xFF888888, false);
 		}
 
 		fillRounded(context, scrollBarX, scrollTrackY1, scrollBarX + BAR_W, scrollTrackY2, 0xFF221111, BAR_W / 2);
