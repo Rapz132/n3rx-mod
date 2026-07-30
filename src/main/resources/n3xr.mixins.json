@@ -10,6 +10,7 @@
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "ChatHudMixin"
+  "TitleScreenMixin"
 ],
 	"injectors": {
 		"defaultRequire": 1
