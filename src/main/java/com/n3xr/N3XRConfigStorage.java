@@ -22,7 +22,7 @@ public class N3XRConfigStorage {
 		boolean showSpeed, showCoords, customCrosshairEnabled, showNameTag, hitboxEnabled;
 		boolean autoGgEnabled, scoreboardHideEnabled, showPlayerCount, blockOutlineEnabled;
 		boolean showMemoryUsage, showCpuUsage, showBiomeInfo, showPotions, showInventoryDisplay;
-		boolean showRealTime, itemUpdateEnabled, noPumpkinOverlay, noFireOverlay;
+		boolean showRealTime, itemUpdateEnabled, fastCrystalEnabled;
 		boolean snapEnabled, guidesEnabled, keysRainbow, showFavoritesOnly;
 		int timezoneIndex;
 
@@ -65,8 +65,7 @@ public class N3XRConfigStorage {
 		d.showInventoryDisplay = N3XRConfig.showInventoryDisplay;
 		d.showRealTime = N3XRConfig.showRealTime;
 		d.itemUpdateEnabled = N3XRConfig.itemUpdateEnabled;
-		d.noPumpkinOverlay = N3XRConfig.noPumpkinOverlay;
-		d.noFireOverlay = N3XRConfig.noFireOverlay;
+		d.fastCrystalEnabled = N3XRConfig.fastCrystalEnabled;
 		d.snapEnabled = N3XRConfig.snapEnabled;
 		d.guidesEnabled = N3XRConfig.guidesEnabled;
 		d.keysRainbow = N3XRConfig.keysRainbow;
@@ -154,8 +153,7 @@ public class N3XRConfigStorage {
 			N3XRConfig.showInventoryDisplay = d.showInventoryDisplay;
 			N3XRConfig.showRealTime = d.showRealTime;
 			N3XRConfig.itemUpdateEnabled = d.itemUpdateEnabled;
-			N3XRConfig.noPumpkinOverlay = d.noPumpkinOverlay;
-			N3XRConfig.noFireOverlay = d.noFireOverlay;
+			N3XRConfig.fastCrystalEnabled = d.fastCrystalEnabled;
 			N3XRConfig.snapEnabled = d.snapEnabled;
 			N3XRConfig.guidesEnabled = d.guidesEnabled;
 			N3XRConfig.keysRainbow = d.keysRainbow;
