@@ -89,9 +89,7 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.blockOutlineEnabled, v -> N3XRConfig.blockOutlineEnabled = v, () -> N3XRConfig.blockOutlineColor, v -> N3XRConfig.blockOutlineColor = v, false));
 		allModules.add(new ModuleDef("Fast Crystal", "Speeds up crystal placement ticks.", icon("fastcrystal"), Category.VISUAL, false,
 			() -> N3XRConfig.fastCrystalEnabled, v -> N3XRConfig.fastCrystalEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-		allModules.add(new ModuleDef("No Fire Overlay", "Removes the fire/low health overlay.", icon("nofire"), Category.VISUAL, false,
-			() -> N3XRConfig.noFireOverlay, v -> N3XRConfig.noFireOverlay = v, () -> 0xFFFFFF, v -> {}, false));
-
+	
 		allModules.add(new ModuleDef("CPS", "Shows your clicks per second.", icon("cps"), Category.COMBAT, true,
 			() -> N3XRConfig.showCps, v -> N3XRConfig.showCps = v, () -> N3XRConfig.cpsColor, v -> N3XRConfig.cpsColor = v, false));
 		allModules.add(new ModuleDef("Hit Color", "Tints entities red when hit.", icon("hitcolor"), Category.COMBAT, true,
