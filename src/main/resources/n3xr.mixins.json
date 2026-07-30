@@ -4,7 +4,7 @@
 	"package": "com.n3xr.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-  "HudOverlayMixin",
+  "AttackCooldownMixin",
   "PlayerListHudMixin",
   "LivingEntityRendererMixin",
   "ScoreboardOverlayMixin",
