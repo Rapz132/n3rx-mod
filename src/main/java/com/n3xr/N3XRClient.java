@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
@@ -13,10 +12,8 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -61,19 +58,7 @@ public class N3XRClient implements ClientModInitializer {
 			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		});
 
-		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-			if (N3XRConfig.hitColorEnabled) {
-				// handled by mixin
-			}
-			if (N3XRConfig.autoGgEnabled && entity instanceof PlayerEntity && entity != player) {
-				MinecraftClient.getInstance().execute(() -> {
-					if (entity.isRemoved() && MinecraftClient.getInstance().getNetworkHandler() != null) {
-						MinecraftClient.getInstance().getNetworkHandler().sendChatMessage("GG");
-					}
-				});
-			}
-			return ActionResult.PASS;
-		});
+							N3XRAutoGG.register();
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (openSettingsKey.wasPressed()) {
@@ -81,6 +66,7 @@ public class N3XRClient implements ClientModInitializer {
 			}
 
 			handleZoom(client);
+N3XRAutoGG.tick(client);
 
 			long now = System.currentTimeMillis();
 			while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
