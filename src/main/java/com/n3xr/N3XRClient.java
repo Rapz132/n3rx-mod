@@ -291,8 +291,13 @@ N3XRAutoGG.tick(client);
 		try {
 			var osBean = ManagementFactory.getOperatingSystemMXBean();
 			if (osBean instanceof com.sun.management.OperatingSystemMXBean sunBean) {
-				double load = sunBean.getProcessCpuLoad();
+				double load = sunBean.getCpuLoad();
+				if (load < 0) load = sunBean.getProcessCpuLoad();
 				if (load >= 0) txt = String.format("CPU: %.1f%%", load * 100);
+			} else {
+				double avg = osBean.getSystemLoadAverage();
+				int cores = osBean.getAvailableProcessors();
+				if (avg >= 0 && cores > 0) txt = String.format("CPU: %.0f%%", (avg / cores) * 100);
 			}
 		} catch (Exception ignored) {}
 		c.drawText(mc.textRenderer, Text.literal(txt), N3XRConfig.cpuX, N3XRConfig.cpuY, N3XRConfig.cpuColor, true);
