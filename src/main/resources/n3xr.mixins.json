@@ -9,7 +9,7 @@
   "LivingEntityRendererMixin",
   "ScoreboardOverlayMixin",
   "ChatHudMixin"
-]
+],
 	"injectors": {
 		"defaultRequire": 1
 	} 
