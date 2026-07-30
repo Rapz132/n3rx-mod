@@ -1,45 +1,44 @@
 package com.n3xr;
 
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.text.Text;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class N3XRAutoGG {
 
-	private static final Map<UUID, Entity> trackedTargets = new HashMap<>();
+    private static long lastGG = 0;
 
-	public static void register() {
-		AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-			if (N3XRConfig.autoGgEnabled && entity instanceof PlayerEntity && entity != player) {
-				trackedTargets.put(entity.getUuid(), entity);
-			}
-			return ActionResult.PASS;
-		});
-	}
+    private static final Pattern[] PATTERNS = {
+            Pattern.compile("(?i)you killed .*"),
+            Pattern.compile("(?i).* killed .*"),
+            Pattern.compile("(?i).* was slain by .*"),
+            Pattern.compile("(?i).* eliminated .*"),
+            Pattern.compile("(?i).* defeated .*"),
+            Pattern.compile("(?i).* shot .*"),
+            Pattern.compile("(?i).* destroyed .*")
+    };
 
-	public static void tick(MinecraftClient client) {
-		if (!N3XRConfig.autoGgEnabled || trackedTargets.isEmpty()) return;
+    public static void register() {
+    }
 
-		Iterator<Map.Entry<UUID, Entity>> it = trackedTargets.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<UUID, Entity> entry = it.next();
-			Entity tracked = entry.getValue();
+    public static void tick(MinecraftClient client) {
+    }
 
-			boolean stillAlive = client.world != null && client.world.getEntity(tracked.getId()) != null;
+    public static void onChat(Text message) {
+        if (!N3XRConfig.autoGgEnabled) return;
 
-			if (!stillAlive) {
-				if (client.getNetworkHandler() != null) {
-					client.getNetworkHandler().sendChatMessage("GG");
-				}
-				it.remove();
-			}
-		}
-	}
-}
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player == null || client.getNetworkHandler() == null) return;
+
+        String ign = client.getSession().getUsername();
+
+        String msg = message.getString();
+
+        if (System.currentTimeMillis() - lastGG < 3000) {
+            return;
+        }
+
+        boolean kill = false;
+
+       
