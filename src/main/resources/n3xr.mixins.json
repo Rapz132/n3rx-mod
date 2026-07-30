@@ -9,7 +9,7 @@
   "LivingEntityRendererMixin",
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
-  "ChatHudMixin"
+  "ChatHudMixin",
   "TitleScreenMixin"
 ],
 	"injectors": {
