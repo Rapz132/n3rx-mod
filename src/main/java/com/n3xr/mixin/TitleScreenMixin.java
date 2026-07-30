@@ -14,21 +14,19 @@ public class TitleScreenMixin {
     private static final Identifier BACKGROUND =
             Identifier.of("n3xr", "textures/gui/main_menu_background.png");
 
-    @Inject(method = "renderPanoramaBackground", at = @At("HEAD"), cancellable = true)
-    private void n3xr$background(DrawContext context, float delta, CallbackInfo ci) {
+    @Inject(method = "render", at = @At("HEAD"))
+    private void n3xr$renderBackground(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
 
         context.drawTexture(
                 BACKGROUND,
                 0,
                 0,
-                0.0F,
-                0.0F,
+                0,
+                0,
                 context.getScaledWindowWidth(),
                 context.getScaledWindowHeight(),
                 1920,
                 1080
         );
-
-        ci.cancel();
     }
 }
