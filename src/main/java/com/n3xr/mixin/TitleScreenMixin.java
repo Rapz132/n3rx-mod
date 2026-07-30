@@ -21,12 +21,12 @@ public class TitleScreenMixin {
                 BACKGROUND,
                 0,
                 0,
-                0,
-                0,
+                0.0F,
+                0.0F,
                 context.getScaledWindowWidth(),
                 context.getScaledWindowHeight(),
-                context.getScaledWindowWidth(),
-                context.getScaledWindowHeight()
+                1920,
+                1080
         );
 
         ci.cancel();
