@@ -8,7 +8,7 @@
   "PlayerListHudMixin",
   "LivingEntityRendererMixin",
   "ScoreboardOverlayMixin",
-  "LivingEntityAccessor"
+  "LivingEntityAccessor",
   "EntityHitboxMixin.java",
   "ChatHudMixin",
   "TitleScreenMixin"
