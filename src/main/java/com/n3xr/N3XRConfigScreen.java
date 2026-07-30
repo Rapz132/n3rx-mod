@@ -87,8 +87,8 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.customCrosshairEnabled, v -> N3XRConfig.customCrosshairEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 		allModules.add(new ModuleDef("Block Outline", "Custom block breaking outline color.", icon("blockoutline"), Category.VISUAL, true,
 			() -> N3XRConfig.blockOutlineEnabled, v -> N3XRConfig.blockOutlineEnabled = v, () -> N3XRConfig.blockOutlineColor, v -> N3XRConfig.blockOutlineColor = v, false));
-		allModules.add(new ModuleDef("No Pumpkin Overlay", "Removes the pumpkin head overlay.", icon("nopumpkin"), Category.VISUAL, false,
-			() -> N3XRConfig.noPumpkinOverlay, v -> N3XRConfig.noPumpkinOverlay = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("Fast Crystal", "Speeds up crystal placement ticks.", icon("fastcrystal"), Category.VISUAL, false,
+			() -> N3XRConfig.fastCrystalEnabled, v -> N3XRConfig.fastCrystalEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 		allModules.add(new ModuleDef("No Fire Overlay", "Removes the fire/low health overlay.", icon("nofire"), Category.VISUAL, false,
 			() -> N3XRConfig.noFireOverlay, v -> N3XRConfig.noFireOverlay = v, () -> 0xFFFFFF, v -> {}, false));
 
