@@ -29,8 +29,7 @@ public class N3XRConfig {
 	public static boolean showInventoryDisplay = false;
 	public static boolean showRealTime = false;
 	public static boolean itemUpdateEnabled = false;
-	public static boolean noPumpkinOverlay = false;
-	public static boolean noFireOverlay = false;
+	public static boolean fastCrystalEnabled = false;
 
 	public static boolean snapEnabled = false;
 	public static boolean guidesEnabled = true;
