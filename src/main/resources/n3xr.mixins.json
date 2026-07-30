@@ -4,14 +4,13 @@
 	"package": "com.n3xr.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"LivingEntityRendererMixin",
-		"LivingEntityAccessor",
-		"PlayerListHudMixin",
-		"EntityHitboxMixin",
-		"ScoreboardOverlayMixin",
-		"HudOverlayMixin"
-	],
+  "HudOverlayMixin",
+  "PlayerListHudMixin",
+  "LivingEntityRendererMixin",
+  "ScoreboardOverlayMixin",
+  "ChatHudMixin"
+]
 	"injectors": {
 		"defaultRequire": 1
-	}
+	} 
 }
