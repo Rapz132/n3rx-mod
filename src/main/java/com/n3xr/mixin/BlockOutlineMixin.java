@@ -12,7 +12,7 @@ public class BlockOutlineMixin {
 
 	@ModifyArgs(method = "drawBlockOutline", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/client/render/WorldRenderer;drawShapeOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/util/shape/VoxelShape;DDDFFFF)V"),
-		require = 0)
+		require = 1)
 	private static void n3xr$colorOutline(Args args) {
 		if (!N3XRConfig.blockOutlineEnabled) return;
 		int color = N3XRConfig.blockOutlineColor;
