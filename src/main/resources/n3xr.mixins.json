@@ -11,6 +11,7 @@
   "LivingEntityAccessor",
   "EntityHitboxMixin.java",
   "ChatHudMixin",
+  "BlockOutlineMixin",
   "TitleScreenMixin"
 ],
 	"injectors": {
