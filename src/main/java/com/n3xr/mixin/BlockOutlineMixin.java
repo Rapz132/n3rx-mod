@@ -11,24 +11,24 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public class BlockOutlineMixin {
 
     @ModifyArgs(
-        method = "drawBlockOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/entity/Entity;DDDLnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)V",
-        at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/render/WorldRenderer;drawShapeOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/util/shape/VoxelShape;DDDFFFFZ)V"
-        ),
-        require = 1
+            method = "drawBlockOutline",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/render/WorldRenderer;drawShapeOutline(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/util/shape/VoxelShape;DDDFFFFZ)V"
+            ),
+            require = 1
     )
-    private static void n3xr$colorOutline(Args args) {
+    private void n3xr$colorOutline(Args args) {
         if (!N3XRConfig.blockOutlineEnabled) return;
 
         int color = N3XRConfig.blockOutlineColor;
 
-        float r = ((color >> 16) & 0xFF) / 255F;
-        float g = ((color >> 8) & 0xFF) / 255F;
-        float b = (color & 0xFF) / 255F;
+        float r = ((color >> 16) & 0xFF) / 255f;
+        float g = ((color >> 8) & 0xFF) / 255f;
+        float b = (color & 0xFF) / 255f;
 
-        args.set(7, r);
-        args.set(8, g);
-        args.set(9, b);
+        args.set(6, r);
+        args.set(7, g);
+        args.set(8, b);
     }
 }
