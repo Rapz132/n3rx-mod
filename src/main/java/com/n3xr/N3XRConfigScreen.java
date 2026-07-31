@@ -249,14 +249,16 @@ public class N3XRConfigScreen extends Screen {
 			if (m.hasColor()) {
 				int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
 				int gearY1 = cy + CARD_H - PAD - toggleH;
-				if (mouseX >= gearX1 && mouseX <= gearX1 + N3XRToggleButton.GEAR_W && mouseY >= gearY1 && mouseY <= gearY1 + toggleH) {
+			if (mouseX >= gearX1 && mouseX <= gearX1 + N3XRToggleButton.GEAR_W && mouseY >= gearY1 && mouseY <= gearY1 + toggleH) {
 					if (m.name().equals("Crosshair")) {
 						this.client.setScreen(new N3XRCrosshairEditorScreen(this));
+					} else if (m.name().equals("Real Time")) {
+						this.client.setScreen(new N3XRRealTimeScreen(this));
 					} else {
 						this.client.setScreen(new N3XRColorPickerScreen(this, m.name(), m.getColor(), m.setColor(), m.supportsRainbow()));
 					}
 					return true;
-				}
+	}
 			}
 		}
 		return super.mouseClicked(mouseX, mouseY, button);
