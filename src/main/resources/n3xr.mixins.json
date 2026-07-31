@@ -9,7 +9,7 @@
   "LivingEntityRendererMixin",
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
-  "EntityHitboxMixin.java",
+  "EntityHitboxMixin",
   "ChatHudMixin",
   "BlockOutlineMixin",
   "TitleScreenMixin"
