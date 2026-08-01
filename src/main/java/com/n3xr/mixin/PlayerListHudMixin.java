@@ -5,6 +5,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,8 +21,8 @@ public class PlayerListHudMixin {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		if (mc.player != null && entry.getProfile().getId().equals(mc.player.getUuid())) {
 			Text original = cir.getReturnValue();
-			Text badge = Text.literal("[N3XR] ").styled(s -> s.withColor(0xFF3333));
+			Text badge = Text.literal("\uE001 ").styled(s -> s.withFont(Identifier.of("n3xr", "badge")));
 			cir.setReturnValue(badge.copy().append(original));
 		}
 	}
-  }
+				}
