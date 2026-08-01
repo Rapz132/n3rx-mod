@@ -85,7 +85,7 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.nightVisionEnabled, v -> N3XRConfig.nightVisionEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 		allModules.add(new ModuleDef("Crosshair", "Draw your own custom crosshair.", icon("crosshair"), Category.VISUAL, true,
 			() -> N3XRConfig.customCrosshairEnabled, v -> N3XRConfig.customCrosshairEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-		allModules.add(new ModuleDef("Block Outline", "Custom block breaking outline color.", icon("blockoutline"), Category.VISUAL, true,
+		allModules.add(new ModuleDef("Block Overlay", "Custom color for the block you're looking at.", icon("blockoverlay"), Category.VISUAL, true,
 			() -> N3XRConfig.blockOutlineEnabled, v -> N3XRConfig.blockOutlineEnabled = v, () -> N3XRConfig.blockOutlineColor, v -> N3XRConfig.blockOutlineColor = v, false));
 		allModules.add(new ModuleDef("Fast Crystal", "Speeds up crystal placement ticks.", icon("fastcrystal"), Category.VISUAL, false,
 			() -> N3XRConfig.fastCrystalEnabled, v -> N3XRConfig.fastCrystalEnabled = v, () -> 0xFFFFFF, v -> {}, false));
