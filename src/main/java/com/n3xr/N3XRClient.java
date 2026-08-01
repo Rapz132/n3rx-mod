@@ -5,6 +5,16 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.TextRenderer;
+import net.minecraft.hit.BlockHitResult;
+import net.minecraft.hit.HitResult;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
@@ -57,6 +67,9 @@ public class N3XRClient implements ClientModInitializer {
 		WorldRenderEvents.END.register(context -> {
 			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		});
+
+		WorldRenderEvents.LAST.register(this::renderBlockOverlay);
+		WorldRenderEvents.AFTER_ENTITIES.register(this::renderWorldNameTag);
 
 							N3XRAutoGG.register();
 
@@ -354,6 +367,53 @@ N3XRAutoGG.tick(client);
 		drawKey(c, mc, "A", x, y + size + gap, size, a);
 		drawKey(c, mc, "S", x + size + gap, y + size + gap, size, s);
 		drawKey(c, mc, "D", x + (size + gap) * 2, y + size + gap, size, d);
+	}
+
+	private void renderBlockOverlay(WorldRenderContext context) {
+		if (!N3XRConfig.blockOutlineEnabled) return;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.player == null || !(mc.crosshairTarget instanceof BlockHitResult bhr)) return;
+		if (bhr.getType() != HitResult.Type.BLOCK) return;
+
+		BlockPos pos = bhr.getBlockPos();
+		var camPos = context.camera().getPos();
+		Box box = new Box(pos).offset(-camPos.x, -camPos.y, -camPos.z);
+
+		int color = N3XRConfig.blockOutlineColor;
+		float r = ((color >> 16) & 0xFF) / 255f;
+		float g = ((color >> 8) & 0xFF) / 255f;
+		float b = (color & 0xFF) / 255f;
+
+		VertexConsumer buffer = context.consumers().getBuffer(RenderLayer.getLines());
+		WorldRenderer.drawBox(context.matrixStack(), buffer, box, r, g, b, 1.0f);
+	}
+
+	private void renderWorldNameTag(WorldRenderContext context) {
+		if (!N3XRConfig.showNameTag) return;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.player == null) return;
+		if (mc.options.getPerspective() == Perspective.FIRST_PERSON) return;
+
+		var camPos = context.camera().getPos();
+		float tickDelta = context.tickCounter().getTickDelta(true);
+		double px = net.minecraft.util.math.MathHelper.lerp(tickDelta, mc.player.lastRenderX, mc.player.getX());
+		double py = net.minecraft.util.math.MathHelper.lerp(tickDelta, mc.player.lastRenderY, mc.player.getY()) + mc.player.getHeight() + 0.5;
+		double pz = net.minecraft.util.math.MathHelper.lerp(tickDelta, mc.player.lastRenderZ, mc.player.getZ());
+
+		var matrices = context.matrixStack();
+		matrices.push();
+		matrices.translate(px - camPos.x, py - camPos.y, pz - camPos.z);
+		matrices.multiply(context.camera().getRotation());
+		matrices.scale(-0.025f, -0.025f, 0.025f);
+
+		var vcp = mc.getBufferBuilders().getEntityVertexConsumers();
+		Text label = Text.literal(mc.getSession().getUsername());
+		int tw = mc.textRenderer.getWidth(label);
+		var matrix = matrices.peek().getPositionMatrix();
+		mc.textRenderer.draw(label, -tw / 2f, 0, N3XRConfig.nameTagColor, false, matrix, vcp,
+			TextRenderer.TextLayerType.NORMAL, 0x40000000, 0xF000F0);
+		vcp.draw();
+		matrices.pop();
 	}
 
 	private void drawKey(net.minecraft.client.gui.DrawContext c, MinecraftClient mc, String label, int x, int y, int size, boolean active) {
