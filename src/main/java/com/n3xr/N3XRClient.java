@@ -9,9 +9,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.TextRenderer;
-import net.minecraft.hit.BlockHitResult;
-import net.minecraft.hit.HitResult;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;,
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.client.option.Perspective;
