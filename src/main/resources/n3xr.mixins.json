@@ -4,6 +4,7 @@
 	"package": "com.n3xr.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+  "TitleScreenMixin",
   "AttackCooldownMixin",
   "PlayerListHudMixin",
   "LivingEntityRendererMixin",
