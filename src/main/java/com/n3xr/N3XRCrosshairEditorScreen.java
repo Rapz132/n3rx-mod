@@ -35,13 +35,13 @@ public class N3XRCrosshairEditorScreen extends Screen {
 			Text.literal(eraseMode ? "Eraser: ON" : "Eraser: OFF"),
 			b -> { eraseMode = !eraseMode; b.setMessage(Text.literal(eraseMode ? "Eraser: ON" : "Eraser: OFF")); }));
 
-		this.addDrawableChild(N3XRButton.of(this.width / 2 - 55, btnY, 100, 20,
-			Text.literal("Reset Settings"),
+		this.addDrawableChild(N3XRButton.of(this.width / 2 - 55, btnY, 110, 20,
+			Text.literal("Reset"),
 			b -> {
 				for (int i = 0; i < N3XRConfig.crosshairPixels.length; i++) N3XRConfig.crosshairPixels[i] = 0;
 			}));
 
-		this.addDrawableChild(N3XRButton.of(this.width / 2 + 55, btnY, 100, 20,
+		this.addDrawableChild(N3XRButton.of(this.width / 2 + 65, btnY, 100, 20,
 			Text.literal("Done"), b -> this.client.setScreen(parent)));
 	}
 
@@ -129,4 +129,4 @@ public class N3XRCrosshairEditorScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-        }
+}
