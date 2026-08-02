@@ -11,7 +11,7 @@
   "LivingEntityAccessor",
   "EntityHitboxMixin",
   "ChatHudMixin",
-  "TitleScreenMixin"
+  "ButtonWidgetMixin"
 ],
 	"injectors": {
 		"defaultRequire": 1
