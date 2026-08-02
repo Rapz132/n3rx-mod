@@ -21,8 +21,8 @@ public class PlayerListHudMixin {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		if (mc.player != null && entry.getProfile().getId().equals(mc.player.getUuid())) {
 			Text original = cir.getReturnValue();
-			Text badge = Text.literal("\uE001 ").styled(s -> s.withFont(Identifier.of("n3xr", "badge")));
+			Text badge = Text.literal("\uE001 ").setStyle(net.minecraft.text.Style.EMPTY.withFont(Identifier.of("n3xr", "badge")));
 			cir.setReturnValue(badge.copy().append(original));
 		}
 	}
-				}
+}
