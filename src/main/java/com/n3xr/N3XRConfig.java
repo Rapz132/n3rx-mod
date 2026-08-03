@@ -17,7 +17,6 @@ public class N3XRConfig {
 	public static boolean customCrosshairEnabled = false;
 	public static boolean showNameTag = false;
 	public static boolean hitboxEnabled = false;
-
 	public static boolean autoGgEnabled = false;
 	public static boolean scoreboardHideEnabled = false;
 	public static boolean showPlayerCount = false;
@@ -30,6 +29,11 @@ public class N3XRConfig {
 	public static boolean showRealTime = false;
 	public static boolean itemUpdateEnabled = false;
 	public static boolean fastCrystalEnabled = false;
+	public static boolean pingOptimizerEnabled = false;
+	public static boolean damageIndicatorEnabled = false;
+	public static boolean chatTimestampEnabled = false;
+	public static boolean chatHeadIconsEnabled = false;
+	public static boolean showDayCounter = false;
 
 	public static boolean snapEnabled = false;
 	public static boolean guidesEnabled = true;
@@ -61,6 +65,7 @@ public class N3XRConfig {
 	public static int potionsX = 5, potionsY = 350;
 	public static int inventoryDisplayX = 5, inventoryDisplayY = 400;
 	public static int realTimeX = 5, realTimeY = 365;
+	public static int dayCounterX = 5, dayCounterY = 380;
 
 	public static int fpsColor = 0xFFFFFF;
 	public static int cpsColor = 0xFFFFFF;
@@ -81,6 +86,8 @@ public class N3XRConfig {
 	public static int potionsColor = 0xFFFFFF;
 	public static int realTimeColor = 0xFFFFFF;
 	public static int blockOutlineColor = 0xFF3333;
+	public static int damageIndicatorColor = 0xFFFF5555;
+	public static int dayCounterColor = 0xFFFFFF;
 
 	public static final int[] PRESET_COLORS = {
 		0xFFFFFF, 0xFF5555, 0xFF8800, 0xFFFF55, 0xAAFF55,
