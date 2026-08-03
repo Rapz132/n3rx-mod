@@ -74,7 +74,7 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showPotions) drawBox(context, "Potions", N3XRConfig.potionsX, N3XRConfig.potionsY, "Potions".equals(dragging));
 		if (N3XRConfig.showRealTime) drawBox(context, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY, "RealTime".equals(dragging));
 		if (N3XRConfig.showInventoryDisplay) drawBox(context, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY, "Inventory".equals(dragging));
-if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, "DayCounter".equals(dragging));
+        if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, "DayCounter".equals(dragging));
 
 		Text hint = Text.literal("Drag modules to reposition \u00b7 Right Shift to close");
 		int hw = this.textRenderer.getWidth(hint);
@@ -110,9 +110,9 @@ if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCoun
 		if (N3XRConfig.showPotions && inBox(mouseX, mouseY, N3XRConfig.potionsX, N3XRConfig.potionsY)) { dragging = "Potions"; setOffset(mouseX, mouseY, N3XRConfig.potionsX, N3XRConfig.potionsY); return true; }
 		if (N3XRConfig.showRealTime && inBox(mouseX, mouseY, N3XRConfig.realTimeX, N3XRConfig.realTimeY)) { dragging = "RealTime"; setOffset(mouseX, mouseY, N3XRConfig.realTimeX, N3XRConfig.realTimeY); return true; }
 		if (N3XRConfig.showInventoryDisplay && inBox(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) { dragging = "Inventory"; setOffset(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY); return true; }
+		if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
 		return super.mouseClicked(mouseX, mouseY, button);
 	}
-if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
 
 	@Override
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
@@ -142,6 +142,7 @@ if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, N3XRConfig.dayCounterX, N
 				case "Potions" -> { N3XRConfig.potionsX = nx; N3XRConfig.potionsY = ny; }
 				case "RealTime" -> { N3XRConfig.realTimeX = nx; N3XRConfig.realTimeY = ny; }
 				case "Inventory" -> { N3XRConfig.inventoryDisplayX = nx; N3XRConfig.inventoryDisplayY = ny; }
+			    case "DayCounter" -> { N3XRConfig.dayCounterX = nx; N3XRConfig.dayCounterY = ny; }
 			}
 			return true;
 		}
