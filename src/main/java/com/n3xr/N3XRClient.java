@@ -3,38 +3,45 @@ package com.n3xr;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.client.option.Perspective;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.option.Perspective;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.TextRenderer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.hit.BlockHitResult;
+import net.minecraft.hit.HitResult;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
 import java.lang.management.ManagementFactory;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class N3XRClient implements ClientModInitializer {
 
@@ -53,9 +60,15 @@ public class N3XRClient implements ClientModInitializer {
 	private final List<String> itemUpdateQueue = new ArrayList<>();
 	private long itemUpdateShownUntil = 0;
 
+	private final Map<UUID, Float> lastHealth = new HashMap<>();
+	private final List<DamagePopup> damagePopups = new ArrayList<>();
+
+	private record DamagePopup(double x, double y, double z, float amount, long expireAt) {}
+
 	@Override
 	public void onInitializeClient() {
 		N3XRConfigStorage.load();
+		N3XRAutoGG.register();
 
 		openSettingsKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 			"key.n3xr.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.n3xr"));
@@ -67,11 +80,21 @@ public class N3XRClient implements ClientModInitializer {
 		WorldRenderEvents.END.register(context -> {
 			com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		});
-
 		WorldRenderEvents.LAST.register(this::renderBlockOverlay);
 		WorldRenderEvents.AFTER_ENTITIES.register(this::renderWorldNameTag);
+		WorldRenderEvents.AFTER_ENTITIES.register(this::renderDamagePopups);
 
-							N3XRAutoGG.register();
+		ClientReceiveMessageEvents.ALLOW_CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
+			if (N3XRConfig.chatTimestampEnabled) {
+				String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+				MutableText prefixed = Text.literal("[" + time + "] ").copy()
+					.styled(s -> s.withColor(0xFF888888))
+					.append(message);
+				MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(prefixed);
+				return false;
+			}
+			return true;
+		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (openSettingsKey.wasPressed()) {
@@ -79,7 +102,7 @@ public class N3XRClient implements ClientModInitializer {
 			}
 
 			handleZoom(client);
-N3XRAutoGG.tick(client);
+			trackDamage(client);
 
 			long now = System.currentTimeMillis();
 			while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
@@ -134,7 +157,6 @@ N3XRAutoGG.tick(client);
 			if (N3XRConfig.showCompass) renderCompass(context, mc);
 			if (N3XRConfig.showSpeed) renderSpeed(context, mc);
 			if (N3XRConfig.showCoords) renderCoords(context, mc);
-			if (N3XRConfig.showNameTag) renderNameTag(context, mc);
 			if (N3XRConfig.showPlayerCount) renderPlayerCount(context, mc);
 			if (N3XRConfig.showMemoryUsage) renderMemory(context, mc);
 			if (N3XRConfig.showCpuUsage) renderCpu(context, mc);
@@ -142,6 +164,7 @@ N3XRAutoGG.tick(client);
 			if (N3XRConfig.showPotions) renderPotions(context, mc);
 			if (N3XRConfig.showRealTime) renderRealTime(context, mc);
 			if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
+			if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
 		});
 	}
 
@@ -169,6 +192,92 @@ N3XRAutoGG.tick(client);
 			if (savedFov >= 0) client.options.getFov().setValue((int) savedFov);
 			zoomActive = false;
 		}
+	}
+
+	private void trackDamage(MinecraftClient client) {
+		if (!N3XRConfig.damageIndicatorEnabled || client.world == null) return;
+		for (Entity entity : client.world.getEntities()) {
+			if (!(entity instanceof LivingEntity living)) continue;
+			float hp = living.getHealth();
+			Float prev = lastHealth.get(entity.getUuid());
+			if (prev != null && hp < prev) {
+				float dmg = prev - hp;
+				damagePopups.add(new DamagePopup(entity.getX(), entity.getY() + entity.getHeight() + 0.3, entity.getZ(),
+					dmg, System.currentTimeMillis() + 800));
+			}
+			lastHealth.put(entity.getUuid(), hp);
+		}
+		damagePopups.removeIf(p -> System.currentTimeMillis() > p.expireAt());
+	}
+
+	private void renderDamagePopups(WorldRenderContext context) {
+		if (!N3XRConfig.damageIndicatorEnabled || damagePopups.isEmpty()) return;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		var camPos = context.camera().getPos();
+
+		for (DamagePopup p : damagePopups) {
+			var matrices = context.matrixStack();
+			matrices.push();
+			matrices.translate(p.x() - camPos.x, p.y() - camPos.y, p.z() - camPos.z);
+			matrices.multiply(context.camera().getRotation());
+			matrices.scale(-0.02f, -0.02f, 0.02f);
+
+			var vcp = mc.getBufferBuilders().getEntityVertexConsumers();
+			Text label = Text.literal(String.format("-%.1f", p.amount()));
+			int tw = mc.textRenderer.getWidth(label);
+			var matrix = matrices.peek().getPositionMatrix();
+			mc.textRenderer.draw(label, -tw / 2f, 0, N3XRConfig.damageIndicatorColor, false, matrix, vcp,
+				TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
+			vcp.draw();
+			matrices.pop();
+		}
+	}
+
+	private void renderBlockOverlay(WorldRenderContext context) {
+		if (!N3XRConfig.blockOutlineEnabled) return;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.player == null || !(mc.crosshairTarget instanceof BlockHitResult bhr)) return;
+		if (bhr.getType() != HitResult.Type.BLOCK) return;
+
+		var pos = bhr.getBlockPos();
+		var camPos = context.camera().getPos();
+		Box box = new Box(pos).offset(-camPos.x, -camPos.y, -camPos.z);
+
+		int color = N3XRConfig.blockOutlineColor;
+		float r = ((color >> 16) & 0xFF) / 255f;
+		float g = ((color >> 8) & 0xFF) / 255f;
+		float b = (color & 0xFF) / 255f;
+
+		VertexConsumer buffer = context.consumers().getBuffer(RenderLayer.getLines());
+		WorldRenderer.drawBox(context.matrixStack(), buffer, box, r, g, b, 1.0f);
+	}
+
+	private void renderWorldNameTag(WorldRenderContext context) {
+		if (!N3XRConfig.showNameTag) return;
+		MinecraftClient mc = MinecraftClient.getInstance();
+		if (mc.player == null) return;
+		if (mc.options.getPerspective() == Perspective.FIRST_PERSON) return;
+
+		var camPos = context.camera().getPos();
+		float tickDelta = context.tickCounter().getTickDelta(true);
+		double px = MathHelper.lerp(tickDelta, mc.player.lastRenderX, mc.player.getX());
+		double py = MathHelper.lerp(tickDelta, mc.player.lastRenderY, mc.player.getY()) + mc.player.getHeight() + 0.5;
+		double pz = MathHelper.lerp(tickDelta, mc.player.lastRenderZ, mc.player.getZ());
+
+		var matrices = context.matrixStack();
+		matrices.push();
+		matrices.translate(px - camPos.x, py - camPos.y, pz - camPos.z);
+		matrices.multiply(context.camera().getRotation());
+		matrices.scale(-0.025f, -0.025f, 0.025f);
+
+		var vcp = mc.getBufferBuilders().getEntityVertexConsumers();
+		Text label = Text.literal(mc.getSession().getUsername());
+		int tw = mc.textRenderer.getWidth(label);
+		var matrix = matrices.peek().getPositionMatrix();
+		mc.textRenderer.draw(label, -tw / 2f, 0, N3XRConfig.nameTagColor, false, matrix, vcp,
+			TextRenderer.TextLayerType.NORMAL, 0x40000000, 0xF000F0);
+		vcp.draw();
+		matrices.pop();
 	}
 
 	private void checkItemUpdates(MinecraftClient client) {
@@ -278,15 +387,6 @@ N3XRAutoGG.tick(client);
 		c.drawText(mc.textRenderer, Text.literal(txt), N3XRConfig.coordsX, N3XRConfig.coordsY, N3XRConfig.coordsColor, true);
 	}
 
-	private void renderNameTag(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
-		int x = N3XRConfig.nameTagX, y = N3XRConfig.nameTagY;
-		int badgeSize = 12;
-		c.fill(x, y, x + badgeSize, y + badgeSize, 0xFFFF3333);
-		c.fill(x + 2, y + 2, x + badgeSize - 2, y + badgeSize - 2, 0xFF1A0A0A);
-		String username = mc.getSession().getUsername();
-		c.drawText(mc.textRenderer, username, x + badgeSize + 4, y + 2, N3XRConfig.nameTagColor, true);
-	}
-
 	private void renderPlayerCount(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
 		int count = mc.getNetworkHandler() != null ? mc.getNetworkHandler().getPlayerList().size() : 0;
 		c.drawText(mc.textRenderer, Text.literal("Players: " + count), N3XRConfig.playerCountX, N3XRConfig.playerCountY, N3XRConfig.playerCountColor, true);
@@ -340,6 +440,12 @@ N3XRAutoGG.tick(client);
 		c.drawText(mc.textRenderer, Text.literal(N3XRConfig.TIMEZONE_NAMES[N3XRConfig.timezoneIndex] + ": " + time), N3XRConfig.realTimeX, N3XRConfig.realTimeY, N3XRConfig.realTimeColor, true);
 	}
 
+	private void renderDayCounter(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
+		if (mc.world == null) return;
+		long day = mc.world.getTimeOfDay() / 24000L;
+		c.drawText(mc.textRenderer, Text.literal("Day: " + day), N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, N3XRConfig.dayCounterColor, true);
+	}
+
 	private void renderInventoryDisplay(net.minecraft.client.gui.DrawContext c, MinecraftClient mc) {
 		int x = N3XRConfig.inventoryDisplayX, y = N3XRConfig.inventoryDisplayY;
 		int slotSize = 18;
@@ -369,53 +475,6 @@ N3XRAutoGG.tick(client);
 		drawKey(c, mc, "D", x + (size + gap) * 2, y + size + gap, size, d);
 	}
 
-	private void renderBlockOverlay(WorldRenderContext context) {
-		if (!N3XRConfig.blockOutlineEnabled) return;
-		MinecraftClient mc = MinecraftClient.getInstance();
-		if (mc.player == null || !(mc.crosshairTarget instanceof BlockHitResult bhr)) return;
-		if (bhr.getType() != HitResult.Type.BLOCK) return;
-
-		BlockPos pos = bhr.getBlockPos();
-		var camPos = context.camera().getPos();
-		Box box = new Box(pos).offset(-camPos.x, -camPos.y, -camPos.z);
-
-		int color = N3XRConfig.blockOutlineColor;
-		float r = ((color >> 16) & 0xFF) / 255f;
-		float g = ((color >> 8) & 0xFF) / 255f;
-		float b = (color & 0xFF) / 255f;
-
-		VertexConsumer buffer = context.consumers().getBuffer(RenderLayer.getLines());
-		WorldRenderer.drawBox(context.matrixStack(), buffer, box, r, g, b, 1.0f);
-	}
-
-	private void renderWorldNameTag(WorldRenderContext context) {
-		if (!N3XRConfig.showNameTag) return;
-		MinecraftClient mc = MinecraftClient.getInstance();
-		if (mc.player == null) return;
-		if (mc.options.getPerspective() == Perspective.FIRST_PERSON) return;
-
-		var camPos = context.camera().getPos();
-		float tickDelta = context.tickCounter().getTickDelta(true);
-		double px = net.minecraft.util.math.MathHelper.lerp(tickDelta, mc.player.lastRenderX, mc.player.getX());
-		double py = net.minecraft.util.math.MathHelper.lerp(tickDelta, mc.player.lastRenderY, mc.player.getY()) + mc.player.getHeight() + 0.5;
-		double pz = net.minecraft.util.math.MathHelper.lerp(tickDelta, mc.player.lastRenderZ, mc.player.getZ());
-
-		var matrices = context.matrixStack();
-		matrices.push();
-		matrices.translate(px - camPos.x, py - camPos.y, pz - camPos.z);
-		matrices.multiply(context.camera().getRotation());
-		matrices.scale(-0.025f, -0.025f, 0.025f);
-
-		var vcp = mc.getBufferBuilders().getEntityVertexConsumers();
-		Text label = Text.literal(mc.getSession().getUsername());
-		int tw = mc.textRenderer.getWidth(label);
-		var matrix = matrices.peek().getPositionMatrix();
-		mc.textRenderer.draw(label, -tw / 2f, 0, N3XRConfig.nameTagColor, false, matrix, vcp,
-			TextRenderer.TextLayerType.NORMAL, 0x40000000, 0xF000F0);
-		vcp.draw();
-		matrices.pop();
-	}
-
 	private void drawKey(net.minecraft.client.gui.DrawContext c, MinecraftClient mc, String label, int x, int y, int size, boolean active) {
 		int color = N3XRConfig.keysColor;
 		if (N3XRConfig.keysRainbow) {
@@ -434,4 +493,4 @@ N3XRAutoGG.tick(client);
 		int tw = mc.textRenderer.getWidth(label);
 		c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
 	}
-	}
+}
