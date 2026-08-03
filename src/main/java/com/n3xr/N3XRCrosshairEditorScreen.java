@@ -26,24 +26,35 @@ public class N3XRCrosshairEditorScreen extends Screen {
 		gridX = this.width / 2 - (grid * CELL) / 2;
 		gridY = 40;
 
-		swatchStartX = this.width / 2 - (N3XRConfig.PRESET_COLORS.length * (SWATCH + 3)) / 2;
+		int totalItems = N3XRConfig.PRESET_COLORS.length + 2;
+		swatchStartX = this.width / 2 - (totalItems * (SWATCH + 3)) / 2;
 		swatchY = gridY + grid * CELL + 16;
 
-		int btnY = swatchY + SWATCH + 16;
-
-		this.addDrawableChild(N3XRButton.of(this.width / 2 - 165, btnY, 100, 20,
-			Text.literal(eraseMode ? "Eraser: ON" : "Eraser: OFF"),
-			b -> { eraseMode = !eraseMode; b.setMessage(Text.literal(eraseMode ? "Eraser: ON" : "Eraser: OFF")); }));
-
-		this.addDrawableChild(N3XRButton.of(this.width / 2 - 55, btnY, 110, 20,
+		this.addDrawableChild(N3XRButton.of(swatchStartX, swatchY, SWATCH * 2 + 3, SWATCH,
 			Text.literal("Reset"),
 			b -> {
 				for (int i = 0; i < N3XRConfig.crosshairPixels.length; i++) N3XRConfig.crosshairPixels[i] = 0;
 			}));
 
-		this.addDrawableChild(N3XRButton.of(this.width / 2 + 65, btnY, 100, 20,
+		this.addDrawableChild(N3XRButton.of(swatchStartX + (SWATCH * 2 + 3) + 6, swatchY, SWATCH * 2 + 3, SWATCH,
+			Text.literal(eraseMode ? "Erase: ON" : "Erase: OFF"),
+			b -> { eraseMode = !eraseMode; b.setMessage(Text.literal(eraseMode ? "Erase: ON" : "Erase: OFF")); }));
+
+		int colorStartX = swatchStartX + (SWATCH * 2 + 3) * 2 + 16;
+		for (int i = 0; i < N3XRConfig.PRESET_COLORS.length; i++) {
+			int idx = i;
+			int sx = colorStartX + i * (SWATCH + 3);
+			this.addDrawableChild(N3XRButton.of(sx, swatchY, SWATCH, SWATCH,
+				Text.literal(""), b -> { selectedColorIndex = idx; eraseMode = false; }));
+		}
+
+		this.addDrawableChild(N3XRButton.of(this.width / 2 - 50, swatchY + SWATCH + 12, 100, 20,
 			Text.literal("Done"), b -> this.client.setScreen(parent)));
+
+		this.colorStartXCache = colorStartX;
 	}
+
+	private int colorStartXCache;
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -57,15 +68,6 @@ public class N3XRCrosshairEditorScreen extends Screen {
 				N3XRConfig.crosshairPixels[idx] = eraseMode ? 0 : (N3XRConfig.PRESET_COLORS[selectedColorIndex] | 0xFF000000);
 			}
 			return true;
-		}
-
-		for (int i = 0; i < N3XRConfig.PRESET_COLORS.length; i++) {
-			int sx = swatchStartX + i * (SWATCH + 3);
-			if (mouseX >= sx && mouseX <= sx + SWATCH && mouseY >= swatchY && mouseY <= swatchY + SWATCH) {
-				selectedColorIndex = i;
-				eraseMode = false;
-				return true;
-			}
 		}
 
 		return super.mouseClicked(mouseX, mouseY, button);
@@ -114,7 +116,7 @@ public class N3XRCrosshairEditorScreen extends Screen {
 		}
 
 		for (int i = 0; i < N3XRConfig.PRESET_COLORS.length; i++) {
-			int sx = swatchStartX + i * (SWATCH + 3);
+			int sx = colorStartXCache + i * (SWATCH + 3);
 			int color = N3XRConfig.PRESET_COLORS[i];
 			context.fill(sx, swatchY, sx + SWATCH, swatchY + SWATCH, color | 0xFF000000);
 			int border = i == selectedColorIndex ? 0xFFFFFFFF : 0xFF666666;
