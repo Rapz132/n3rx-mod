@@ -117,6 +117,14 @@ public class N3XRConfigScreen extends Screen {
 
 		allModules.add(new ModuleDef("Auto GG", "Sends GG after killing a player.", icon("autogg"), Category.CHAT, false,
 			() -> N3XRConfig.autoGgEnabled, v -> N3XRConfig.autoGgEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+allModules.add(new ModuleDef("Ping Optimizer", "Attempts minor network tweaks. Real ping depends on your network/server.", icon("pingopt"), Category.CHAT, false,
+			() -> N3XRConfig.pingOptimizerEnabled, v -> N3XRConfig.pingOptimizerEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("Damage Indicator", "Shows floating damage numbers.", icon("damageindicator"), Category.COMBAT, true,
+			() -> N3XRConfig.damageIndicatorEnabled, v -> N3XRConfig.damageIndicatorEnabled = v, () -> N3XRConfig.damageIndicatorColor, v -> N3XRConfig.damageIndicatorColor = v, false));
+		allModules.add(new ModuleDef("Chat Timestamp", "Adds a timestamp to chat messages.", icon("chattimestamp"), Category.CHAT, false,
+			() -> N3XRConfig.chatTimestampEnabled, v -> N3XRConfig.chatTimestampEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+		allModules.add(new ModuleDef("Day Counter", "Shows the current in-game day.", icon("daycounter"), Category.UTILITY, true,
+			() -> N3XRConfig.showDayCounter, v -> N3XRConfig.showDayCounter = v, () -> N3XRConfig.dayCounterColor, v -> N3XRConfig.dayCounterColor = v, false));
 
 		int leftPad = 20, rightPad = 16, innerGap = 8;
 		int maxPanelW = this.width - 24;
