@@ -66,7 +66,6 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showCompass) drawBox(context, "Compass", N3XRConfig.compassX, N3XRConfig.compassY, "Compass".equals(dragging));
 		if (N3XRConfig.showSpeed) drawBox(context, "Speed", N3XRConfig.speedX, N3XRConfig.speedY, "Speed".equals(dragging));
 		if (N3XRConfig.showCoords) drawBox(context, "Coords", N3XRConfig.coordsX, N3XRConfig.coordsY, "Coords".equals(dragging));
-		if (N3XRConfig.showNameTag) drawBox(context, "NameTag", N3XRConfig.nameTagX, N3XRConfig.nameTagY, "NameTag".equals(dragging));
 		if (N3XRConfig.showPlayerCount) drawBox(context, "PlayerCount", N3XRConfig.playerCountX, N3XRConfig.playerCountY, "PlayerCount".equals(dragging));
 		if (N3XRConfig.showMemoryUsage) drawBox(context, "Memory", N3XRConfig.memoryX, N3XRConfig.memoryY, "Memory".equals(dragging));
 		if (N3XRConfig.showCpuUsage) drawBox(context, "CPU", N3XRConfig.cpuX, N3XRConfig.cpuY, "CPU".equals(dragging));
@@ -74,7 +73,7 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showPotions) drawBox(context, "Potions", N3XRConfig.potionsX, N3XRConfig.potionsY, "Potions".equals(dragging));
 		if (N3XRConfig.showRealTime) drawBox(context, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY, "RealTime".equals(dragging));
 		if (N3XRConfig.showInventoryDisplay) drawBox(context, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY, "Inventory".equals(dragging));
-        if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, "DayCounter".equals(dragging));
+		if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, "DayCounter".equals(dragging));
 
 		Text hint = Text.literal("Drag modules to reposition \u00b7 Right Shift to close");
 		int hw = this.textRenderer.getWidth(hint);
@@ -102,7 +101,6 @@ public class N3XRHudEditScreen extends Screen {
 		if (N3XRConfig.showCompass && inBox(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY)) { dragging = "Compass"; setOffset(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY); return true; }
 		if (N3XRConfig.showSpeed && inBox(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY)) { dragging = "Speed"; setOffset(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY); return true; }
 		if (N3XRConfig.showCoords && inBox(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY)) { dragging = "Coords"; setOffset(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY); return true; }
-		if (N3XRConfig.showNameTag && inBox(mouseX, mouseY, N3XRConfig.nameTagX, N3XRConfig.nameTagY)) { dragging = "NameTag"; setOffset(mouseX, mouseY, N3XRConfig.nameTagX, N3XRConfig.nameTagY); return true; }
 		if (N3XRConfig.showPlayerCount && inBox(mouseX, mouseY, N3XRConfig.playerCountX, N3XRConfig.playerCountY)) { dragging = "PlayerCount"; setOffset(mouseX, mouseY, N3XRConfig.playerCountX, N3XRConfig.playerCountY); return true; }
 		if (N3XRConfig.showMemoryUsage && inBox(mouseX, mouseY, N3XRConfig.memoryX, N3XRConfig.memoryY)) { dragging = "Memory"; setOffset(mouseX, mouseY, N3XRConfig.memoryX, N3XRConfig.memoryY); return true; }
 		if (N3XRConfig.showCpuUsage && inBox(mouseX, mouseY, N3XRConfig.cpuX, N3XRConfig.cpuY)) { dragging = "CPU"; setOffset(mouseX, mouseY, N3XRConfig.cpuX, N3XRConfig.cpuY); return true; }
@@ -134,7 +132,6 @@ public class N3XRHudEditScreen extends Screen {
 				case "Compass" -> { N3XRConfig.compassX = nx; N3XRConfig.compassY = ny; }
 				case "Speed" -> { N3XRConfig.speedX = nx; N3XRConfig.speedY = ny; }
 				case "Coords" -> { N3XRConfig.coordsX = nx; N3XRConfig.coordsY = ny; }
-				case "NameTag" -> { N3XRConfig.nameTagX = nx; N3XRConfig.nameTagY = ny; }
 				case "PlayerCount" -> { N3XRConfig.playerCountX = nx; N3XRConfig.playerCountY = ny; }
 				case "Memory" -> { N3XRConfig.memoryX = nx; N3XRConfig.memoryY = ny; }
 				case "CPU" -> { N3XRConfig.cpuX = nx; N3XRConfig.cpuY = ny; }
@@ -142,7 +139,7 @@ public class N3XRHudEditScreen extends Screen {
 				case "Potions" -> { N3XRConfig.potionsX = nx; N3XRConfig.potionsY = ny; }
 				case "RealTime" -> { N3XRConfig.realTimeX = nx; N3XRConfig.realTimeY = ny; }
 				case "Inventory" -> { N3XRConfig.inventoryDisplayX = nx; N3XRConfig.inventoryDisplayY = ny; }
-			    case "DayCounter" -> { N3XRConfig.dayCounterX = nx; N3XRConfig.dayCounterY = ny; }
+				case "DayCounter" -> { N3XRConfig.dayCounterX = nx; N3XRConfig.dayCounterY = ny; }
 			}
 			return true;
 		}
@@ -168,4 +165,4 @@ public class N3XRHudEditScreen extends Screen {
 	public boolean shouldPause() {
 		return false;
 	}
-			}
+}
