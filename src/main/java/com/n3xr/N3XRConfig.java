@@ -32,7 +32,6 @@ public class N3XRConfig {
 	public static boolean pingOptimizerEnabled = false;
 	public static boolean damageIndicatorEnabled = false;
 	public static boolean chatTimestampEnabled = false;
-	public static boolean chatHeadIconsEnabled = false;
 	public static boolean showDayCounter = false;
 
 	public static boolean snapEnabled = false;
