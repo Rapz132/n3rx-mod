@@ -22,16 +22,18 @@ public class N3XRConfigStorage {
 		boolean showSpeed, showCoords, customCrosshairEnabled, showNameTag, hitboxEnabled;
 		boolean autoGgEnabled, scoreboardHideEnabled, showPlayerCount, blockOutlineEnabled;
 		boolean showMemoryUsage, showCpuUsage, showBiomeInfo, showPotions, showInventoryDisplay;
-		boolean showRealTime, itemUpdateEnabled, fastCrystalEnabled;
+		boolean showRealTime, itemUpdateEnabled, fastCrystalEnabled, pingOptimizerEnabled;
+		boolean damageIndicatorEnabled, chatTimestampEnabled, showDayCounter;
 		boolean snapEnabled, guidesEnabled, keysRainbow, showFavoritesOnly;
 		int timezoneIndex;
 
 		int fpsX, fpsY, armorX, armorY, cpsX, cpsY, pingX, pingY, keysX, keysY;
 		int serverIpX, serverIpY, tpsX, tpsY, compassX, compassY, speedX, speedY, coordsX, coordsY, nameTagX, nameTagY;
-		int playerCountX, playerCountY, memoryX, memoryY, cpuX, cpuY, biomeX, biomeY, potionsX, potionsY, inventoryDisplayX, inventoryDisplayY, realTimeX, realTimeY;
+		int playerCountX, playerCountY, memoryX, memoryY, cpuX, cpuY, biomeX, biomeY, potionsX, potionsY;
+		int inventoryDisplayX, inventoryDisplayY, realTimeX, realTimeY, dayCounterX, dayCounterY;
 
 		int fpsColor, cpsColor, pingColor, keysColor, serverIpColor, hitColor, tpsColor, compassColor, speedColor, coordsColor, nameTagColor, hitboxColor;
-		int playerCountColor, memoryColor, cpuColor, biomeColor, potionsColor, realTimeColor, blockOutlineColor;
+		int playerCountColor, memoryColor, cpuColor, biomeColor, potionsColor, realTimeColor, blockOutlineColor, damageIndicatorColor, dayCounterColor;
 
 		int[] crosshairPixels;
 	}
@@ -66,6 +68,10 @@ public class N3XRConfigStorage {
 		d.showRealTime = N3XRConfig.showRealTime;
 		d.itemUpdateEnabled = N3XRConfig.itemUpdateEnabled;
 		d.fastCrystalEnabled = N3XRConfig.fastCrystalEnabled;
+		d.pingOptimizerEnabled = N3XRConfig.pingOptimizerEnabled;
+		d.damageIndicatorEnabled = N3XRConfig.damageIndicatorEnabled;
+		d.chatTimestampEnabled = N3XRConfig.chatTimestampEnabled;
+		d.showDayCounter = N3XRConfig.showDayCounter;
 		d.snapEnabled = N3XRConfig.snapEnabled;
 		d.guidesEnabled = N3XRConfig.guidesEnabled;
 		d.keysRainbow = N3XRConfig.keysRainbow;
@@ -90,6 +96,7 @@ public class N3XRConfigStorage {
 		d.potionsX = N3XRConfig.potionsX; d.potionsY = N3XRConfig.potionsY;
 		d.inventoryDisplayX = N3XRConfig.inventoryDisplayX; d.inventoryDisplayY = N3XRConfig.inventoryDisplayY;
 		d.realTimeX = N3XRConfig.realTimeX; d.realTimeY = N3XRConfig.realTimeY;
+		d.dayCounterX = N3XRConfig.dayCounterX; d.dayCounterY = N3XRConfig.dayCounterY;
 
 		d.fpsColor = N3XRConfig.fpsColor;
 		d.cpsColor = N3XRConfig.cpsColor;
@@ -110,6 +117,8 @@ public class N3XRConfigStorage {
 		d.potionsColor = N3XRConfig.potionsColor;
 		d.realTimeColor = N3XRConfig.realTimeColor;
 		d.blockOutlineColor = N3XRConfig.blockOutlineColor;
+		d.damageIndicatorColor = N3XRConfig.damageIndicatorColor;
+		d.dayCounterColor = N3XRConfig.dayCounterColor;
 
 		d.crosshairPixels = N3XRConfig.crosshairPixels;
 
@@ -154,6 +163,10 @@ public class N3XRConfigStorage {
 			N3XRConfig.showRealTime = d.showRealTime;
 			N3XRConfig.itemUpdateEnabled = d.itemUpdateEnabled;
 			N3XRConfig.fastCrystalEnabled = d.fastCrystalEnabled;
+			N3XRConfig.pingOptimizerEnabled = d.pingOptimizerEnabled;
+			N3XRConfig.damageIndicatorEnabled = d.damageIndicatorEnabled;
+			N3XRConfig.chatTimestampEnabled = d.chatTimestampEnabled;
+			N3XRConfig.showDayCounter = d.showDayCounter;
 			N3XRConfig.snapEnabled = d.snapEnabled;
 			N3XRConfig.guidesEnabled = d.guidesEnabled;
 			N3XRConfig.keysRainbow = d.keysRainbow;
@@ -178,6 +191,7 @@ public class N3XRConfigStorage {
 			N3XRConfig.potionsX = d.potionsX; N3XRConfig.potionsY = d.potionsY;
 			N3XRConfig.inventoryDisplayX = d.inventoryDisplayX; N3XRConfig.inventoryDisplayY = d.inventoryDisplayY;
 			N3XRConfig.realTimeX = d.realTimeX; N3XRConfig.realTimeY = d.realTimeY;
+			N3XRConfig.dayCounterX = d.dayCounterX; N3XRConfig.dayCounterY = d.dayCounterY;
 
 			N3XRConfig.fpsColor = d.fpsColor;
 			N3XRConfig.cpsColor = d.cpsColor;
@@ -198,10 +212,12 @@ public class N3XRConfigStorage {
 			N3XRConfig.potionsColor = d.potionsColor;
 			N3XRConfig.realTimeColor = d.realTimeColor;
 			N3XRConfig.blockOutlineColor = d.blockOutlineColor;
+			N3XRConfig.damageIndicatorColor = d.damageIndicatorColor;
+			N3XRConfig.dayCounterColor = d.dayCounterColor;
 
 			if (d.crosshairPixels != null) N3XRConfig.crosshairPixels = d.crosshairPixels;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	}
+}
