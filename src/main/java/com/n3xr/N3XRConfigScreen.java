@@ -70,7 +70,7 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.showArmor, v -> N3XRConfig.showArmor = v, () -> 0xFFFFFF, v -> {}, false));
 		allModules.add(new ModuleDef("Keystrokes", "Shows your keys in real-time.", icon("keystrokes"), Category.HUD, true,
 			() -> N3XRConfig.showKeystrokes, v -> N3XRConfig.showKeystrokes = v, () -> N3XRConfig.keysColor, v -> N3XRConfig.keysColor = v, true));
-		allModules.add(new ModuleDef("Name Tag", "Shows an N3XR badge with your name.", icon("nametag"), Category.HUD, true,
+		allModules.add(new ModuleDef("Name Tag", "Shows your name above your head (F5 view).", icon("nametag"), Category.HUD, true,
 			() -> N3XRConfig.showNameTag, v -> N3XRConfig.showNameTag = v, () -> N3XRConfig.nameTagColor, v -> N3XRConfig.nameTagColor = v, false));
 		allModules.add(new ModuleDef("Scoreboard Hide", "Hides the sidebar scoreboard.", icon("scoreboard"), Category.HUD, false,
 			() -> N3XRConfig.scoreboardHideEnabled, v -> N3XRConfig.scoreboardHideEnabled = v, () -> 0xFFFFFF, v -> {}, false));
@@ -89,13 +89,15 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.blockOutlineEnabled, v -> N3XRConfig.blockOutlineEnabled = v, () -> N3XRConfig.blockOutlineColor, v -> N3XRConfig.blockOutlineColor = v, false));
 		allModules.add(new ModuleDef("Fast Crystal", "Speeds up crystal placement ticks.", icon("fastcrystal"), Category.VISUAL, false,
 			() -> N3XRConfig.fastCrystalEnabled, v -> N3XRConfig.fastCrystalEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-	
+
 		allModules.add(new ModuleDef("CPS", "Shows your clicks per second.", icon("cps"), Category.COMBAT, true,
 			() -> N3XRConfig.showCps, v -> N3XRConfig.showCps = v, () -> N3XRConfig.cpsColor, v -> N3XRConfig.cpsColor = v, false));
 		allModules.add(new ModuleDef("Hit Color", "Tints entities red when hit.", icon("hitcolor"), Category.COMBAT, true,
 			() -> N3XRConfig.hitColorEnabled, v -> N3XRConfig.hitColorEnabled = v, () -> N3XRConfig.hitColor, v -> N3XRConfig.hitColor = v, false));
 		allModules.add(new ModuleDef("Hitbox", "Shows entity hitbox outlines.", icon("hitbox"), Category.COMBAT, true,
 			() -> N3XRConfig.hitboxEnabled, v -> N3XRConfig.hitboxEnabled = v, () -> N3XRConfig.hitboxColor, v -> N3XRConfig.hitboxColor = v, false));
+		allModules.add(new ModuleDef("Damage Indicator", "Shows floating damage numbers on hit.", icon("damageindicator"), Category.COMBAT, true,
+			() -> N3XRConfig.damageIndicatorEnabled, v -> N3XRConfig.damageIndicatorEnabled = v, () -> N3XRConfig.damageIndicatorColor, v -> N3XRConfig.damageIndicatorColor = v, false));
 
 		allModules.add(new ModuleDef("Zoom", "Adds zoom capabilities.", icon("zoom"), Category.UTILITY, false,
 			() -> N3XRConfig.zoomEnabled, v -> N3XRConfig.zoomEnabled = v, () -> 0xFFFFFF, v -> {}, false));
@@ -107,6 +109,8 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.showBiomeInfo, v -> N3XRConfig.showBiomeInfo = v, () -> N3XRConfig.biomeColor, v -> N3XRConfig.biomeColor = v, false));
 		allModules.add(new ModuleDef("Real Time", "Shows time from selected region.", icon("realtime"), Category.UTILITY, true,
 			() -> N3XRConfig.showRealTime, v -> N3XRConfig.showRealTime = v, () -> N3XRConfig.realTimeColor, v -> N3XRConfig.realTimeColor = v, false));
+		allModules.add(new ModuleDef("Day Counter", "Shows the current in-game day.", icon("daycounter"), Category.UTILITY, true,
+			() -> N3XRConfig.showDayCounter, v -> N3XRConfig.showDayCounter = v, () -> N3XRConfig.dayCounterColor, v -> N3XRConfig.dayCounterColor = v, false));
 
 		allModules.add(new ModuleDef("Ping", "Displays your current ping.", icon("ping"), Category.SERVER, true,
 			() -> N3XRConfig.showPing, v -> N3XRConfig.showPing = v, () -> N3XRConfig.pingColor, v -> N3XRConfig.pingColor = v, false));
@@ -114,17 +118,13 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.showServerIp, v -> N3XRConfig.showServerIp = v, () -> N3XRConfig.serverIpColor, v -> N3XRConfig.serverIpColor = v, false));
 		allModules.add(new ModuleDef("Player Count", "Shows online player count.", icon("playercount"), Category.SERVER, true,
 			() -> N3XRConfig.showPlayerCount, v -> N3XRConfig.showPlayerCount = v, () -> N3XRConfig.playerCountColor, v -> N3XRConfig.playerCountColor = v, false));
+		allModules.add(new ModuleDef("Ping Optimizer", "Attempts minor network tweaks.", icon("pingopt"), Category.SERVER, false,
+			() -> N3XRConfig.pingOptimizerEnabled, v -> N3XRConfig.pingOptimizerEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
 		allModules.add(new ModuleDef("Auto GG", "Sends GG after killing a player.", icon("autogg"), Category.CHAT, false,
 			() -> N3XRConfig.autoGgEnabled, v -> N3XRConfig.autoGgEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-allModules.add(new ModuleDef("Ping Optimizer", "Attempts minor network tweaks. Real ping depends on your network/server.", icon("pingopt"), Category.CHAT, false,
-			() -> N3XRConfig.pingOptimizerEnabled, v -> N3XRConfig.pingOptimizerEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-		allModules.add(new ModuleDef("Damage Indicator", "Shows floating damage numbers.", icon("damageindicator"), Category.COMBAT, true,
-			() -> N3XRConfig.damageIndicatorEnabled, v -> N3XRConfig.damageIndicatorEnabled = v, () -> N3XRConfig.damageIndicatorColor, v -> N3XRConfig.damageIndicatorColor = v, false));
 		allModules.add(new ModuleDef("Chat Timestamp", "Adds a timestamp to chat messages.", icon("chattimestamp"), Category.CHAT, false,
 			() -> N3XRConfig.chatTimestampEnabled, v -> N3XRConfig.chatTimestampEnabled = v, () -> 0xFFFFFF, v -> {}, false));
-		allModules.add(new ModuleDef("Day Counter", "Shows the current in-game day.", icon("daycounter"), Category.UTILITY, true,
-			() -> N3XRConfig.showDayCounter, v -> N3XRConfig.showDayCounter = v, () -> N3XRConfig.dayCounterColor, v -> N3XRConfig.dayCounterColor = v, false));
 
 		int leftPad = 20, rightPad = 16, innerGap = 8;
 		int maxPanelW = this.width - 24;
@@ -257,7 +257,7 @@ allModules.add(new ModuleDef("Ping Optimizer", "Attempts minor network tweaks. R
 			if (m.hasColor()) {
 				int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
 				int gearY1 = cy + CARD_H - PAD - toggleH;
-			if (mouseX >= gearX1 && mouseX <= gearX1 + N3XRToggleButton.GEAR_W && mouseY >= gearY1 && mouseY <= gearY1 + toggleH) {
+				if (mouseX >= gearX1 && mouseX <= gearX1 + N3XRToggleButton.GEAR_W && mouseY >= gearY1 && mouseY <= gearY1 + toggleH) {
 					if (m.name().equals("Crosshair")) {
 						this.client.setScreen(new N3XRCrosshairEditorScreen(this));
 					} else if (m.name().equals("Real Time")) {
@@ -266,7 +266,7 @@ allModules.add(new ModuleDef("Ping Optimizer", "Attempts minor network tweaks. R
 						this.client.setScreen(new N3XRColorPickerScreen(this, m.name(), m.getColor(), m.setColor(), m.supportsRainbow()));
 					}
 					return true;
-	}
+				}
 			}
 		}
 		return super.mouseClicked(mouseX, mouseY, button);
@@ -350,9 +350,7 @@ allModules.add(new ModuleDef("Ping Optimizer", "Attempts minor network tweaks. R
 
 			int iconBoxSize = 24;
 			fillRounded(context, cx + PAD, cy + PAD, cx + PAD + iconBoxSize, cy + PAD + iconBoxSize, 0xFF2A1414, 4);
-			if (m.icon() != null) {
-				context.drawTexture(m.icon(), cx + PAD + 4, cy + PAD + 4, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
-			}
+			context.drawTexture(m.icon(), cx + PAD + 4, cy + PAD + 4, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
 
 			context.drawText(this.textRenderer, Text.literal(m.name()).styled(s -> s.withBold(true)), cx + PAD + iconBoxSize + 6, cy + PAD, 0xFFFFFFFF, true);
 
