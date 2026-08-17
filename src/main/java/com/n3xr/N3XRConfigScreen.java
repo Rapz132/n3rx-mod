@@ -96,9 +96,9 @@ public class N3XRConfigScreen extends Screen {
 			() -> N3XRConfig.hitColorEnabled, v -> N3XRConfig.hitColorEnabled = v, () -> N3XRConfig.hitColor, v -> N3XRConfig.hitColor = v, false));
 		allModules.add(new ModuleDef("Hitbox", "Shows entity hitbox outlines.", icon("hitbox"), Category.COMBAT, true,
 			() -> N3XRConfig.hitboxEnabled, v -> N3XRConfig.hitboxEnabled = v, () -> N3XRConfig.hitboxColor, v -> N3XRConfig.hitboxColor = v, false));
-		allModules.add(new ModuleDef("Damage Indicator", "Shows floating damage numbers on hit.", icon("damageindicator"), Category.COMBAT, true,
-			() -> N3XRConfig.damageIndicatorEnabled, v -> N3XRConfig.damageIndicatorEnabled = v, () -> N3XRConfig.damageIndicatorColor, v -> N3XRConfig.damageIndicatorColor = v, false));
-
+		allModules.add(new ModuleDef("Health Indicator", "Shows player health above their name.", icon("healthindicator"), Category.COMBAT, true,
+			() -> N3XRConfig.healthIndicatorEnabled, v -> N3XRConfig.healthIndicatorEnabled = v, () -> N3XRConfig.healthIndicatorColor, v -> N3XRConfig.healthIndicatorColor = v, false));
+		
 		allModules.add(new ModuleDef("Zoom", "Adds zoom capabilities.", icon("zoom"), Category.UTILITY, false,
 			() -> N3XRConfig.zoomEnabled, v -> N3XRConfig.zoomEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 		allModules.add(new ModuleDef("Compass", "Shows the direction you're facing.", icon("compass"), Category.UTILITY, true,
