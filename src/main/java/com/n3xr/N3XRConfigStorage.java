@@ -23,9 +23,10 @@ public class N3XRConfigStorage {
 		boolean autoGgEnabled, scoreboardHideEnabled, showPlayerCount, blockOutlineEnabled;
 		boolean showMemoryUsage, showCpuUsage, showBiomeInfo, showPotions, showInventoryDisplay;
 		boolean showRealTime, itemUpdateEnabled, fastCrystalEnabled, pingOptimizerEnabled;
-		boolean damageIndicatorEnabled, chatTimestampEnabled, showDayCounter;
+		boolean healthIndicatorEnabled, chatTimestampEnabled, showDayCounter;
 		boolean snapEnabled, guidesEnabled, keysRainbow, showFavoritesOnly;
 		int timezoneIndex;
+		float hudScale;
 
 		int fpsX, fpsY, armorX, armorY, cpsX, cpsY, pingX, pingY, keysX, keysY;
 		int serverIpX, serverIpY, tpsX, tpsY, compassX, compassY, speedX, speedY, coordsX, coordsY, nameTagX, nameTagY;
@@ -33,7 +34,7 @@ public class N3XRConfigStorage {
 		int inventoryDisplayX, inventoryDisplayY, realTimeX, realTimeY, dayCounterX, dayCounterY;
 
 		int fpsColor, cpsColor, pingColor, keysColor, serverIpColor, hitColor, tpsColor, compassColor, speedColor, coordsColor, nameTagColor, hitboxColor;
-		int playerCountColor, memoryColor, cpuColor, biomeColor, potionsColor, realTimeColor, blockOutlineColor, damageIndicatorColor, dayCounterColor;
+		int playerCountColor, memoryColor, cpuColor, biomeColor, potionsColor, realTimeColor, blockOutlineColor, healthIndicatorColor, dayCounterColor;
 
 		int[] crosshairPixels;
 	}
@@ -69,7 +70,7 @@ public class N3XRConfigStorage {
 		d.itemUpdateEnabled = N3XRConfig.itemUpdateEnabled;
 		d.fastCrystalEnabled = N3XRConfig.fastCrystalEnabled;
 		d.pingOptimizerEnabled = N3XRConfig.pingOptimizerEnabled;
-		d.damageIndicatorEnabled = N3XRConfig.damageIndicatorEnabled;
+		d.healthIndicatorEnabled = N3XRConfig.healthIndicatorEnabled;
 		d.chatTimestampEnabled = N3XRConfig.chatTimestampEnabled;
 		d.showDayCounter = N3XRConfig.showDayCounter;
 		d.snapEnabled = N3XRConfig.snapEnabled;
@@ -77,6 +78,7 @@ public class N3XRConfigStorage {
 		d.keysRainbow = N3XRConfig.keysRainbow;
 		d.showFavoritesOnly = N3XRConfig.showFavoritesOnly;
 		d.timezoneIndex = N3XRConfig.timezoneIndex;
+		d.hudScale = N3XRConfig.hudScale;
 
 		d.fpsX = N3XRConfig.fpsX; d.fpsY = N3XRConfig.fpsY;
 		d.armorX = N3XRConfig.armorX; d.armorY = N3XRConfig.armorY;
@@ -117,7 +119,7 @@ public class N3XRConfigStorage {
 		d.potionsColor = N3XRConfig.potionsColor;
 		d.realTimeColor = N3XRConfig.realTimeColor;
 		d.blockOutlineColor = N3XRConfig.blockOutlineColor;
-		d.damageIndicatorColor = N3XRConfig.damageIndicatorColor;
+		d.healthIndicatorColor = N3XRConfig.healthIndicatorColor;
 		d.dayCounterColor = N3XRConfig.dayCounterColor;
 
 		d.crosshairPixels = N3XRConfig.crosshairPixels;
@@ -164,7 +166,7 @@ public class N3XRConfigStorage {
 			N3XRConfig.itemUpdateEnabled = d.itemUpdateEnabled;
 			N3XRConfig.fastCrystalEnabled = d.fastCrystalEnabled;
 			N3XRConfig.pingOptimizerEnabled = d.pingOptimizerEnabled;
-			N3XRConfig.damageIndicatorEnabled = d.damageIndicatorEnabled;
+			N3XRConfig.healthIndicatorEnabled = d.healthIndicatorEnabled;
 			N3XRConfig.chatTimestampEnabled = d.chatTimestampEnabled;
 			N3XRConfig.showDayCounter = d.showDayCounter;
 			N3XRConfig.snapEnabled = d.snapEnabled;
@@ -172,6 +174,7 @@ public class N3XRConfigStorage {
 			N3XRConfig.keysRainbow = d.keysRainbow;
 			N3XRConfig.showFavoritesOnly = d.showFavoritesOnly;
 			N3XRConfig.timezoneIndex = d.timezoneIndex;
+			if (d.hudScale > 0) N3XRConfig.hudScale = d.hudScale;
 
 			N3XRConfig.fpsX = d.fpsX; N3XRConfig.fpsY = d.fpsY;
 			N3XRConfig.armorX = d.armorX; N3XRConfig.armorY = d.armorY;
@@ -212,7 +215,7 @@ public class N3XRConfigStorage {
 			N3XRConfig.potionsColor = d.potionsColor;
 			N3XRConfig.realTimeColor = d.realTimeColor;
 			N3XRConfig.blockOutlineColor = d.blockOutlineColor;
-			N3XRConfig.damageIndicatorColor = d.damageIndicatorColor;
+			N3XRConfig.healthIndicatorColor = d.healthIndicatorColor;
 			N3XRConfig.dayCounterColor = d.dayCounterColor;
 
 			if (d.crosshairPixels != null) N3XRConfig.crosshairPixels = d.crosshairPixels;
@@ -220,4 +223,4 @@ public class N3XRConfigStorage {
 			e.printStackTrace();
 		}
 	}
-}
+			}
