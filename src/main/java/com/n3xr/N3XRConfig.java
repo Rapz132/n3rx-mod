@@ -41,6 +41,16 @@ public class N3XRConfig {
 
 	public static float hudScale = 1.0f;
 
+public static final java.util.Map<String, Float> moduleScale = new java.util.HashMap<>();
+
+	public static float getScale(String key) {
+		return moduleScale.getOrDefault(key, 1.0f);
+	}
+
+	public static void setScale(String key, float value) {
+		moduleScale.put(key, Math.max(0.5f, Math.min(3.0f, value)));
+	}
+
 	public static final int CROSSHAIR_GRID = 12;
 	public static int[] crosshairPixels = new int[CROSSHAIR_GRID * CROSSHAIR_GRID];
 
