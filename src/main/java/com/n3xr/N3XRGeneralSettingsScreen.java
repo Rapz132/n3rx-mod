@@ -65,6 +65,14 @@ public class N3XRGeneralSettingsScreen extends Screen {
 			Text.literal("+ Guides: " + (N3XRConfig.guidesEnabled ? "ON" : "OFF")),
 			b -> { N3XRConfig.guidesEnabled = !N3XRConfig.guidesEnabled; b.setMessage(Text.literal("+ Guides: " + (N3XRConfig.guidesEnabled ? "ON" : "OFF"))); })); y += gap;
 
+		this.addDrawableChild(N3XRButton.of(cx, y, 95, 20,
+			Text.literal("Scale -"),
+			b -> { N3XRConfig.hudScale = Math.max(0.5f, N3XRConfig.hudScale - 0.1f); message = "Scale: " + String.format("%.1f", N3XRConfig.hudScale); }));
+		this.addDrawableChild(N3XRButton.of(cx + 105, y, 95, 20,
+			Text.literal("Scale +"),
+			b -> { N3XRConfig.hudScale = Math.min(2.0f, N3XRConfig.hudScale + 0.1f); message = "Scale: " + String.format("%.1f", N3XRConfig.hudScale); }));
+		y += 24;
+
 		this.addDrawableChild(N3XRButton.of(cx, y, 200, 20,
 			Text.literal("Save Config Now"),
 			b -> { N3XRConfigStorage.save(); message = "Config saved!"; })); y += gap + 8;
