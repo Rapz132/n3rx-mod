@@ -30,7 +30,7 @@ public class N3XRConfig {
 	public static boolean itemUpdateEnabled = false;
 	public static boolean fastCrystalEnabled = false;
 	public static boolean pingOptimizerEnabled = false;
-	public static boolean damageIndicatorEnabled = false;
+	public static boolean healthIndicatorEnabled = false;
 	public static boolean chatTimestampEnabled = false;
 	public static boolean showDayCounter = false;
 
@@ -38,6 +38,8 @@ public class N3XRConfig {
 	public static boolean guidesEnabled = true;
 	public static boolean keysRainbow = false;
 	public static boolean showFavoritesOnly = false;
+
+	public static float hudScale = 1.0f;
 
 	public static final int CROSSHAIR_GRID = 12;
 	public static int[] crosshairPixels = new int[CROSSHAIR_GRID * CROSSHAIR_GRID];
@@ -85,7 +87,7 @@ public class N3XRConfig {
 	public static int potionsColor = 0xFFFFFF;
 	public static int realTimeColor = 0xFFFFFF;
 	public static int blockOutlineColor = 0xFF3333;
-	public static int damageIndicatorColor = 0xFFFF5555;
+	public static int healthIndicatorColor = 0xFF55FF55;
 	public static int dayCounterColor = 0xFFFFFF;
 
 	public static final int[] PRESET_COLORS = {
