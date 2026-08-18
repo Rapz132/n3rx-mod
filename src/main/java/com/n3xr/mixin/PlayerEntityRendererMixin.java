@@ -2,47 +2,25 @@ package com.n3xr.mixin;
 
 import com.n3xr.N3XRConfig;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.client.render.VertexConsumerProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntityRenderer.class)
 public abstract class PlayerEntityRendererMixin {
 
     @Inject(
-            method = "hasLabel",
-            at = @At("RETURN"),
-            cancellable = true
-    )
-    private void n3xr$showOwnNametag(
-            AbstractClientPlayerEntity player,
-            CallbackInfoReturnable<Boolean> cir
-    ) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        if (!N3XRConfig.showHealthIndicator) return;
-
-        if (player == mc.player
-                && mc.options.getPerspective() != net.minecraft.client.option.Perspective.FIRST_PERSON) {
-
-            cir.setReturnValue(true);
-        }
-    }
-
-    @Inject(
             method = "renderLabelIfPresent",
-            at = @At("HEAD"),
-            cancellable = true
+            at = @At("TAIL")
     )
-    private void n3xr$healthNametag(
-            AbstractClientPlayerEntity player,
+    private void n3xr$renderHealth(
+            PlayerEntity player,
             Text text,
             MatrixStack matrices,
             VertexConsumerProvider vertexConsumers,
@@ -50,30 +28,59 @@ public abstract class PlayerEntityRendererMixin {
             float tickDelta,
             CallbackInfo ci
     ) {
-        if (!N3XRConfig.showHealthIndicator) return;
+        if (!N3XRConfig.healthIndicatorEnabled) {
+            return;
+        }
 
         MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (mc.player == null) {
+            return;
+        }
 
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
 
-        health = MathHelper.clamp(health, 0.0f, maxHealth);
+        if (maxHealth <= 0.0f) {
+            return;
+        }
 
         String healthText = String.format("%.1f ❤", health);
 
-        Text combined = Text.literal(
-                text.getString() + "  " + healthText
-        );
+        int color;
 
-        // Vanilla nametag renderer sendiri tetap dipakai.
-        // Kita mengganti teks yang akan dirender.
+        if (health <= maxHealth * 0.25f) {
+            color = 0xFFFF5555;
+        } else if (health <= maxHealth * 0.5f) {
+            color = 0xFFFFFF55;
+        } else {
+            color = N3XRConfig.healthIndicatorColor;
+        }
+
         matrices.push();
 
+        /*
+         * Posisi health berada sedikit di bawah nametag.
+         */
+        matrices.translate(0.0, 0.25, 0.0);
+
+        /*
+         * Ikuti rotasi kamera.
+         */
+        matrices.multiply(mc.gameRenderer.getCamera().getRotation());
+
+        /*
+         * Ukuran text seperti nametag Minecraft.
+         */
+        matrices.scale(-0.025f, -0.025f, 0.025f);
+
+        int width = mc.textRenderer.getWidth(healthText);
+
         mc.textRenderer.draw(
-                combined,
-                -mc.textRenderer.getWidth(combined) / 2.0f,
-                0,
-                N3XRConfig.healthIndicatorColor,
+                Text.literal(healthText),
+                -width / 2.0f,
+                0.0f,
+                color,
                 true,
                 matrices.peek().getPositionMatrix(),
                 vertexConsumers,
@@ -83,7 +90,5 @@ public abstract class PlayerEntityRendererMixin {
         );
 
         matrices.pop();
-
-        ci.cancel();
     }
 }
