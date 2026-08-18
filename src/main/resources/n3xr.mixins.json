@@ -6,6 +6,7 @@
 	"client": [
   "AttackCooldownMixin",
   "LivingEntityRendererMixin",
+  "PlayerEntityRendererMixin",
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
