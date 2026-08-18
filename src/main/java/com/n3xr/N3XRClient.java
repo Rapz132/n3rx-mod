@@ -8,12 +8,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.InputUtil;
@@ -21,13 +21,12 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
@@ -138,19 +137,16 @@ public class N3XRClient implements ClientModInitializer {
 
 			if (mc.options.hudHidden) return;
 
-			context.getMatrices().push();
-			context.getMatrices().scale(N3XRConfig.hudScale, N3XRConfig.hudScale, 1.0f);
-
-			if (N3XRConfig.showFps) renderLabel(context, mc, "FPS: " + mc.getCurrentFps(), N3XRConfig.fpsX, N3XRConfig.fpsY, N3XRConfig.fpsColor);
+			if (N3XRConfig.showFps) renderLabel(context, mc, "FPS", "FPS: " + mc.getCurrentFps(), N3XRConfig.fpsX, N3XRConfig.fpsY, N3XRConfig.fpsColor);
 			if (N3XRConfig.showArmor) renderArmorHud(context, mc);
-			if (N3XRConfig.showCps) renderLabel(context, mc, "CPS: " + clickTimes.size(), N3XRConfig.cpsX, N3XRConfig.cpsY, N3XRConfig.cpsColor);
+			if (N3XRConfig.showCps) renderLabel(context, mc, "CPS", "CPS: " + clickTimes.size(), N3XRConfig.cpsX, N3XRConfig.cpsY, N3XRConfig.cpsColor);
 			if (N3XRConfig.showPing) renderPing(context, mc);
 			if (N3XRConfig.showKeystrokes) renderKeystrokes(context, mc);
 			if (N3XRConfig.showServerIp) renderServerIp(context, mc);
-			if (N3XRConfig.showTps) renderLabel(context, mc, String.format("TPS: %.1f", Math.min(20.0, tickTimes.size())), N3XRConfig.tpsX, N3XRConfig.tpsY, N3XRConfig.tpsColor);
+			if (N3XRConfig.showTps) renderLabel(context, mc, "TPS", String.format("TPS: %.1f", Math.min(20.0, tickTimes.size())), N3XRConfig.tpsX, N3XRConfig.tpsY, N3XRConfig.tpsColor);
 			if (N3XRConfig.showCompass) renderCompass(context, mc);
-			if (N3XRConfig.showSpeed) renderLabel(context, mc, String.format("Speed: %.2f b/s", currentSpeed), N3XRConfig.speedX, N3XRConfig.speedY, N3XRConfig.speedColor);
-			if (N3XRConfig.showCoords) renderLabel(context, mc, String.format("X: %.0f Y: %.0f Z: %.0f", mc.player.getX(), mc.player.getY(), mc.player.getZ()), N3XRConfig.coordsX, N3XRConfig.coordsY, N3XRConfig.coordsColor);
+			if (N3XRConfig.showSpeed) renderLabel(context, mc, "Speed", String.format("Speed: %.2f b/s", currentSpeed), N3XRConfig.speedX, N3XRConfig.speedY, N3XRConfig.speedColor);
+			if (N3XRConfig.showCoords) renderLabel(context, mc, "Coords", String.format("X: %.0f Y: %.0f Z: %.0f", mc.player.getX(), mc.player.getY(), mc.player.getZ()), N3XRConfig.coordsX, N3XRConfig.coordsY, N3XRConfig.coordsColor);
 			if (N3XRConfig.showPlayerCount) renderPlayerCount(context, mc);
 			if (N3XRConfig.showMemoryUsage) renderMemory(context, mc);
 			if (N3XRConfig.showCpuUsage) renderCpu(context, mc);
@@ -159,8 +155,6 @@ public class N3XRClient implements ClientModInitializer {
 			if (N3XRConfig.showRealTime) renderRealTime(context, mc);
 			if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
 			if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
-
-			context.getMatrices().pop();
 		});
 	}
 
@@ -226,15 +220,17 @@ public class N3XRClient implements ClientModInitializer {
 
 		for (PlayerEntity p : mc.world.getPlayers()) {
 			float hp = p.getHealth();
-			String label = String.format("%.1f HP", hp);
-			double extraY = (p == mc.player) ? 0.4 : 0.3;
-			drawWorldText(context, mc, label, p.getX(), p.getY() + p.getHeight() + extraY, p.getZ(), N3XRConfig.healthIndicatorColor);
+			int fullHearts = (int) Math.ceil(hp / 2.0f);
+			StringBuilder hearts = new StringBuilder();
+			for (int i = 0; i < fullHearts; i++) hearts.append("\u2665");
+
+			double extraY = (p == mc.player) ? 0.5 : 0.35;
+			drawWorldText(context, mc, hearts.toString(), p.getX(), p.getY() + p.getHeight() + extraY, p.getZ(), N3XRConfig.healthIndicatorColor);
 		}
 	}
 
 	private void drawWorldText(WorldRenderContext context, MinecraftClient mc, String text, double worldX, double worldY, double worldZ, int color) {
 		var camPos = context.camera().getPos();
-		float tickDelta = context.tickCounter().getTickDelta(true);
 
 		var matrices = context.matrixStack();
 		matrices.push();
@@ -295,24 +291,34 @@ public class N3XRClient implements ClientModInitializer {
 		}
 	}
 
-	private void renderLabel(DrawContext c, MinecraftClient mc, String text, int x, int y, int color) {
+	private void renderLabel(DrawContext c, MinecraftClient mc, String key, String text, int x, int y, int color) {
+		float scale = N3XRConfig.getScale(key);
+		c.getMatrices().push();
+		c.getMatrices().translate(x, y, 0);
+		c.getMatrices().scale(scale, scale, 1f);
 		int tw = mc.textRenderer.getWidth(text);
-		c.fill(x - 2, y - 2, x + tw + 2, y + 10, 0x90000000);
-		c.drawText(mc.textRenderer, Text.literal(text), x, y, color, true);
+		c.fill(-2, -2, tw + 2, 10, 0x90000000);
+		c.drawText(mc.textRenderer, Text.literal(text), 0, 0, color, true);
+		c.getMatrices().pop();
 	}
 
 	private void renderArmorHud(DrawContext c, MinecraftClient mc) {
-		int y = N3XRConfig.armorY;
-		c.fill(N3XRConfig.armorX - 2, y - 2, N3XRConfig.armorX + 18, y + 20 * 4 - 2, 0x90000000);
+		float scale = N3XRConfig.getScale("Armor");
+		c.getMatrices().push();
+		c.getMatrices().translate(N3XRConfig.armorX, N3XRConfig.armorY, 0);
+		c.getMatrices().scale(scale, scale, 1f);
+		c.fill(-2, -2, 18, 20 * 4 - 2, 0x90000000);
+		int y = 0;
 		for (ItemStack armor : mc.player.getArmorItems()) {
 			if (!armor.isEmpty()) {
-				c.drawItem(armor, N3XRConfig.armorX, y);
-				c.drawItemInSlot(mc.textRenderer, armor, N3XRConfig.armorX, y);
+				c.drawItem(armor, 0, y);
+				c.drawItemInSlot(mc.textRenderer, armor, 0, y);
 			} else {
-				c.fill(N3XRConfig.armorX, y, N3XRConfig.armorX + 16, y + 16, 0x40FFFFFF);
+				c.fill(0, y, 16, y + 16, 0x40FFFFFF);
 			}
 			y += 20;
 		}
+		c.getMatrices().pop();
 	}
 
 	private void renderPing(DrawContext c, MinecraftClient mc) {
@@ -321,12 +327,12 @@ public class N3XRClient implements ClientModInitializer {
 			PlayerListEntry e = mc.getNetworkHandler().getPlayerListEntry(mc.player.getUuid());
 			if (e != null) ping = e.getLatency();
 		}
-		renderLabel(c, mc, "Ping: " + ping + "ms", N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor);
+		renderLabel(c, mc, "Ping", "Ping: " + ping + "ms", N3XRConfig.pingX, N3XRConfig.pingY, N3XRConfig.pingColor);
 	}
 
 	private void renderServerIp(DrawContext c, MinecraftClient mc) {
 		String ip = mc.getCurrentServerEntry() != null ? mc.getCurrentServerEntry().address : "Singleplayer";
-		renderLabel(c, mc, "Server: " + ip, N3XRConfig.serverIpX, N3XRConfig.serverIpY, N3XRConfig.serverIpColor);
+		renderLabel(c, mc, "ServerIP", "Server: " + ip, N3XRConfig.serverIpX, N3XRConfig.serverIpY, N3XRConfig.serverIpColor);
 	}
 
 	private void renderCompass(DrawContext c, MinecraftClient mc) {
@@ -341,19 +347,19 @@ public class N3XRClient implements ClientModInitializer {
 		else if (yaw < 247.5) dir = "NE";
 		else if (yaw < 292.5) dir = "E";
 		else dir = "SE";
-		renderLabel(c, mc, "Facing: " + dir, N3XRConfig.compassX, N3XRConfig.compassY, N3XRConfig.compassColor);
+		renderLabel(c, mc, "Compass", "Facing: " + dir, N3XRConfig.compassX, N3XRConfig.compassY, N3XRConfig.compassColor);
 	}
 
 	private void renderPlayerCount(DrawContext c, MinecraftClient mc) {
 		int count = mc.getNetworkHandler() != null ? mc.getNetworkHandler().getPlayerList().size() : 0;
-		renderLabel(c, mc, "Players: " + count, N3XRConfig.playerCountX, N3XRConfig.playerCountY, N3XRConfig.playerCountColor);
+		renderLabel(c, mc, "PlayerCount", "Players: " + count, N3XRConfig.playerCountX, N3XRConfig.playerCountY, N3XRConfig.playerCountColor);
 	}
 
 	private void renderMemory(DrawContext c, MinecraftClient mc) {
 		Runtime rt = Runtime.getRuntime();
 		long usedMb = (rt.totalMemory() - rt.freeMemory()) / 1048576L;
 		long maxMb = rt.maxMemory() / 1048576L;
-		renderLabel(c, mc, "Mem: " + usedMb + "/" + maxMb + " MB", N3XRConfig.memoryX, N3XRConfig.memoryY, N3XRConfig.memoryColor);
+		renderLabel(c, mc, "Memory", "Mem: " + usedMb + "/" + maxMb + " MB", N3XRConfig.memoryX, N3XRConfig.memoryY, N3XRConfig.memoryColor);
 	}
 
 	private void renderCpu(DrawContext c, MinecraftClient mc) {
@@ -370,7 +376,7 @@ public class N3XRClient implements ClientModInitializer {
 				if (avg >= 0 && cores > 0) txt = String.format("CPU: %.0f%%", (avg / cores) * 100);
 			}
 		} catch (Exception ignored) {}
-		renderLabel(c, mc, txt, N3XRConfig.cpuX, N3XRConfig.cpuY, N3XRConfig.cpuColor);
+		renderLabel(c, mc, "CPU", txt, N3XRConfig.cpuX, N3XRConfig.cpuY, N3XRConfig.cpuColor);
 	}
 
 	private void renderBiome(DrawContext c, MinecraftClient mc) {
@@ -379,14 +385,14 @@ public class N3XRClient implements ClientModInitializer {
 			var biomeEntry = mc.world.getBiome(mc.player.getBlockPos());
 			biomeName = biomeEntry.getKey().map(k -> k.getValue().getPath()).orElse("Unknown");
 		} catch (Exception ignored) {}
-		renderLabel(c, mc, "Biome: " + biomeName, N3XRConfig.biomeX, N3XRConfig.biomeY, N3XRConfig.biomeColor);
+		renderLabel(c, mc, "Biome", "Biome: " + biomeName, N3XRConfig.biomeX, N3XRConfig.biomeY, N3XRConfig.biomeColor);
 	}
 
 	private void renderPotions(DrawContext c, MinecraftClient mc) {
 		int y = N3XRConfig.potionsY;
 		for (StatusEffectInstance effect : mc.player.getStatusEffects()) {
 			String name = effect.getEffectType().value().getName().getString();
-			renderLabel(c, mc, name + " " + StatusEffectUtil.getDurationText(effect, 1.0f, 20).getString(), N3XRConfig.potionsX, y, N3XRConfig.potionsColor);
+			renderLabel(c, mc, "Potions", name + " " + StatusEffectUtil.getDurationText(effect, 1.0f, 20).getString(), N3XRConfig.potionsX, y, N3XRConfig.potionsColor);
 			y += 12;
 		}
 	}
@@ -394,23 +400,26 @@ public class N3XRClient implements ClientModInitializer {
 	private void renderRealTime(DrawContext c, MinecraftClient mc) {
 		ZoneId zone = ZoneId.of(N3XRConfig.TIMEZONE_IDS[N3XRConfig.timezoneIndex]);
 		String time = ZonedDateTime.now(zone).format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-		renderLabel(c, mc, N3XRConfig.TIMEZONE_NAMES[N3XRConfig.timezoneIndex] + ": " + time, N3XRConfig.realTimeX, N3XRConfig.realTimeY, N3XRConfig.realTimeColor);
+		renderLabel(c, mc, "RealTime", N3XRConfig.TIMEZONE_NAMES[N3XRConfig.timezoneIndex] + ": " + time, N3XRConfig.realTimeX, N3XRConfig.realTimeY, N3XRConfig.realTimeColor);
 	}
 
 	private void renderDayCounter(DrawContext c, MinecraftClient mc) {
 		if (mc.world == null) return;
 		long day = mc.world.getTimeOfDay() / 24000L;
-		renderLabel(c, mc, "Day: " + day, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, N3XRConfig.dayCounterColor);
+		renderLabel(c, mc, "DayCounter", "Day: " + day, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, N3XRConfig.dayCounterColor);
 	}
 
 	private void renderInventoryDisplay(DrawContext c, MinecraftClient mc) {
-		int x = N3XRConfig.inventoryDisplayX, y = N3XRConfig.inventoryDisplayY;
+		float scale = N3XRConfig.getScale("Inventory");
+		c.getMatrices().push();
+		c.getMatrices().translate(N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY, 0);
+		c.getMatrices().scale(scale, scale, 1f);
 		int slotSize = 18;
-		c.fill(x - 2, y - 2, x + slotSize * 9, y + slotSize * 4, 0x90000000);
+		c.fill(-2, -2, slotSize * 9, slotSize * 4, 0x90000000);
 		var inv = mc.player.getInventory();
 		for (int i = 0; i < 36; i++) {
 			int col = i % 9, row = i / 9;
-			int sx = x + col * slotSize, sy = y + row * slotSize;
+			int sx = col * slotSize, sy = row * slotSize;
 			c.fill(sx, sy, sx + 16, sy + 16, 0x40000000);
 			ItemStack stack = inv.main.get(i);
 			if (!stack.isEmpty()) {
@@ -418,20 +427,28 @@ public class N3XRClient implements ClientModInitializer {
 				c.drawItemInSlot(mc.textRenderer, stack, sx, sy);
 			}
 		}
+		c.getMatrices().pop();
 	}
 
 	private void renderKeystrokes(DrawContext c, MinecraftClient mc) {
-		int x = N3XRConfig.keysX, y = N3XRConfig.keysY, size = 18, gap = 2;
-		c.fill(x - 2, y - 2, x + (size + gap) * 3, y + (size + gap) * 2, 0x90000000);
+		float scale = N3XRConfig.getScale("Keys");
+		c.getMatrices().push();
+		c.getMatrices().translate(N3XRConfig.keysX, N3XRConfig.keysY, 0);
+		c.getMatrices().scale(scale, scale, 1f);
+
+		int size = 18, gap = 2;
+		c.fill(-2, -2, (size + gap) * 3, (size + gap) * 2, 0x90000000);
 		boolean w = mc.options.forwardKey.isPressed();
 		boolean a = mc.options.leftKey.isPressed();
 		boolean s = mc.options.backKey.isPressed();
 		boolean d = mc.options.rightKey.isPressed();
 
-		drawKey(c, mc, "W", x + size + gap, y, size, w);
-		drawKey(c, mc, "A", x, y + size + gap, size, a);
-		drawKey(c, mc, "S", x + size + gap, y + size + gap, size, s);
-		drawKey(c, mc, "D", x + (size + gap) * 2, y + size + gap, size, d);
+		drawKey(c, mc, "W", size + gap, 0, size, w);
+		drawKey(c, mc, "A", 0, size + gap, size, a);
+		drawKey(c, mc, "S", size + gap, size + gap, size, s);
+		drawKey(c, mc, "D", (size + gap) * 2, size + gap, size, d);
+
+		c.getMatrices().pop();
 	}
 
 	private void drawKey(DrawContext c, MinecraftClient mc, String label, int x, int y, int size, boolean active) {
