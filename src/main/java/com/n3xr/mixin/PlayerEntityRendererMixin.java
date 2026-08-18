@@ -16,27 +16,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerEntityRendererMixin {
 
     @Inject(
-            method = "renderLabelIfPresent",
-            at = @At("TAIL")
+        method = "renderLabelIfPresent",
+        at = @At("TAIL")
     )
     private void n3xr$renderHealth(
-            AbstractClientPlayerEntity player,
-            Text text,
-            MatrixStack matrices,
-            VertexConsumerProvider vertexConsumers,
-            int light,
-            float tickDelta,
-            CallbackInfo ci
+        AbstractClientPlayerEntity player,
+        Text text,
+        MatrixStack matrices,
+        VertexConsumerProvider vertexConsumers,
+        int light,
+        float tickDelta,
+        CallbackInfo ci
     ) {
         if (!N3XRConfig.healthIndicatorEnabled) {
             return;
         }
 
         MinecraftClient mc = MinecraftClient.getInstance();
-
-        if (mc.player == null) {
-            return;
-        }
 
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
@@ -61,25 +57,25 @@ public abstract class PlayerEntityRendererMixin {
 
         matrices.translate(0.0, 0.25, 0.0);
 
-        matrices.multiply(
-                mc.gameRenderer.getCamera().getRotation()
+        matrices.scale(
+            -0.025f,
+            -0.025f,
+            0.025f
         );
-
-        matrices.scale(-0.025f, -0.025f, 0.025f);
 
         int width = mc.textRenderer.getWidth(healthText);
 
         mc.textRenderer.draw(
-                Text.literal(healthText),
-                -width / 2.0f,
-                0.0f,
-                color,
-                true,
-                matrices.peek().getPositionMatrix(),
-                vertexConsumers,
-                net.minecraft.client.font.TextRenderer.TextLayerType.NORMAL,
-                0,
-                light
+            Text.literal(healthText),
+            -width / 2.0f,
+            0.0f,
+            color,
+            true,
+            matrices.peek().getPositionMatrix(),
+            vertexConsumers,
+            net.minecraft.client.font.TextRenderer.TextLayerType.NORMAL,
+            0,
+            light
         );
 
         matrices.pop();
