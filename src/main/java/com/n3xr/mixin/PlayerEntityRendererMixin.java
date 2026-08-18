@@ -2,10 +2,10 @@ package com.n3xr.mixin;
 
 import com.n3xr.N3XRConfig;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +20,7 @@ public abstract class PlayerEntityRendererMixin {
             at = @At("TAIL")
     )
     private void n3xr$renderHealth(
-            PlayerEntity player,
+            AbstractClientPlayerEntity player,
             Text text,
             MatrixStack matrices,
             VertexConsumerProvider vertexConsumers,
@@ -59,19 +59,12 @@ public abstract class PlayerEntityRendererMixin {
 
         matrices.push();
 
-        /*
-         * Posisi health berada sedikit di bawah nametag.
-         */
         matrices.translate(0.0, 0.25, 0.0);
 
-        /*
-         * Ikuti rotasi kamera.
-         */
-        matrices.multiply(mc.gameRenderer.getCamera().getRotation());
+        matrices.multiply(
+                mc.gameRenderer.getCamera().getRotation()
+        );
 
-        /*
-         * Ukuran text seperti nametag Minecraft.
-         */
         matrices.scale(-0.025f, -0.025f, 0.025f);
 
         int width = mc.textRenderer.getWidth(healthText);
