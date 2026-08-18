@@ -1,3 +1,4 @@
+
 package com.n3xr.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -15,27 +16,55 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin<T extends LivingEntity> {
 
-	@Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
-	private void n3xr$before(T entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-		if (entity == MinecraftClient.getInstance().player) return;
+    @Inject(
+            method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+            at = @At("HEAD")
+    )
+    private void n3xr$before(
+            T entity,
+            float yaw,
+            float tickDelta,
+            MatrixStack matrices,
+            VertexConsumerProvider vertexConsumers,
+            int light,
+            CallbackInfo ci
+    ) {
+        MinecraftClient mc = MinecraftClient.getInstance();
 
-		int hurtTime = ((LivingEntityAccessor) entity).n3xr$getHurtTime();
-		if (N3XRConfig.hitColorEnabled && hurtTime > 0) {
-			int color = N3XRConfig.hitColor;
-			float r = ((color >> 16) & 0xFF) / 255f;
-			float g = ((color >> 8) & 0xFF) / 255f;
-			float b = (color & 0xFF) / 255f;
-			RenderSystem.setShaderColor(r, g, b, 1.0f);
-		}
-	}
+        if (entity == mc.player) return;
 
-	@Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("RETURN"))
-	private void n3xr$after(T entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-		if (entity == MinecraftClient.getInstance().player) return;
+        int hurtTime = ((LivingEntityAccessor) entity).n3xr$getHurtTime();
 
-		if (vertexConsumers instanceof VertexConsumerProvider.Immediate immediate) {
-			immediate.draw();
-		}
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-	}
+        if (N3XRConfig.hitColorEnabled && hurtTime > 0) {
+            int color = N3XRConfig.hitColor;
+
+            float r = ((color >> 16) & 0xFF) / 255.0f;
+            float g = ((color >> 8) & 0xFF) / 255.0f;
+            float b = (color & 0xFF) / 255.0f;
+
+            RenderSystem.setShaderColor(r, g, b, 1.0f);
+        }
+    }
+
+    @Inject(
+            method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+            at = @At("RETURN")
+    )
+    private void n3xr$after(
+            T entity,
+            float yaw,
+            float tickDelta,
+            MatrixStack matrices,
+            VertexConsumerProvider vertexConsumers,
+            int light,
+            CallbackInfo ci
+    ) {
+        if (entity == MinecraftClient.getInstance().player) return;
+
+        if (vertexConsumers instanceof VertexConsumerProvider.Immediate immediate) {
+            immediate.draw();
+        }
+
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
 }
