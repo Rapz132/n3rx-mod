@@ -32,14 +32,23 @@ public abstract class LivingEntityRendererLabelMixin {
             return;
         }
 
-        if (!N3XRConfig.showNameTag) {
-            return;
-        }
-
         if (mc.options.getPerspective() == Perspective.FIRST_PERSON) {
             return;
         }
 
-        cir.setReturnValue(true);
+        /*
+         * Nametag vanilla milik player sendiri hanya
+         * disembunyikan kalau custom nametag (icon, nama,
+         * health) sedang aktif — supaya gak numpuk sama
+         * hasil render N3XRClient.renderWorldNameTag().
+         *
+         * Kalau custom nametag OFF, vanilla tetap tampil
+         * seperti biasa (tidak diubah di sini).
+         */
+        if (!N3XRConfig.showNameTag && !N3XRConfig.healthIndicatorEnabled) {
+            return;
+        }
+
+        cir.setReturnValue(false);
     }
 }
