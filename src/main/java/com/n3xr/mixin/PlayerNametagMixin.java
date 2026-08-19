@@ -6,8 +6,10 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.client.font.TextRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PlayerEntityRenderer.class)
 public abstract class PlayerNametagMixin {
 
-    private static final Identifier ICON =
-            Identifier.of("n3xr", "textures/gui/nametag_icon.png");
+    private static final Identifier NAMETAG_FONT =
+            Identifier.of("n3xr", "nametag");
 
     @Inject(
         method = "renderLabelIfPresent",
@@ -62,52 +64,123 @@ public abstract class PlayerNametagMixin {
         }
 
         /*
-         * Health indicator.
+         * Custom PNG icon.
          *
-         * `text` tetap merupakan nama/display name asli
-         * dari server, termasuk [BOT] jika server mengirimnya.
+         * U+E000 adalah private-use character
+         * yang dihubungkan ke PNG melalui nametag.json.
          */
-        matrices.push();
+        Text icon = Text.literal("\uE000")
+                .setStyle(
+                    Style.EMPTY.withFont(NAMETAG_FONT)
+                );
 
-        matrices.translate(0.0, 0.25, 0.0);
+        Text separator = Text.literal(" | ");
 
-        matrices.scale(
-            -0.025f,
-            -0.025f,
-            0.025f
-        );
-
+        int iconWidth = mc.textRenderer.getWidth(icon);
+        int separatorWidth = mc.textRenderer.getWidth(separator);
         int nameWidth = mc.textRenderer.getWidth(text);
         int healthWidth = mc.textRenderer.getWidth(healthText);
 
-        int totalWidth = nameWidth + 6 + healthWidth;
+        int totalWidth =
+                iconWidth
+                + separatorWidth
+                + nameWidth
+                + 6
+                + healthWidth;
 
         float x = -totalWidth / 2.0f;
 
-        mc.textRenderer.draw(
-            text,
-            x,
-            0.0f,
-            N3XRConfig.nameTagColor,
-            false,
-            matrices.peek().getPositionMatrix(),
-            vertexConsumers,
-            net.minecraft.client.font.TextRenderer.TextLayerType.NORMAL,
-            0x40000000,
-            light
+        matrices.push();
+
+        matrices.translate(
+                0.0,
+                0.25,
+                0.0
         );
 
+        matrices.multiply(
+                mc.gameRenderer.getCamera().getRotation()
+        );
+
+        matrices.scale(
+                -0.025f,
+                -0.025f,
+                0.025f
+        );
+
+        /*
+         * CUSTOM PNG ICON
+         */
         mc.textRenderer.draw(
-            Text.literal(healthText),
-            x + nameWidth + 6,
-            0.0f,
-            healthColor,
-            false,
-            matrices.peek().getPositionMatrix(),
-            vertexConsumers,
-            net.minecraft.client.font.TextRenderer.TextLayerType.NORMAL,
-            0x40000000,
-            light
+                icon,
+                x,
+                0.0f,
+                0xFFFFFFFF,
+                true,
+                matrices.peek().getPositionMatrix(),
+                vertexConsumers,
+                TextRenderer.TextLayerType.NORMAL,
+                0x40000000,
+                light
+        );
+
+        /*
+         * |
+         */
+        x += iconWidth;
+
+        mc.textRenderer.draw(
+                separator,
+                x,
+                0.0f,
+                0xFFFFFFFF,
+                true,
+                matrices.peek().getPositionMatrix(),
+                vertexConsumers,
+                TextRenderer.TextLayerType.NORMAL,
+                0x40000000,
+                light
+        );
+
+        /*
+         * USERNAME / DISPLAY NAME
+         *
+         * Ini tetap text dari server.
+         *
+         * Contoh:
+         * [BOT] ZFGVC
+         */
+        x += separatorWidth;
+
+        mc.textRenderer.draw(
+                text,
+                x,
+                0.0f,
+                N3XRConfig.nameTagColor,
+                true,
+                matrices.peek().getPositionMatrix(),
+                vertexConsumers,
+                TextRenderer.TextLayerType.NORMAL,
+                0x40000000,
+                light
+        );
+
+        /*
+         * HEALTH
+         */
+        x += nameWidth + 6;
+
+        mc.textRenderer.draw(
+                Text.literal(healthText),
+                x,
+                0.0f,
+                healthColor,
+                true,
+                matrices.peek().getPositionMatrix(),
+                vertexConsumers,
+                TextRenderer.TextLayerType.NORMAL,
+                0x40000000,
+                light
         );
 
         matrices.pop();
