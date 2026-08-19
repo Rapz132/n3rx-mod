@@ -1,8 +1,6 @@
 package com.n3xr;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -17,12 +15,8 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
@@ -284,13 +278,6 @@ public class N3XRClient implements ClientModInitializer {
 
                 float startX = -totalWidth / 2.0f;
 
-                renderNametagIcon(
-                        matrices,
-                        startX,
-                        -1.0f,
-                        iconSize
-                );
-
                 float nameX = startX + iconSize + spacing;
 
                 mc.textRenderer.draw(
@@ -337,44 +324,6 @@ public class N3XRClient implements ClientModInitializer {
                 vertexConsumers.draw();
 
                 matrices.pop();
-        }
-
-        private void renderNametagIcon(
-                MatrixStack matrices,
-                float x,
-                float y,
-                float size
-        ) {
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.enableDepthTest();
-
-                RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-                RenderSystem.setShaderTexture(0, NAMETAG_ICON);
-
-                var matrix = matrices.peek().getPositionMatrix();
-
-                BufferBuilder buffer =
-                        Tessellator.getInstance().begin(
-                                VertexFormat.DrawMode.QUADS,
-                                VertexFormats.POSITION_TEXTURE
-                        );
-
-                buffer.vertex(matrix, x, y + size, 0)
-                        .texture(0.0f, 1.0f);
-
-                buffer.vertex(matrix, x + size, y + size, 0)
-                        .texture(1.0f, 1.0f);
-
-                buffer.vertex(matrix, x + size, y, 0)
-                        .texture(1.0f, 0.0f);
-
-                buffer.vertex(matrix, x, y, 0)
-                        .texture(0.0f, 0.0f);
-
-                BufferRenderer.drawWithGlobalProgram(buffer.end());
-
-                RenderSystem.disableBlend();
         }
 
         private void drawWorldText(WorldRenderContext context, MinecraftClient mc, String text, double worldX, double worldY, double worldZ, int color) {
