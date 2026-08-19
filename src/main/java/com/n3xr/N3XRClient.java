@@ -263,25 +263,24 @@ public class N3XRClient implements ClientModInitializer {
                 var vertexConsumers =
                         mc.getBufferBuilders().getEntityVertexConsumers();
 
-                int iconSize = 12;
+                Text nameWithIcon = Text.literal("⚡ ").append(displayName);
+
                 int spacing = 4;
 
-                int nameWidth = mc.textRenderer.getWidth(displayName);
+                int nameWidth = mc.textRenderer.getWidth(nameWithIcon);
                 int healthWidth = mc.textRenderer.getWidth(healthText);
 
                 int totalWidth =
-                        iconSize +
-                        spacing +
                         nameWidth +
                         spacing +
                         healthWidth;
 
                 float startX = -totalWidth / 2.0f;
 
-                float nameX = startX + iconSize + spacing;
+                float nameX = startX;
 
                 mc.textRenderer.draw(
-                        displayName,
+                        nameWithIcon,
                         nameX,
                         0,
                         N3XRConfig.nameTagColor,
