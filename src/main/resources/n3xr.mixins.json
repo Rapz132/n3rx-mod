@@ -7,7 +7,6 @@
   "AttackCooldownMixin",
   "LivingEntityRendererMixin",
   "LivingEntityRendererLabelMixin",
-  "PlayerNametagMixin",
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
