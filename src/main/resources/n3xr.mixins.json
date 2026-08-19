@@ -8,7 +8,6 @@
   "LivingEntityRendererMixin",
   "LivingEntityRendererLabelMixin",
   "PlayerNametagMixin",
-  "PlayerEntityRendererMixin",
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
