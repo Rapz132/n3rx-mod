@@ -63,6 +63,9 @@ public class N3XRClient implements ClientModInitializer {
         private final List<String> itemUpdateQueue = new ArrayList<>();
         private long itemUpdateShownUntil = 0;
 
+        private long lastProcStatIdle = -1;
+        private long lastProcStatTotal = -1;
+
         @Override
         public void onInitializeClient() {
                 N3XRConfigStorage.load();
@@ -462,17 +465,83 @@ public class N3XRClient implements ClientModInitializer {
                 String txt = "CPU: N/A";
                 try {
                         var osBean = ManagementFactory.getOperatingSystemMXBean();
+                        double resolved = -1;
+
                         if (osBean instanceof com.sun.management.OperatingSystemMXBean sunBean) {
                                 double load = sunBean.getCpuLoad();
                                 if (load < 0) load = sunBean.getProcessCpuLoad();
-                                if (load >= 0) txt = String.format("CPU: %.1f%%", load * 100);
-                        } else {
+                                if (load >= 0) resolved = load * 100;
+                        }
+
+                        if (resolved < 0) {
                                 double avg = osBean.getSystemLoadAverage();
                                 int cores = osBean.getAvailableProcessors();
-                                if (avg >= 0 && cores > 0) txt = String.format("CPU: %.0f%%", (avg / cores) * 100);
+                                if (avg >= 0 && cores > 0) resolved = (avg / cores) * 100;
                         }
+
+                        if (resolved < 0) {
+                                Double procStat = readProcStatCpuUsage();
+                                if (procStat != null) resolved = procStat;
+                        }
+
+                        if (resolved >= 0) txt = String.format("CPU: %.1f%%", resolved);
                 } catch (Exception ignored) {}
                 renderLabel(c, mc, "CPU", txt, N3XRConfig.cpuX, N3XRConfig.cpuY, N3XRConfig.cpuColor);
+        }
+
+        /**
+         * Fallback pembacaan CPU usage lewat /proc/stat, dipakai saat
+         * com.sun.management.OperatingSystemMXBean tidak tersedia atau
+         * selalu mengembalikan nilai tidak valid (umum terjadi di JVM
+         * hasil porting seperti PojavLauncher di Android).
+         *
+         * Menghitung persentase dari selisih dua kali pembacaan
+         * berturut-turut, karena angka di /proc/stat bersifat kumulatif
+         * sejak boot.
+         */
+        private Double readProcStatCpuUsage() {
+                try {
+                        java.io.File statFile = new java.io.File("/proc/stat");
+                        if (!statFile.exists()) return null;
+
+                        String firstLine;
+                        try (var reader = new java.io.BufferedReader(new java.io.FileReader(statFile))) {
+                                firstLine = reader.readLine();
+                        }
+                        if (firstLine == null || !firstLine.startsWith("cpu ")) return null;
+
+                        String[] parts = firstLine.trim().split("\\s+");
+                        if (parts.length < 5) return null;
+
+                        long user = Long.parseLong(parts[1]);
+                        long nice = Long.parseLong(parts[2]);
+                        long system = Long.parseLong(parts[3]);
+                        long idle = Long.parseLong(parts[4]);
+                        long iowait = parts.length > 5 ? Long.parseLong(parts[5]) : 0;
+                        long irq = parts.length > 6 ? Long.parseLong(parts[6]) : 0;
+                        long softirq = parts.length > 7 ? Long.parseLong(parts[7]) : 0;
+
+                        long idleTotal = idle + iowait;
+                        long total = user + nice + system + idleTotal + irq + softirq;
+
+                        Double result = null;
+
+                        if (lastProcStatTotal >= 0) {
+                                long totalDelta = total - lastProcStatTotal;
+                                long idleDelta = idleTotal - lastProcStatIdle;
+                                if (totalDelta > 0) {
+                                        double usageFraction = 1.0 - ((double) idleDelta / (double) totalDelta);
+                                        result = Math.max(0.0, Math.min(100.0, usageFraction * 100));
+                                }
+                        }
+
+                        lastProcStatTotal = total;
+                        lastProcStatIdle = idleTotal;
+
+                        return result;
+                } catch (Exception e) {
+                        return null;
+                }
         }
 
         private void renderBiome(DrawContext c, MinecraftClient mc) {
