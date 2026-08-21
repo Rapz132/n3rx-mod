@@ -9,12 +9,9 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.PlayerSkinDrawer;
-import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
@@ -68,6 +65,8 @@ public class N3XRClient implements ClientModInitializer {
 
         private long lastProcStatIdle = -1;
         private long lastProcStatTotal = -1;
+        private int procStatStuckIdleCount = 0;
+        private boolean procStatUnreliable = false;
 
         @Override
         public void onInitializeClient() {
@@ -80,16 +79,6 @@ public class N3XRClient implements ClientModInitializer {
                         "key.n3xr.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.n3xr"));
 
                 hookMouseClicks();
-
-                ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-                        if (screen instanceof TitleScreen) {
-                                ScreenEvents.afterRender(screen).register((s, context, mouseX, mouseY, tickDelta) -> {
-                                        if (N3XRConfig.showPlayerHead) {
-                                                renderPlayerHead(context, MinecraftClient.getInstance());
-                                        }
-                                });
-                        }
-                });
 
                 WorldRenderEvents.END.register(context -> {
                         com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -176,7 +165,6 @@ public class N3XRClient implements ClientModInitializer {
                         if (N3XRConfig.showPotions) renderPotions(context, mc);
                         if (N3XRConfig.showRealTime) renderRealTime(context, mc);
                         if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
-                        if (N3XRConfig.showPlayerHead) renderPlayerHead(context, mc);
                         if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
                 });
         }
@@ -523,6 +511,8 @@ public class N3XRClient implements ClientModInitializer {
          * sejak boot.
          */
         private Double readProcStatCpuUsage() {
+                if (procStatUnreliable) return null;
+
                 try {
                         java.io.File statFile = new java.io.File("/proc/stat");
                         if (!statFile.exists()) return null;
@@ -552,7 +542,26 @@ public class N3XRClient implements ClientModInitializer {
                         if (lastProcStatTotal >= 0) {
                                 long totalDelta = total - lastProcStatTotal;
                                 long idleDelta = idleTotal - lastProcStatIdle;
+
                                 if (totalDelta > 0) {
+                                        /*
+                                         * Beberapa Android modern membatasi/menyamarkan isi
+                                         * /proc/stat untuk app biasa, sehingga idleDelta
+                                         * selalu terbaca 0 walau totalDelta terus bertambah.
+                                         * Kalau ini terjadi berulang, angka yang dihasilkan
+                                         * akan selalu mentok 100% dan menyesatkan — matikan
+                                         * fallback ini secara permanen untuk sesi berjalan.
+                                         */
+                                        if (idleDelta <= 0) {
+                                                procStatStuckIdleCount++;
+                                                if (procStatStuckIdleCount >= 5) {
+                                                        procStatUnreliable = true;
+                                                        return null;
+                                                }
+                                        } else {
+                                                procStatStuckIdleCount = 0;
+                                        }
+
                                         double usageFraction = 1.0 - ((double) idleDelta / (double) totalDelta);
                                         result = Math.max(0.0, Math.min(100.0, usageFraction * 100));
                                 }
@@ -595,57 +604,6 @@ public class N3XRClient implements ClientModInitializer {
                 if (mc.world == null) return;
                 long day = mc.world.getTimeOfDay() / 24000L;
                 renderLabel(c, mc, "DayCounter", "Day: " + day, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, N3XRConfig.dayCounterColor);
-        }
-
-        private void renderPlayerHead(DrawContext c, MinecraftClient mc) {
-                String name;
-                net.minecraft.client.util.SkinTextures textures;
-
-                try {
-                        if (mc.player != null) {
-                                name = mc.player.getGameProfile().getName();
-                                textures = mc.player.getSkinTextures();
-                        } else {
-                                name = mc.getSession().getUsername();
-                                textures = mc.getSkinProvider().getSkinTextures(mc.getGameProfile());
-                        }
-                } catch (Exception e) {
-                        return;
-                }
-
-                if (name == null || textures == null) return;
-
-                float scale = N3XRConfig.getScale("PlayerHead");
-                c.getMatrices().push();
-                c.getMatrices().translate(N3XRConfig.playerHeadX, N3XRConfig.playerHeadY, 0);
-                c.getMatrices().scale(scale, scale, 1f);
-
-                int headSize = 20;
-                int textWidth = mc.textRenderer.getWidth(name);
-
-                int panelW = headSize + 6 + textWidth + 6;
-                int panelH = headSize + 2;
-
-                c.fill(-2, -2, panelW, panelH, 0x90000000);
-
-                PlayerSkinDrawer.draw(
-                        c,
-                        textures,
-                        0,
-                        0,
-                        headSize
-                );
-
-                c.drawText(
-                        mc.textRenderer,
-                        name,
-                        headSize + 6,
-                        (headSize - 8) / 2,
-                        N3XRConfig.playerHeadColor,
-                        true
-                );
-
-                c.getMatrices().pop();
         }
 
         private void renderInventoryDisplay(DrawContext c, MinecraftClient mc) {
