@@ -634,7 +634,6 @@ public class N3XRClient implements ClientModInitializer {
                 c.getMatrices().scale(scale, scale, 1f);
 
                 int size = 12, gap = 1;
-                c.fill(-2, -2, (size + gap) * 3, (size + gap) * 2, 0x80000000);
                 boolean w = mc.options.forwardKey.isPressed();
                 boolean a = mc.options.leftKey.isPressed();
                 boolean s = mc.options.backKey.isPressed();
