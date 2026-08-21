@@ -33,7 +33,6 @@ public class N3XRConfig {
         public static boolean healthIndicatorEnabled = false;
         public static boolean chatTimestampEnabled = false;
         public static boolean showDayCounter = false;
-        public static boolean showPlayerHead = false;
 
         public static boolean snapEnabled = false;
         public static boolean guidesEnabled = true;
@@ -78,7 +77,6 @@ public static final java.util.Map<String, Float> moduleScale = new java.util.Has
         public static int inventoryDisplayX = 5, inventoryDisplayY = 400;
         public static int realTimeX = 5, realTimeY = 365;
         public static int dayCounterX = 5, dayCounterY = 380;
-        public static int playerHeadX = 5, playerHeadY = 415;
 
         public static int fpsColor = 0xFFFFFF;
         public static int cpsColor = 0xFFFFFF;
@@ -101,7 +99,6 @@ public static final java.util.Map<String, Float> moduleScale = new java.util.Has
         public static int blockOutlineColor = 0xFF3333;
         public static int healthIndicatorColor = 0xFF55FF55;
         public static int dayCounterColor = 0xFFFFFF;
-        public static int playerHeadColor = 0xFFFFFF;
 
         public static final int[] PRESET_COLORS = {
                 0xFFFFFF, 0xFF5555, 0xFF8800, 0xFFFF55, 0xAAFF55,
