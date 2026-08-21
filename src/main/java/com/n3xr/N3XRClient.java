@@ -9,9 +9,12 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.PlayerSkinDrawer;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
@@ -77,6 +80,16 @@ public class N3XRClient implements ClientModInitializer {
                         "key.n3xr.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.n3xr"));
 
                 hookMouseClicks();
+
+                ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+                        if (screen instanceof TitleScreen) {
+                                ScreenEvents.afterRender(screen).register((s, context, mouseX, mouseY, tickDelta) -> {
+                                        if (N3XRConfig.showPlayerHead) {
+                                                renderPlayerHead(context, MinecraftClient.getInstance());
+                                        }
+                                });
+                        }
+                });
 
                 WorldRenderEvents.END.register(context -> {
                         com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -163,6 +176,7 @@ public class N3XRClient implements ClientModInitializer {
                         if (N3XRConfig.showPotions) renderPotions(context, mc);
                         if (N3XRConfig.showRealTime) renderRealTime(context, mc);
                         if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
+                        if (N3XRConfig.showPlayerHead) renderPlayerHead(context, mc);
                         if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
                 });
         }
@@ -473,18 +487,27 @@ public class N3XRClient implements ClientModInitializer {
                                 if (load >= 0) resolved = load * 100;
                         }
 
+                        /*
+                         * /proc/stat dicoba lebih dulu daripada loadAverage,
+                         * karena loadAverage di Android/Linux adalah rata-rata
+                         * antrian proses (bisa > jumlah core), bukan persentase
+                         * pemakaian murni — gampang menghasilkan angka > 100%.
+                         */
+                        if (resolved < 0) {
+                                Double procStat = readProcStatCpuUsage();
+                                if (procStat != null) resolved = procStat;
+                        }
+
                         if (resolved < 0) {
                                 double avg = osBean.getSystemLoadAverage();
                                 int cores = osBean.getAvailableProcessors();
                                 if (avg >= 0 && cores > 0) resolved = (avg / cores) * 100;
                         }
 
-                        if (resolved < 0) {
-                                Double procStat = readProcStatCpuUsage();
-                                if (procStat != null) resolved = procStat;
+                        if (resolved >= 0) {
+                                resolved = Math.max(0.0, Math.min(100.0, resolved));
+                                txt = String.format("CPU: %.1f%%", resolved);
                         }
-
-                        if (resolved >= 0) txt = String.format("CPU: %.1f%%", resolved);
                 } catch (Exception ignored) {}
                 renderLabel(c, mc, "CPU", txt, N3XRConfig.cpuX, N3XRConfig.cpuY, N3XRConfig.cpuColor);
         }
@@ -574,6 +597,57 @@ public class N3XRClient implements ClientModInitializer {
                 renderLabel(c, mc, "DayCounter", "Day: " + day, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, N3XRConfig.dayCounterColor);
         }
 
+        private void renderPlayerHead(DrawContext c, MinecraftClient mc) {
+                String name;
+                net.minecraft.client.util.SkinTextures textures;
+
+                try {
+                        if (mc.player != null) {
+                                name = mc.player.getGameProfile().getName();
+                                textures = mc.player.getSkinTextures();
+                        } else {
+                                name = mc.getSession().getUsername();
+                                textures = mc.getSkinProvider().getSkinTextures(mc.getGameProfile());
+                        }
+                } catch (Exception e) {
+                        return;
+                }
+
+                if (name == null || textures == null) return;
+
+                float scale = N3XRConfig.getScale("PlayerHead");
+                c.getMatrices().push();
+                c.getMatrices().translate(N3XRConfig.playerHeadX, N3XRConfig.playerHeadY, 0);
+                c.getMatrices().scale(scale, scale, 1f);
+
+                int headSize = 20;
+                int textWidth = mc.textRenderer.getWidth(name);
+
+                int panelW = headSize + 6 + textWidth + 6;
+                int panelH = headSize + 2;
+
+                c.fill(-2, -2, panelW, panelH, 0x90000000);
+
+                PlayerSkinDrawer.draw(
+                        c,
+                        textures,
+                        0,
+                        0,
+                        headSize
+                );
+
+                c.drawText(
+                        mc.textRenderer,
+                        name,
+                        headSize + 6,
+                        (headSize - 8) / 2,
+                        N3XRConfig.playerHeadColor,
+                        true
+                );
+
+                c.getMatrices().pop();
+        }
+
         private void renderInventoryDisplay(DrawContext c, MinecraftClient mc) {
                 float scale = N3XRConfig.getScale("Inventory");
                 c.getMatrices().push();
@@ -601,8 +675,8 @@ public class N3XRClient implements ClientModInitializer {
                 c.getMatrices().translate(N3XRConfig.keysX, N3XRConfig.keysY, 0);
                 c.getMatrices().scale(scale, scale, 1f);
 
-                int size = 18, gap = 2;
-                c.fill(-2, -2, (size + gap) * 3, (size + gap) * 2, 0x90000000);
+                int size = 12, gap = 1;
+                c.fill(-2, -2, (size + gap) * 3, (size + gap) * 2, 0x80000000);
                 boolean w = mc.options.forwardKey.isPressed();
                 boolean a = mc.options.leftKey.isPressed();
                 boolean s = mc.options.backKey.isPressed();
