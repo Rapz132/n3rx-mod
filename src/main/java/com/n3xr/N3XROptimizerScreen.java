@@ -37,7 +37,8 @@ public class N3XROptimizerScreen extends Screen {
                 features = new OptimizerFeature[]{
                         new OptimizerFeature("Smart Render", "Auto-adjusts render distance based on FPS.", true,
                                 () -> N3XRConfig.smartRenderEnabled, v -> N3XRConfig.smartRenderEnabled = v),
-                        new OptimizerFeature("Feature 2", "Soon", false, () -> false, v -> {}),
+                        new OptimizerFeature("No Shading", "Removes shading on block sides (experimental).", true,
+                                () -> N3XRConfig.noBlockShadingEnabled, v -> N3XRConfig.noBlockShadingEnabled = v),
                         new OptimizerFeature("Feature 3", "Soon", false, () -> false, v -> {}),
                         new OptimizerFeature("Feature 4", "Soon", false, () -> false, v -> {}),
                         new OptimizerFeature("Feature 5", "Soon", false, () -> false, v -> {}),
