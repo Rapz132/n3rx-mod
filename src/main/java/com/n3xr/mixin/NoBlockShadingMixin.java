@@ -17,29 +17,29 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  *
  * PERINGATAN: target method ini private dan spesifik untuk yarn
  * 1.21+build.2. Jika signature berubah di versi lain, mixin ini
- * bisa gagal apply saat build — karena itu didaftarkan sebagai
- * optional (required: 0) di mixin config, supaya kegagalannya
- * tidak menjatuhkan seluruh mod, hanya fitur ini yang tidak aktif.
+ * bisa gagal apply — karena tiap @ModifyVariable diberi
+ * require = 0, kegagalan match hanya membuat fitur ini diam-diam
+ * tidak aktif, tidak menjatuhkan seluruh mod saat build/load.
  */
 @Mixin(BlockModelRenderer.class)
 public abstract class NoBlockShadingMixin {
 
-        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 0, require = 0)
         private float n3xr$flattenBrightness0(float brightness) {
                 return N3XRConfig.noBlockShadingEnabled ? 1.0f : brightness;
         }
 
-        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 1, require = 0)
         private float n3xr$flattenBrightness1(float brightness) {
                 return N3XRConfig.noBlockShadingEnabled ? 1.0f : brightness;
         }
 
-        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 2)
+        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 2, require = 0)
         private float n3xr$flattenBrightness2(float brightness) {
                 return N3XRConfig.noBlockShadingEnabled ? 1.0f : brightness;
         }
 
-        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 3)
+        @ModifyVariable(method = "renderQuad", at = @At("HEAD"), argsOnly = true, ordinal = 3, require = 0)
         private float n3xr$flattenBrightness3(float brightness) {
                 return N3XRConfig.noBlockShadingEnabled ? 1.0f : brightness;
         }
