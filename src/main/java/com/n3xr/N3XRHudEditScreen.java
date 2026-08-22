@@ -33,8 +33,12 @@ public class N3XRHudEditScreen extends Screen {
                 ));
 
                 this.addDrawableChild(N3XRButton.of(cx + 105, 118, 95, 18,
-                        Text.literal("+ Guides " + (N3XRConfig.guidesEnabled ? "ON" : "OFF")),
-                        b -> { N3XRConfig.guidesEnabled = !N3XRConfig.guidesEnabled; b.setMessage(Text.literal("+ Guides " + (N3XRConfig.guidesEnabled ? "ON" : "OFF"))); }
+                        Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")),
+                        b -> {
+                                N3XRConfig.snapEnabled = !N3XRConfig.snapEnabled;
+                                N3XRConfig.guidesEnabled = N3XRConfig.snapEnabled;
+                                b.setMessage(Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")));
+                        }
                 ));
         }
 
