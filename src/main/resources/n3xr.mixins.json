@@ -7,13 +7,10 @@
   "AttackCooldownMixin",
   "LivingEntityRendererMixin",
   "LivingEntityRendererLabelMixin",
-  "NoBlockShadingMixin",
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
-  "ChatHudMixin",
-  "FogDisableMixin",
-  "EntityCullingMixin"
+  "ChatHudMixin"
 ],
 	"injectors": {
 		"defaultRequire": 1
