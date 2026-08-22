@@ -37,6 +37,9 @@ public class N3XRConfig {
         public static boolean snapEnabled = false;
         public static boolean smartRenderEnabled = false;
         public static boolean noBlockShadingEnabled = false;
+        public static boolean fogDisabledEnabled = false;
+        public static boolean entityCullingEnabled = false;
+        public static float entityCullingDistance = 32.0f;
         public static int smartRenderOriginalDistance = -1;
         public static boolean guidesEnabled = true;
         public static boolean keysRainbow = false;
