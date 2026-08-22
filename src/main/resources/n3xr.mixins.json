@@ -11,7 +11,9 @@
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
-  "ChatHudMixin"
+  "ChatHudMixin",
+  "FogDisableMixin",
+  "EntityCullingMixin"
 ],
 	"injectors": {
 		"defaultRequire": 1
