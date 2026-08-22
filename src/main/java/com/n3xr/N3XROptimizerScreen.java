@@ -11,7 +11,9 @@ import java.util.function.Supplier;
  * Screen terpisah untuk fitur-fitur optimizer (Smart Render, dll).
  * Dibuka dari tombol "Optimizer" di N3XRHudEditScreen.
  *
- * Layout: grid 2 kolom x 5 baris = 10 slot fitur.
+ * Layout: grid 2 kolom, dengan jumlah baris yang terlihat dibatasi
+ * oleh tinggi panel dan sisanya bisa di-scroll (pola sama seperti
+ * N3XRConfigScreen).
  * Slot yang belum diimplementasi ditandai "Soon" dan tidak bisa ditoggle.
  */
 public class N3XROptimizerScreen extends Screen {
@@ -23,12 +25,16 @@ public class N3XROptimizerScreen extends Screen {
         private final OptimizerFeature[] features;
 
         private static final int COLS = 2;
-        private static final int ROWS = 5;
         private static final int CARD_W = 180;
         private static final int CARD_H = 58;
         private static final int GAP = 8;
+        private static final int BAR_W = 14;
+        private static final int VISIBLE_ROWS = 2;
 
-        private int gridX, gridY;
+        private int gridX, gridY, gridBottom;
+        private int scrollOffset = 0;
+        private boolean draggingScrollbar = false;
+        private int scrollBarX, scrollTrackY1, scrollTrackY2;
 
         public N3XROptimizerScreen(Screen parent) {
                 super(Text.literal("N3XR Optimizer"));
@@ -57,15 +63,44 @@ public class N3XROptimizerScreen extends Screen {
                 int totalW = COLS * CARD_W + (COLS - 1) * GAP;
                 gridX = this.width / 2 - totalW / 2;
                 gridY = 50;
+                gridBottom = gridY + VISIBLE_ROWS * CARD_H + (VISIBLE_ROWS - 1) * GAP;
+
+                scrollBarX = gridX + totalW + 10;
+                scrollTrackY1 = gridY;
+                scrollTrackY2 = gridBottom;
+
+                this.addDrawableChild(N3XRButton.of(scrollBarX, gridY, BAR_W, 18,
+                        Text.literal("^"), b -> { if (scrollOffset > 0) scrollOffset--; }));
+                this.addDrawableChild(N3XRButton.of(scrollBarX, gridBottom - 18, BAR_W, 18,
+                        Text.literal("v"), b -> {
+                                int maxOffset = maxScrollOffset();
+                                if (scrollOffset < maxOffset) scrollOffset++;
+                        }));
 
                 this.addDrawableChild(N3XRButton.of(this.width / 2 - 55, this.height - 30, 110, 18,
                         Text.literal("Back"), b -> this.client.setScreen(parent)));
         }
 
+        private int totalRows() {
+                return (int) Math.ceil(features.length / (double) COLS);
+        }
+
+        private int maxScrollOffset() {
+                return Math.max(0, totalRows() - VISIBLE_ROWS);
+        }
+
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                for (int i = 0; i < features.length; i++) {
-                        OptimizerFeature f = features[i];
+                int thumbY = getThumbY();
+                int thumbH = getThumbHeight();
+                if (mouseX >= scrollBarX && mouseX <= scrollBarX + BAR_W && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
+                        draggingScrollbar = true;
+                        return true;
+                }
+
+                int startIndex = scrollOffset * COLS;
+                for (int i = 0; i < features.length - startIndex && i < VISIBLE_ROWS * COLS; i++) {
+                        OptimizerFeature f = features[startIndex + i];
                         if (!f.implemented()) continue;
 
                         int col = i % COLS, row = i / COLS;
@@ -83,6 +118,53 @@ public class N3XROptimizerScreen extends Screen {
                         }
                 }
                 return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+                if (draggingScrollbar) {
+                        int maxOffset = maxScrollOffset();
+                        if (maxOffset <= 0) return true;
+                        int trackH = scrollTrackY2 - scrollTrackY1 - getThumbHeight();
+                        if (trackH <= 0) return true;
+                        double ratio = (mouseY - scrollTrackY1 - getThumbHeight() / 2.0) / trackH;
+                        ratio = Math.max(0, Math.min(1, ratio));
+                        scrollOffset = (int) Math.round(ratio * maxOffset);
+                        return true;
+                }
+                return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        }
+
+        @Override
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+                draggingScrollbar = false;
+                return super.mouseReleased(mouseX, mouseY, button);
+        }
+
+        @Override
+        public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+                int maxOffset = maxScrollOffset();
+                if (maxOffset > 0) {
+                        scrollOffset = Math.max(0, Math.min(maxOffset, scrollOffset - (int) Math.signum(verticalAmount)));
+                        return true;
+                }
+                return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        }
+
+        private int getThumbHeight() {
+                int trackH = scrollTrackY2 - scrollTrackY1;
+                int maxOffset = maxScrollOffset();
+                int totalRows = maxOffset + VISIBLE_ROWS;
+                if (totalRows <= 0) return trackH;
+                int h = (int) (trackH * (VISIBLE_ROWS / (double) totalRows));
+                return Math.max(BAR_W, Math.min(trackH, h));
+        }
+
+        private int getThumbY() {
+                int maxOffset = maxScrollOffset();
+                if (maxOffset <= 0) return scrollTrackY1;
+                int trackH = scrollTrackY2 - scrollTrackY1 - getThumbHeight();
+                return scrollTrackY1 + (int) (trackH * (scrollOffset / (double) maxOffset));
         }
 
         private java.util.List<String> wrapText(String text, int maxWidth) {
@@ -121,8 +203,8 @@ public class N3XROptimizerScreen extends Screen {
 
         @Override
         public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-                int panelW = COLS * CARD_W + (COLS - 1) * GAP + 32;
-                int panelH = ROWS * CARD_H + (ROWS - 1) * GAP + 70;
+                int panelW = COLS * CARD_W + (COLS - 1) * GAP + 32 + BAR_W + 10;
+                int panelH = VISIBLE_ROWS * CARD_H + (VISIBLE_ROWS - 1) * GAP + 70;
                 int panelX1 = this.width / 2 - panelW / 2;
                 int panelY1 = 20;
 
@@ -134,8 +216,9 @@ public class N3XROptimizerScreen extends Screen {
                 int tw = this.textRenderer.getWidth(title);
                 context.drawText(this.textRenderer, title, (this.width - tw) / 2, panelY1 + 10, 0xFFFF3333, true);
 
-                for (int i = 0; i < features.length; i++) {
-                        OptimizerFeature f = features[i];
+                int startIndex = scrollOffset * COLS;
+                for (int i = 0; i < features.length - startIndex && i < VISIBLE_ROWS * COLS; i++) {
+                        OptimizerFeature f = features[startIndex + i];
                         int col = i % COLS, row = i / COLS;
                         int cx = gridX + col * (CARD_W + GAP);
                         int cy = gridY + row * (CARD_H + GAP);
@@ -175,6 +258,11 @@ public class N3XROptimizerScreen extends Screen {
                                         cx + 8, cy + CARD_H - 16, 0xFF666666, false);
                         }
                 }
+
+                fillRounded(context, scrollBarX, scrollTrackY1, scrollBarX + BAR_W, scrollTrackY2, 0xFF221111, BAR_W / 2);
+                int thumbY = getThumbY();
+                int thumbH = getThumbHeight();
+                fillRounded(context, scrollBarX + 2, thumbY, scrollBarX + BAR_W - 2, thumbY + thumbH, 0xFFFF5555, (BAR_W - 4) / 2);
         }
 
         @Override
