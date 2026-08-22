@@ -27,7 +27,9 @@ public abstract class FogDisableMixin {
                 float viewDistance,
                 Camera camera,
                 BackgroundRenderer.FogType fogType,
-                boolean thickFog
+                float skyDarkness,
+                boolean thickFog,
+                float tickDelta
         ) {
                 if (!N3XRConfig.fogDisabledEnabled) return viewDistance;
 
