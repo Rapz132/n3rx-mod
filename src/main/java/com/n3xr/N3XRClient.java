@@ -59,6 +59,9 @@ public class N3XRClient implements ClientModInitializer {
         private double lastX, lastY, lastZ;
         private double currentSpeed = 0;
 
+        private long lastSmartRenderCheck = 0;
+        private int smartRenderUserMax = -1;
+
         private final List<String> lastInventorySnapshot = new ArrayList<>();
         private final List<String> itemUpdateQueue = new ArrayList<>();
         private long itemUpdateShownUntil = 0;
@@ -103,9 +106,11 @@ public class N3XRClient implements ClientModInitializer {
                                 if (client.currentScreen == null) client.setScreen(new N3XRHudEditScreen());
                         }
 
-                        handleZoom(client);
-
                         long now = System.currentTimeMillis();
+
+                        handleZoom(client);
+                        handleSmartRender(client, now);
+
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
 
                         if (client.world != null) {
@@ -193,6 +198,53 @@ public class N3XRClient implements ClientModInitializer {
                         if (savedFov >= 0) client.options.getFov().setValue((int) savedFov);
                         zoomActive = false;
                 }
+        }
+
+        /**
+         * Smart Render: otomatis menurunkan render distance saat FPS
+         * rendah, dan menaikkannya kembali saat FPS sudah membaik.
+         * Batas atas mengikuti render distance yang di-set user sendiri
+         * di video settings (tidak pernah dinaikkan melebihi itu).
+         * Dicek setiap 2 detik agar tidak terlalu sering berubah-ubah.
+         */
+        private void handleSmartRender(MinecraftClient client, long now) {
+                if (!N3XRConfig.smartRenderEnabled) {
+                        smartRenderUserMax = -1;
+                        return;
+                }
+
+                if (client.world == null || client.options == null) return;
+
+                if (smartRenderUserMax < 0) {
+                        smartRenderUserMax = client.options.getViewDistance().getValue();
+                }
+
+                if (now - lastSmartRenderCheck < 2000) return;
+                lastSmartRenderCheck = now;
+
+                int fps = client.getCurrentFps();
+                int currentDistance = client.options.getViewDistance().getValue();
+
+                final int MIN_DISTANCE = 4;
+
+                if (fps < 30 && currentDistance > MIN_DISTANCE) {
+                        setViewDistanceSafely(client, currentDistance - 1);
+                } else if (fps > 50 && currentDistance < smartRenderUserMax) {
+                        setViewDistanceSafely(client, currentDistance + 1);
+                }
+        }
+
+        /**
+         * Mengubah render distance dan mencoba menyimpannya ke options.txt.
+         * Dibungkus try-catch karena nama method penyimpanan bisa berbeda
+         * antar versi Minecraft — kalau gagal, perubahan tetap berlaku
+         * untuk sesi berjalan, hanya tidak persisten ke file.
+         */
+        private void setViewDistanceSafely(MinecraftClient client, int newDistance) {
+                client.options.getViewDistance().setValue(newDistance);
+                try {
+                        client.options.write();
+                } catch (Exception ignored) {}
         }
 
         private void renderBlockOverlay(WorldRenderContext context) {
