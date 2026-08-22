@@ -25,7 +25,7 @@ public class N3XROptimizerScreen extends Screen {
         private static final int COLS = 2;
         private static final int ROWS = 5;
         private static final int CARD_W = 180;
-        private static final int CARD_H = 44;
+        private static final int CARD_H = 58;
         private static final int GAP = 8;
 
         private int gridX, gridY;
@@ -82,6 +82,25 @@ public class N3XROptimizerScreen extends Screen {
                 return super.mouseClicked(mouseX, mouseY, button);
         }
 
+        private java.util.List<String> wrapText(String text, int maxWidth) {
+                java.util.List<String> lines = new java.util.ArrayList<>();
+                String[] words = text.split(" ");
+                StringBuilder current = new StringBuilder();
+
+                for (String word : words) {
+                        String attempt = current.isEmpty() ? word : current + " " + word;
+                        if (this.textRenderer.getWidth(attempt) > maxWidth && !current.isEmpty()) {
+                                lines.add(current.toString());
+                                current = new StringBuilder(word);
+                        } else {
+                                current = new StringBuilder(attempt);
+                        }
+                }
+                if (!current.isEmpty()) lines.add(current.toString());
+
+                return lines;
+        }
+
         private void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
                 radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
                 if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
@@ -131,7 +150,13 @@ public class N3XROptimizerScreen extends Screen {
                                 cx + 8, cy + 6, f.implemented() ? 0xFFFFFFFF : 0xFF888888, true);
 
                         if (f.implemented()) {
-                                context.drawText(this.textRenderer, f.desc(), cx + 8, cy + 18, 0xFF999999, false);
+                                int maxDescW = CARD_W - 16;
+                                java.util.List<String> lines = wrapText(f.desc(), maxDescW);
+                                int lineY = cy + 18;
+                                for (String line : lines) {
+                                        context.drawText(this.textRenderer, line, cx + 8, lineY, 0xFF999999, false);
+                                        lineY += 10;
+                                }
 
                                 int toggleW = 40, toggleH = 16;
                                 int toggleX1 = cx + CARD_W - 8 - toggleW;
