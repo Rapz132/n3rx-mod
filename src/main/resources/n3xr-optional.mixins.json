@@ -1,0 +1,12 @@
+{
+	"required": false,
+	"minVersion": "0.8",
+	"package": "com.n3xr.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+  "NoBlockShadingMixin"
+],
+	"injectors": {
+		"defaultRequire": 0
+	}
+}
