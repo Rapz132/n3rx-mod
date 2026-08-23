@@ -62,7 +62,7 @@ public class N3XROptimizerScreen extends Screen {
         protected void init() {
                 int totalW = COLS * CARD_W + (COLS - 1) * GAP;
                 gridX = this.width / 2 - totalW / 2;
-                gridY = 50;
+                gridY = 62;
                 gridBottom = gridY + VISIBLE_ROWS * CARD_H + (VISIBLE_ROWS - 1) * GAP;
 
                 scrollBarX = gridX + totalW + 10;
@@ -212,9 +212,12 @@ public class N3XROptimizerScreen extends Screen {
 
                 super.render(context, mouseX, mouseY, delta);
 
-                Text title = Text.literal("N3XR Optimizer").styled(s -> s.withBold(true));
-                int tw = this.textRenderer.getWidth(title);
-                context.drawText(this.textRenderer, title, (this.width - tw) / 2, panelY1 + 10, 0xFFFF3333, true);
+                int logoW = 160, logoH = 32;
+                int logoX = (this.width - logoW) / 2;
+                context.drawTexture(
+                        net.minecraft.util.Identifier.of("n3xr", "textures/gui/optimizer_logo.png"),
+                        logoX, panelY1 + 8, 0, 0, logoW, logoH, logoW, logoH
+                );
 
                 int startIndex = scrollOffset * COLS;
                 for (int i = 0; i < features.length - startIndex && i < VISIBLE_ROWS * COLS; i++) {
