@@ -40,6 +40,17 @@ public class N3XRConfig {
         public static boolean fogDisabledEnabled = false;
         public static boolean entityCullingEnabled = false;
         public static float entityCullingDistance = 32.0f;
+
+        public static boolean fpsGovernorEnabled = false;
+        public static int fpsGovernorTarget = 60;
+
+        public static boolean itemEntityOptimizerEnabled = false;
+        public static float itemEntityCullingDistance = 16.0f;
+
+        public static boolean resourceManagerEnabled = false;
+        public static int resourceManagerMode = 1; // 0=Low, 1=Balanced, 2=Performance
+
+        public static boolean combatPerformanceModeEnabled = false;
         public static int smartRenderOriginalDistance = -1;
         public static boolean guidesEnabled = true;
         public static boolean keysRainbow = false;
