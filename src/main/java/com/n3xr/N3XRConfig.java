@@ -51,6 +51,8 @@ public class N3XRConfig {
         public static int resourceManagerMode = 1; // 0=Low, 1=Balanced, 2=Performance
 
         public static boolean combatPerformanceModeEnabled = false;
+        public static boolean weatherReducerEnabled = false;
+        public static boolean noGlintEnabled = false;
         public static int smartRenderOriginalDistance = -1;
         public static boolean guidesEnabled = true;
         public static boolean keysRainbow = false;
