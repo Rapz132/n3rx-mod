@@ -49,10 +49,14 @@ public class N3XROptimizerScreen extends Screen {
                                 () -> N3XRConfig.fogDisabledEnabled, v -> N3XRConfig.fogDisabledEnabled = v),
                         new OptimizerFeature("Entity Culling", "Skips rendering entities beyond a set distance.", true,
                                 () -> N3XRConfig.entityCullingEnabled, v -> N3XRConfig.entityCullingEnabled = v),
-                        new OptimizerFeature("Feature 5", "Soon", false, () -> false, v -> {}),
-                        new OptimizerFeature("Feature 6", "Soon", false, () -> false, v -> {}),
-                        new OptimizerFeature("Feature 7", "Soon", false, () -> false, v -> {}),
-                        new OptimizerFeature("Feature 8", "Soon", false, () -> false, v -> {}),
+                        new OptimizerFeature("Smart FPS Governor", "Keeps FPS near a target so GPU/CPU isn't maxed out.", true,
+                                () -> N3XRConfig.fpsGovernorEnabled, v -> N3XRConfig.fpsGovernorEnabled = v),
+                        new OptimizerFeature("Item Entity Optimizer", "Culls rendering of distant/stacked dropped items.", true,
+                                () -> N3XRConfig.itemEntityOptimizerEnabled, v -> N3XRConfig.itemEntityOptimizerEnabled = v),
+                        new OptimizerFeature("Smart Resource Manager", "Adjusts particles/effects based on device load.", true,
+                                () -> N3XRConfig.resourceManagerEnabled, v -> N3XRConfig.resourceManagerEnabled = v),
+                        new OptimizerFeature("Combat Performance Mode", "Reduces effects automatically when PvP is nearby.", true,
+                                () -> N3XRConfig.combatPerformanceModeEnabled, v -> N3XRConfig.combatPerformanceModeEnabled = v),
                         new OptimizerFeature("Feature 9", "Soon", false, () -> false, v -> {}),
                         new OptimizerFeature("Feature 10", "Soon", false, () -> false, v -> {}),
                 };
@@ -115,6 +119,19 @@ public class N3XROptimizerScreen extends Screen {
                                 && mouseY >= toggleY1 && mouseY <= toggleY1 + toggleH) {
                                 f.setEnabled().accept(!f.getEnabled().get());
                                 return true;
+                        }
+
+                        if (f.name().equals("Smart Resource Manager")) {
+                                String[] modeLabels = {"Low", "Balanced", "Performance"};
+                                int modeBtnW = 50, modeBtnH = 14;
+                                int modeX1 = toggleX1 - 8 - modeBtnW;
+                                int modeY1 = cy + CARD_H - 8 - modeBtnH;
+
+                                if (mouseX >= modeX1 && mouseX <= modeX1 + modeBtnW
+                                        && mouseY >= modeY1 && mouseY <= modeY1 + modeBtnH) {
+                                        N3XRConfig.resourceManagerMode = (N3XRConfig.resourceManagerMode + 1) % modeLabels.length;
+                                        return true;
+                                }
                         }
                 }
                 return super.mouseClicked(mouseX, mouseY, button);
@@ -256,6 +273,19 @@ public class N3XROptimizerScreen extends Screen {
                                 int knobSize = toggleH - 4;
                                 int knobX = enabled ? toggleX1 + toggleW - knobSize - 2 : toggleX1 + 2;
                                 fillRounded(context, knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF, knobSize / 2);
+
+                                if (f.name().equals("Smart Resource Manager")) {
+                                        String[] modeLabels = {"Low", "Balanced", "Performance"};
+                                        int modeBtnW = 50, modeBtnH = 14;
+                                        int modeX1 = toggleX1 - 8 - modeBtnW;
+                                        int modeY1 = cy + CARD_H - 8 - modeBtnH;
+
+                                        fillRounded(context, modeX1, modeY1, modeX1 + modeBtnW, modeY1 + modeBtnH, 0xFF2A2A2A, 3);
+                                        String label = modeLabels[N3XRConfig.resourceManagerMode];
+                                        int labelW = this.textRenderer.getWidth(label);
+                                        context.drawText(this.textRenderer, label,
+                                                modeX1 + (modeBtnW - labelW) / 2, modeY1 + 3, 0xFFFFFFFF, false);
+                                }
                         } else {
                                 context.drawText(this.textRenderer, Text.literal("Soon").styled(s -> s.withItalic(true)),
                                         cx + 8, cy + CARD_H - 16, 0xFF666666, false);
