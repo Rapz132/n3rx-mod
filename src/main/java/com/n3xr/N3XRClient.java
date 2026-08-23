@@ -73,6 +73,10 @@ public class N3XRClient implements ClientModInitializer {
         private long lastCombatCheck = 0;
         private long lastCombatDetected = 0;
 
+        private long lastWeatherReducerCheck = 0;
+        private int weatherReducerOriginalParticles = -1;
+        private boolean weatherReducerActive = false;
+
         private final List<String> lastInventorySnapshot = new ArrayList<>();
         private final List<String> itemUpdateQueue = new ArrayList<>();
         private long itemUpdateShownUntil = 0;
@@ -124,6 +128,7 @@ public class N3XRClient implements ClientModInitializer {
                         handleFpsGovernor(client, now);
                         handleResourceManager(client, now);
                         handleCombatPerformanceMode(client, now);
+                        handleWeatherReducer(client, now);
 
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
 
@@ -390,6 +395,47 @@ public class N3XRClient implements ClientModInitializer {
                         combatModeOriginalParticles = -1;
                 }
                 combatModeActive = false;
+        }
+
+        /**
+         * Weather Reducer: saat sedang hujan/salju dan FPS turun di bawah
+         * ambang batas, particle mode diturunkan sementara untuk mengurangi
+         * beban render dari partikel cuaca. Kembali ke pengaturan asal saat
+         * cuaca reda atau FPS sudah membaik.
+         */
+        private void handleWeatherReducer(MinecraftClient client, long now) {
+                if (!N3XRConfig.weatherReducerEnabled) {
+                        if (weatherReducerOriginalParticles >= 0) {
+                                client.options.getParticles().setValue(
+                                        net.minecraft.client.option.ParticlesMode.byId(weatherReducerOriginalParticles));
+                                weatherReducerOriginalParticles = -1;
+                                weatherReducerActive = false;
+                        }
+                        return;
+                }
+
+                if (client.world == null || client.player == null) return;
+
+                if (now - lastWeatherReducerCheck < 1000) return;
+                lastWeatherReducerCheck = now;
+
+                boolean isRaining = client.world.isRaining();
+                int fps = client.getCurrentFps();
+
+                if (isRaining && fps < 40) {
+                        if (!weatherReducerActive) {
+                                weatherReducerActive = true;
+                                weatherReducerOriginalParticles = client.options.getParticles().getValue().getId();
+                        }
+                        client.options.getParticles().setValue(net.minecraft.client.option.ParticlesMode.MINIMAL);
+                } else if (weatherReducerActive && (!isRaining || fps > 50)) {
+                        if (weatherReducerOriginalParticles >= 0) {
+                                client.options.getParticles().setValue(
+                                        net.minecraft.client.option.ParticlesMode.byId(weatherReducerOriginalParticles));
+                                weatherReducerOriginalParticles = -1;
+                        }
+                        weatherReducerActive = false;
+                }
         }
 
         private void renderBlockOverlay(WorldRenderContext context) {
