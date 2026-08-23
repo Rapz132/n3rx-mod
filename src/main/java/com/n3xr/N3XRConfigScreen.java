@@ -328,8 +328,11 @@ public class N3XRConfigScreen extends Screen {
 
                 super.render(context, mouseX, mouseY, delta);
 
-                context.drawText(this.textRenderer, Text.literal("N3XR").styled(s -> s.withBold(true)), panelX1 + 10, 8, 0xFFFF3333, true);
-                context.drawText(this.textRenderer, Text.literal("CLIENT").styled(s -> s.withBold(true)), panelX1 + 38, 8, 0xFFFFFFFF, true);
+                int logoW = 120, logoH = 24;
+                context.drawTexture(
+                        net.minecraft.util.Identifier.of("n3xr", "textures/gui/n3xr_client_logo.png"),
+                        panelX1 + 10, 6, 0, 0, logoW, logoH, logoW, logoH
+                );
 
                 int startIndex = scrollOffset * COLS;
                 for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
