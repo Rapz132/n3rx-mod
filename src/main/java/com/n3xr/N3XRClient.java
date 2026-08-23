@@ -62,6 +62,17 @@ public class N3XRClient implements ClientModInitializer {
         private long lastSmartRenderCheck = 0;
         private int smartRenderUserMax = -1;
 
+        private long lastFpsGovernorCheck = 0;
+        private int fpsGovernorOriginalMaxFps = -1;
+
+        private long lastResourceManagerCheck = 0;
+        private int resourceManagerOriginalParticles = -1;
+
+        private boolean combatModeActive = false;
+        private int combatModeOriginalParticles = -1;
+        private long lastCombatCheck = 0;
+        private long lastCombatDetected = 0;
+
         private final List<String> lastInventorySnapshot = new ArrayList<>();
         private final List<String> itemUpdateQueue = new ArrayList<>();
         private long itemUpdateShownUntil = 0;
@@ -110,6 +121,9 @@ public class N3XRClient implements ClientModInitializer {
 
                         handleZoom(client);
                         handleSmartRender(client, now);
+                        handleFpsGovernor(client, now);
+                        handleResourceManager(client, now);
+                        handleCombatPerformanceMode(client, now);
 
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
 
@@ -245,6 +259,137 @@ public class N3XRClient implements ClientModInitializer {
                 try {
                         client.options.write();
                 } catch (Exception ignored) {}
+        }
+
+        /**
+         * Smart FPS Governor: menjaga FPS mendekati target tertentu dengan
+         * menaik-turunkan max FPS cap (bukan render distance), supaya
+         * GPU/CPU tidak dipaksa render sebanyak-banyaknya tanpa henti saat
+         * FPS aktual sudah jauh melebihi kebutuhan mata.
+         */
+        private void handleFpsGovernor(MinecraftClient client, long now) {
+                if (!N3XRConfig.fpsGovernorEnabled) {
+                        if (fpsGovernorOriginalMaxFps >= 0) {
+                                client.options.getMaxFps().setValue(fpsGovernorOriginalMaxFps);
+                                fpsGovernorOriginalMaxFps = -1;
+                        }
+                        return;
+                }
+
+                if (fpsGovernorOriginalMaxFps < 0) {
+                        fpsGovernorOriginalMaxFps = client.options.getMaxFps().getValue();
+                }
+
+                if (now - lastFpsGovernorCheck < 1000) return;
+                lastFpsGovernorCheck = now;
+
+                int currentFps = client.getCurrentFps();
+                int target = N3XRConfig.fpsGovernorTarget;
+                int currentCap = client.options.getMaxFps().getValue();
+
+                if (currentFps > target + 10 && currentCap > target) {
+                        client.options.getMaxFps().setValue(Math.max(target, currentCap - 5));
+                } else if (currentFps < target - 5 && currentCap < fpsGovernorOriginalMaxFps) {
+                        client.options.getMaxFps().setValue(Math.min(fpsGovernorOriginalMaxFps, currentCap + 5));
+                }
+        }
+
+        /**
+         * Smart Resource Manager: menyetel beberapa opsi grafis sekaligus
+         * berdasarkan mode yang dipilih (Low/Balanced/Performance), dan
+         * pada mode Low secara otomatis menurunkan particle count lebih
+         * jauh lagi jika memory usage JVM mendekati penuh.
+         */
+        private void handleResourceManager(MinecraftClient client, long now) {
+                if (!N3XRConfig.resourceManagerEnabled) {
+                        if (resourceManagerOriginalParticles >= 0) {
+                                client.options.getParticles().setValue(
+                                        net.minecraft.particle.ParticlesMode.byId(resourceManagerOriginalParticles));
+                                resourceManagerOriginalParticles = -1;
+                        }
+                        return;
+                }
+
+                if (resourceManagerOriginalParticles < 0) {
+                        resourceManagerOriginalParticles = client.options.getParticles().getValue().getId();
+                }
+
+                if (now - lastResourceManagerCheck < 2000) return;
+                lastResourceManagerCheck = now;
+
+                net.minecraft.particle.ParticlesMode targetMode;
+                switch (N3XRConfig.resourceManagerMode) {
+                        case 0 -> targetMode = net.minecraft.particle.ParticlesMode.MINIMAL;
+                        case 2 -> targetMode = net.minecraft.particle.ParticlesMode.ALL;
+                        default -> targetMode = net.minecraft.particle.ParticlesMode.DECREASED;
+                }
+
+                if (N3XRConfig.resourceManagerMode == 0) {
+                        Runtime rt = Runtime.getRuntime();
+                        long usedMb = (rt.totalMemory() - rt.freeMemory()) / 1048576L;
+                        long maxMb = rt.maxMemory() / 1048576L;
+                        if (maxMb > 0 && (usedMb / (double) maxMb) > 0.85) {
+                                targetMode = net.minecraft.particle.ParticlesMode.MINIMAL;
+                        }
+                }
+
+                if (client.options.getParticles().getValue() != targetMode) {
+                        client.options.getParticles().setValue(targetMode);
+                }
+        }
+
+        /**
+         * Combat Performance Mode: mendeteksi kondisi "PvP" secara sederhana
+         * (ada player lain dalam radius dekat), lalu menurunkan particle
+         * count sementara untuk mengurangi beban render saat pertarungan.
+         * Kembali normal beberapa detik setelah tidak ada player terdekat.
+         */
+        private void handleCombatPerformanceMode(MinecraftClient client, long now) {
+                if (!N3XRConfig.combatPerformanceModeEnabled) {
+                        if (combatModeActive) {
+                                restoreCombatParticles(client);
+                        }
+                        return;
+                }
+
+                if (client.world == null || client.player == null) return;
+
+                if (now - lastCombatCheck < 500) return;
+                lastCombatCheck = now;
+
+                boolean nearbyPlayerFound = false;
+                double combatRadius = 8.0;
+
+                for (net.minecraft.entity.player.PlayerEntity other : client.world.getPlayers()) {
+                        if (other == client.player) continue;
+                        double dx = other.getX() - client.player.getX();
+                        double dy = other.getY() - client.player.getY();
+                        double dz = other.getZ() - client.player.getZ();
+                        if (dx * dx + dy * dy + dz * dz <= combatRadius * combatRadius) {
+                                nearbyPlayerFound = true;
+                                break;
+                        }
+                }
+
+                if (nearbyPlayerFound) {
+                        lastCombatDetected = now;
+                        if (!combatModeActive) {
+                                combatModeActive = true;
+                                combatModeOriginalParticles = client.options.getParticles().getValue().getId();
+                                client.options.getParticles().setValue(net.minecraft.particle.ParticlesMode.MINIMAL);
+                        }
+                } else if (combatModeActive && now - lastCombatDetected > 5000) {
+                        restoreCombatParticles(client);
+                }
+        }
+
+        private void restoreCombatParticles(MinecraftClient client) {
+                if (combatModeOriginalParticles >= 0) {
+                        client.options.getParticles().setValue(
+                                net.minecraft.particle.ParticlesMode.byId(combatModeOriginalParticles));
+                        combatModeOriginalParticles = -1;
+                }
+                combatModeActive = false;
         }
 
         private void renderBlockOverlay(WorldRenderContext context) {
