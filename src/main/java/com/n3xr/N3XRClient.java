@@ -304,7 +304,7 @@ public class N3XRClient implements ClientModInitializer {
                 if (!N3XRConfig.resourceManagerEnabled) {
                         if (resourceManagerOriginalParticles >= 0) {
                                 client.options.getParticles().setValue(
-                                        net.minecraft.particle.ParticlesMode.byId(resourceManagerOriginalParticles));
+                                        net.minecraft.client.option.ParticlesMode.byId(resourceManagerOriginalParticles));
                                 resourceManagerOriginalParticles = -1;
                         }
                         return;
@@ -317,11 +317,11 @@ public class N3XRClient implements ClientModInitializer {
                 if (now - lastResourceManagerCheck < 2000) return;
                 lastResourceManagerCheck = now;
 
-                net.minecraft.particle.ParticlesMode targetMode;
+                net.minecraft.client.option.ParticlesMode targetMode;
                 switch (N3XRConfig.resourceManagerMode) {
-                        case 0 -> targetMode = net.minecraft.particle.ParticlesMode.MINIMAL;
-                        case 2 -> targetMode = net.minecraft.particle.ParticlesMode.ALL;
-                        default -> targetMode = net.minecraft.particle.ParticlesMode.DECREASED;
+                        case 0 -> targetMode = net.minecraft.client.option.ParticlesMode.MINIMAL;
+                        case 2 -> targetMode = net.minecraft.client.option.ParticlesMode.ALL;
+                        default -> targetMode = net.minecraft.client.option.ParticlesMode.DECREASED;
                 }
 
                 if (N3XRConfig.resourceManagerMode == 0) {
@@ -329,7 +329,7 @@ public class N3XRClient implements ClientModInitializer {
                         long usedMb = (rt.totalMemory() - rt.freeMemory()) / 1048576L;
                         long maxMb = rt.maxMemory() / 1048576L;
                         if (maxMb > 0 && (usedMb / (double) maxMb) > 0.85) {
-                                targetMode = net.minecraft.particle.ParticlesMode.MINIMAL;
+                                targetMode = net.minecraft.client.option.ParticlesMode.MINIMAL;
                         }
                 }
 
@@ -376,7 +376,7 @@ public class N3XRClient implements ClientModInitializer {
                         if (!combatModeActive) {
                                 combatModeActive = true;
                                 combatModeOriginalParticles = client.options.getParticles().getValue().getId();
-                                client.options.getParticles().setValue(net.minecraft.particle.ParticlesMode.MINIMAL);
+                                client.options.getParticles().setValue(net.minecraft.client.option.ParticlesMode.MINIMAL);
                         }
                 } else if (combatModeActive && now - lastCombatDetected > 5000) {
                         restoreCombatParticles(client);
@@ -386,7 +386,7 @@ public class N3XRClient implements ClientModInitializer {
         private void restoreCombatParticles(MinecraftClient client) {
                 if (combatModeOriginalParticles >= 0) {
                         client.options.getParticles().setValue(
-                                net.minecraft.particle.ParticlesMode.byId(combatModeOriginalParticles));
+                                net.minecraft.client.option.ParticlesMode.byId(combatModeOriginalParticles));
                         combatModeOriginalParticles = -1;
                 }
                 combatModeActive = false;
