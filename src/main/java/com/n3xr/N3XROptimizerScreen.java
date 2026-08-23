@@ -57,8 +57,10 @@ public class N3XROptimizerScreen extends Screen {
                                 () -> N3XRConfig.resourceManagerEnabled, v -> N3XRConfig.resourceManagerEnabled = v),
                         new OptimizerFeature("Combat Performance Mode", "Reduces effects automatically when PvP is nearby.", true,
                                 () -> N3XRConfig.combatPerformanceModeEnabled, v -> N3XRConfig.combatPerformanceModeEnabled = v),
-                        new OptimizerFeature("Feature 9", "Soon", false, () -> false, v -> {}),
-                        new OptimizerFeature("Feature 10", "Soon", false, () -> false, v -> {}),
+                        new OptimizerFeature("Weather Reducer", "Lowers weather particles when FPS drops while raining.", true,
+                                () -> N3XRConfig.weatherReducerEnabled, v -> N3XRConfig.weatherReducerEnabled = v),
+                        new OptimizerFeature("No Glint", "Disables enchantment glint effect on items.", true,
+                                () -> N3XRConfig.noGlintEnabled, v -> N3XRConfig.noGlintEnabled = v),
                 };
         }
 
