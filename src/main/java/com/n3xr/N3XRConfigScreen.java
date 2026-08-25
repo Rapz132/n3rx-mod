@@ -42,6 +42,9 @@ public class N3XRConfigScreen extends Screen {
         private int cardW;
         private int gridX, gridY, gridBottom, panelX1, panelX2;
         private int scrollTrackY1, scrollTrackY2, scrollBarX;
+        private int[][] categoryTabRects;
+        private String[] categoryTabLabels;
+        private Category[] categoryTabValues;
 
         public N3XRConfigScreen() {
                 super(Text.literal("N3XR Settings"));
@@ -163,27 +166,29 @@ public class N3XRConfigScreen extends Screen {
 
                 String[] catLabels = {"All", "Performance", "HUD", "Visual", "Combat", "Utility", "Server", "Chat"};
                 Category[] cats = Category.values();
+                categoryTabRects = new int[cats.length][4];
                 int tabX = panelX1 + 10;
-                int tabY = 40;
+                int tabY = 42;
                 int usedW = 0;
                 int rowW = panelX2 - panelX1 - 20;
                 for (int i = 0; i < cats.length; i++) {
-                        Category cat = cats[i];
-                        int tw = Math.min(this.textRenderer.getWidth(catLabels[i]) + 16, 90);
+                        int tw = Math.min(this.textRenderer.getWidth(catLabels[i]) + 22, 96);
                         if (usedW + tw > rowW) {
                                 tabX = panelX1 + 10;
-                                tabY += 20;
+                                tabY += 24;
                                 usedW = 0;
                         }
-                        final int fx = tabX;
-                        final int fy = tabY;
-                        this.addDrawableChild(N3XRButton.of(fx, fy, tw, 18,
-                                Text.literal(catLabels[i]), b -> { currentCategory = cat; scrollOffset = 0; applyFilter(); }));
-                        tabX += tw + 4;
-                        usedW += tw + 4;
+                        categoryTabRects[i][0] = tabX;
+                        categoryTabRects[i][1] = tabY;
+                        categoryTabRects[i][2] = tw;
+                        categoryTabRects[i][3] = 20;
+                        tabX += tw + 6;
+                        usedW += tw + 6;
                 }
+                categoryTabLabels = catLabels;
+                categoryTabValues = cats;
 
-                gridY = tabY + 24;
+                gridY = tabY + 28;
                 scrollTrackY1 = gridY;
                 scrollTrackY2 = gridBottom;
                 scrollBarX = gridX + COLS * cardW + (COLS - 1) * GAP + innerGap;
@@ -224,6 +229,16 @@ public class N3XRConfigScreen extends Screen {
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                for (int i = 0; i < categoryTabRects.length; i++) {
+                        int[] r = categoryTabRects[i];
+                        if (mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
+                                currentCategory = categoryTabValues[i];
+                                scrollOffset = 0;
+                                applyFilter();
+                                return true;
+                        }
+                }
+
                 int thumbY = getThumbY();
                 int thumbH = getThumbHeight();
                 if (mouseX >= scrollBarX && mouseX <= scrollBarX + BAR_W && mouseY >= thumbY && mouseY <= thumbY + thumbH) {
@@ -333,6 +348,28 @@ public class N3XRConfigScreen extends Screen {
                         net.minecraft.util.Identifier.of("n3xr", "textures/gui/n3xr_client_logo.png"),
                         panelX1 + 10, 6, 0, 0, logoW, logoH, logoW, logoH
                 );
+
+                for (int i = 0; i < categoryTabRects.length; i++) {
+                        int[] r = categoryTabRects[i];
+                        boolean active = currentCategory == categoryTabValues[i];
+
+                        int bg = active ? 0xFFCC2222 : 0xFF1A0E0E;
+                        fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 5);
+
+                        if (!active) {
+                                int borderColor = 0xFF553333;
+                                context.fill(r[0], r[1], r[0] + r[2], r[1] + 1, borderColor);
+                                context.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], borderColor);
+                                context.fill(r[0], r[1], r[0] + 1, r[1] + r[3], borderColor);
+                                context.fill(r[0] + r[2] - 1, r[1], r[0] + r[2], r[1] + r[3], borderColor);
+                        }
+
+                        Text label = Text.literal(categoryTabLabels[i]);
+                        int lw = this.textRenderer.getWidth(label);
+                        context.drawText(this.textRenderer, label,
+                                r[0] + (r[2] - lw) / 2, r[1] + (r[3] - 8) / 2,
+                                active ? 0xFFFFFFFF : 0xFFAAAAAA, true);
+                }
 
                 int startIndex = scrollOffset * COLS;
                 for (int i = 0; i < visibleModules.size() - startIndex && i < rowsVisible() * COLS; i++) {
