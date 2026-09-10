@@ -7,8 +7,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -45,6 +47,13 @@ public class N3XRConfigScreen extends Screen {
         private int[][] categoryTabRects;
         private String[] categoryTabLabels;
         private Category[] categoryTabValues;
+
+        private final Map<String, Float> toggleAnimProgress = new HashMap<>();
+        private float[] tabAnimProgress;
+        private long lastRenderNanos = 0;
+
+        private int[] backButtonRect;
+        private float backHoverProgress = 0f;
 
         public N3XRConfigScreen() {
                 super(Text.literal("N3XR Settings"));
@@ -188,6 +197,11 @@ public class N3XRConfigScreen extends Screen {
                 categoryTabLabels = catLabels;
                 categoryTabValues = cats;
 
+                tabAnimProgress = new float[cats.length];
+                for (int i = 0; i < cats.length; i++) {
+                        tabAnimProgress[i] = (cats[i] == currentCategory) ? 1f : 0f;
+                }
+
                 gridY = tabY + 28;
                 scrollTrackY1 = gridY;
                 scrollTrackY2 = gridBottom;
@@ -201,8 +215,13 @@ public class N3XRConfigScreen extends Screen {
                                 if (scrollOffset < maxOffset) scrollOffset++;
                         }));
 
-                this.addDrawableChild(N3XRButton.of(this.width / 2 - 55, this.height - 22, 110, 16,
-                        Text.literal("Back"), b -> this.client.setScreen(new N3XRHudEditScreen())));
+                int backW = 110, backH = 18;
+                backButtonRect = new int[]{
+                        this.width / 2 - backW / 2,
+                        this.height - 30,
+                        backW,
+                        backH
+                };
 
                 applyFilter();
         }
@@ -229,6 +248,13 @@ public class N3XRConfigScreen extends Screen {
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                if (backButtonRect != null
+                        && mouseX >= backButtonRect[0] && mouseX <= backButtonRect[0] + backButtonRect[2]
+                        && mouseY >= backButtonRect[1] && mouseY <= backButtonRect[1] + backButtonRect[3]) {
+                        this.client.setScreen(new N3XRHudEditScreen());
+                        return true;
+                }
+
                 for (int i = 0; i < categoryTabRects.length; i++) {
                         int[] r = categoryTabRects[i];
                         if (mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
@@ -337,8 +363,39 @@ public class N3XRConfigScreen extends Screen {
                 }
         }
 
+        /**
+         * Interpolasi linear antara dua warna ARGB berdasarkan t (0..1).
+         * Dipakai untuk transisi warna toggle dan tab kategori.
+         */
+        private int lerpColor(int colorA, int colorB, float t) {
+                t = Math.max(0f, Math.min(1f, t));
+                int aA = (colorA >> 24) & 0xFF, rA = (colorA >> 16) & 0xFF, gA = (colorA >> 8) & 0xFF, bA = colorA & 0xFF;
+                int aB = (colorB >> 24) & 0xFF, rB = (colorB >> 16) & 0xFF, gB = (colorB >> 8) & 0xFF, bB = colorB & 0xFF;
+                int a = (int) (aA + (aB - aA) * t);
+                int r = (int) (rA + (rB - rA) * t);
+                int g = (int) (gA + (gB - gA) * t);
+                int b = (int) (bA + (bB - bA) * t);
+                return (a << 24) | (r << 16) | (g << 8) | b;
+        }
+
+        /**
+         * Menghitung dan memperbarui progress animasi (0..1) menuju target,
+         * dengan kecepatan pendekatan berbasis delta waktu nyata (frame-rate
+         * independent), bukan berbasis tick game.
+         */
+        private float approachProgress(float current, boolean targetOn, float dtSeconds) {
+                float target = targetOn ? 1f : 0f;
+                float speed = Math.min(1f, dtSeconds * 14f);
+                return current + (target - current) * speed;
+        }
+
         @Override
         public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+                long nowNanos = System.nanoTime();
+                float dtSeconds = lastRenderNanos == 0 ? 0f : (nowNanos - lastRenderNanos) / 1_000_000_000f;
+                dtSeconds = Math.min(dtSeconds, 0.1f);
+                lastRenderNanos = nowNanos;
+
                 fillRounded(context, panelX1, 8, panelX2, this.height - 8, 0xE00A0505, 6);
 
                 super.render(context, mouseX, mouseY, delta);
@@ -353,10 +410,13 @@ public class N3XRConfigScreen extends Screen {
                         int[] r = categoryTabRects[i];
                         boolean active = currentCategory == categoryTabValues[i];
 
-                        int bg = active ? 0xFFCC2222 : 0xFF1A0E0E;
+                        tabAnimProgress[i] = approachProgress(tabAnimProgress[i], active, dtSeconds);
+                        float t = tabAnimProgress[i];
+
+                        int bg = lerpColor(0xFF1A0E0E, 0xFFCC2222, t);
                         fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 5);
 
-                        if (!active) {
+                        if (t < 0.5f) {
                                 int borderColor = 0xFF553333;
                                 context.fill(r[0], r[1], r[0] + r[2], r[1] + 1, borderColor);
                                 context.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], borderColor);
@@ -366,9 +426,10 @@ public class N3XRConfigScreen extends Screen {
 
                         Text label = Text.literal(categoryTabLabels[i]);
                         int lw = this.textRenderer.getWidth(label);
+                        int textColor = lerpColor(0xFFAAAAAA, 0xFFFFFFFF, t);
                         context.drawText(this.textRenderer, label,
                                 r[0] + (r[2] - lw) / 2, r[1] + (r[3] - 8) / 2,
-                                active ? 0xFFFFFFFF : 0xFFAAAAAA, true);
+                                textColor, true);
                 }
 
                 int startIndex = scrollOffset * COLS;
@@ -380,7 +441,10 @@ public class N3XRConfigScreen extends Screen {
                         boolean enabled = m.getEnabled().get();
                         int borderColor = enabled ? 0xFFFF5555 : 0xFF553333;
 
-                        fillRounded(context, cx, cy, cx + cardW, cy + CARD_H, 0xF0140A0C, 4);
+                        boolean hovered = mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + CARD_H;
+                        int cardBg = hovered ? 0xF01F1010 : 0xF0140A0C;
+
+                        fillRounded(context, cx, cy, cx + cardW, cy + CARD_H, cardBg, 4);
                         context.fill(cx, cy, cx + cardW, cy + 1, borderColor);
                         context.fill(cx, cy + CARD_H - 1, cx + cardW, cy + CARD_H, borderColor);
                         context.fill(cx, cy, cx + 1, cy + CARD_H, borderColor);
@@ -410,10 +474,16 @@ public class N3XRConfigScreen extends Screen {
                         int toggleX1 = toggleX2 - toggleW;
                         int toggleY1 = cy + CARD_H - PAD - toggleH;
 
-                        int trackColor = enabled ? 0xFFCC3333 : 0xFF332222;
+                        float toggleT = toggleAnimProgress.getOrDefault(m.name(), enabled ? 1f : 0f);
+                        toggleT = approachProgress(toggleT, enabled, dtSeconds);
+                        toggleAnimProgress.put(m.name(), toggleT);
+
+                        int trackColor = lerpColor(0xFF332222, 0xFFCC3333, toggleT);
                         fillRounded(context, toggleX1, toggleY1, toggleX2, toggleY1 + toggleH, trackColor, toggleH / 2);
                         int knobSize = toggleH - 4;
-                        int knobX = enabled ? toggleX2 - knobSize - 2 : toggleX1 + 2;
+                        int knobTravelStart = toggleX1 + 2;
+                        int knobTravelEnd = toggleX2 - knobSize - 2;
+                        int knobX = (int) (knobTravelStart + (knobTravelEnd - knobTravelStart) * toggleT);
                         fillRounded(context, knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF, knobSize / 2);
 
                         if (m.hasColor()) {
@@ -433,6 +503,29 @@ public class N3XRConfigScreen extends Screen {
                 int thumbY = getThumbY();
                 int thumbH = getThumbHeight();
                 fillRounded(context, scrollBarX + 2, thumbY, scrollBarX + BAR_W - 2, thumbY + thumbH, 0xFFFF5555, (BAR_W - 4) / 2);
+
+                if (backButtonRect != null) {
+                        boolean backHovered = mouseX >= backButtonRect[0] && mouseX <= backButtonRect[0] + backButtonRect[2]
+                                && mouseY >= backButtonRect[1] && mouseY <= backButtonRect[1] + backButtonRect[3];
+
+                        backHoverProgress = approachProgress(backHoverProgress, backHovered, dtSeconds);
+
+                        int bx1 = backButtonRect[0], by1 = backButtonRect[1];
+                        int bx2 = bx1 + backButtonRect[2], by2 = by1 + backButtonRect[3];
+
+                        int backBg = lerpColor(0xFF0A0505, 0xFF1F0F0F, backHoverProgress);
+                        fillRounded(context, bx1, by1, bx2, by2, backBg, 4);
+
+                        int underlineColor = lerpColor(0xFFCC2222, 0xFFFF5555, backHoverProgress);
+                        context.fill(bx1 + 4, by2 - 2, bx2 - 4, by2, underlineColor);
+
+                        Text backLabel = Text.literal("Back");
+                        int blw = this.textRenderer.getWidth(backLabel);
+                        int textColor = lerpColor(0xFFCCCCCC, 0xFFFFFFFF, backHoverProgress);
+                        context.drawText(this.textRenderer, backLabel,
+                                bx1 + (backButtonRect[2] - blw) / 2, by1 + (backButtonRect[3] - 10) / 2,
+                                textColor, true);
+                }
         }
 
         @Override
