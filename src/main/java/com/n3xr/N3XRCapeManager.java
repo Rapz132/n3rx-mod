@@ -36,6 +36,17 @@ public class N3XRCapeManager {
                 return Identifier.of("n3xr", "textures/cosmetics/capes/" + key + ".png");
         }
 
+        /**
+         * Icon 2D untuk ditampilkan di list pilihan cape (N3XRCapeSelectScreen).
+         * Terpisah dari texture cape 3D-nya (yang harus format UV 64x32) —
+         * icon ini bebas berupa gambar apa saja, misalnya siluet/artwork
+         * konsep dari cape tersebut, karena cuma digambar datar di UI.
+         */
+        public static Identifier getIconFor(String key) {
+                if (key == null) return null;
+                return Identifier.of("n3xr", "textures/cosmetics/capes/icons/" + key + ".png");
+        }
+
         public static Identifier getSelectedTexture() {
                 return getTextureFor(com.n3xr.N3XRConfig.capeSelectedKey);
         }
