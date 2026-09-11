@@ -24,9 +24,9 @@ public class N3XRCapeManager {
 
         static {
                 // Contoh entri — ganti/tambah sesuai file PNG yang sudah ditaruh.
-                CAPES.add(new CapeEntry("cherryblosom_cape", "Cherry Blosom Cape"));
-CAPES.add(new CapeEntry("brokenheart_cape", "Broken Hearth Cape"));
-CAPES.add(new CapeEntry("carrot_cape", "Carrot Cape"));
+                CAPES.add(new CapeEntry("brokenheart_cape", "Broken Heart Cape"));
+                CAPES.add(new CapeEntry("carrot_cape", "Carrot Cape"));
+                CAPES.add(new CapeEntry("cherryblosom_cape", "Cherry Blossom Cape"));
         }
 
         public static List<CapeEntry> getAvailableCapes() {
