@@ -41,7 +41,11 @@ public class N3XRCapeRenderer {
                                 ModelPartBuilder.create().uv(0, 0).cuboid(-5.0f, 0.0f, -1.0f, 10.0f, 16.0f, 1.0f),
                                 ModelTransform.pivot(0.0f, 0.0f, 0.0f)
                         );
-                        TexturedModelData texturedModelData = TexturedModelData.of(modelData, 32, 32);
+                        // 64x32 = ukuran canvas standar Minecraft untuk cape,
+                        // supaya template cape gratis dari internet (mc-capes.com,
+                        // resourcepackcreator.com, skinmc.net/capes/editor, dll)
+                        // bisa langsung dipakai tanpa perlu dikonversi ulang.
+                        TexturedModelData texturedModelData = TexturedModelData.of(modelData, 64, 32);
                         capeModel = texturedModelData.createModel().getChild("cape");
                 }
                 return capeModel;
