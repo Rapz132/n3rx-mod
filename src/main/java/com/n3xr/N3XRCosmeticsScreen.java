@@ -104,10 +104,7 @@ public class N3XRCosmeticsScreen extends Screen {
                         int[] r = itemRects.get(i);
                         if (mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
                                 if (item.key().equals("cloak")) {
-                                        N3XRConfig.capeEnabled = !N3XRConfig.capeEnabled;
-                                        if (N3XRConfig.capeEnabled) {
-                                                com.n3xr.cosmetic.N3XRCapeManager.resetCache();
-                                        }
+                                        this.client.setScreen(new N3XRCapeSelectScreen(this));
                                 }
                                 return true;
                         }
@@ -133,7 +130,7 @@ public class N3XRCosmeticsScreen extends Screen {
                         CosmeticItem item = items.get(i);
                         int[] r = itemRects.get(i);
 
-                        boolean isActive = item.key().equals("cloak") && N3XRConfig.capeEnabled;
+                        boolean isActive = item.key().equals("cloak") && N3XRConfig.capeSelectedKey != null;
                         boolean hovered = item.implemented()
                                 && mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3];
 
