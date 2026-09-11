@@ -78,6 +78,17 @@ public class N3XRCapeRenderer {
 
                 matrices.translate(0.0, player.getHeight() * 0.72, 0.08);
 
+                /*
+                 * Model 3D di Minecraft didefinisikan dalam satuan 1/16 blok
+                 * (16 unit = 1 blok penuh), dan biasanya dikonversi otomatis
+                 * ke ukuran blok sungguhan oleh LivingEntityRenderer. Karena
+                 * render ini manual lewat WorldRenderEvents (bypass sistem
+                 * itu), konversi skala harus ditambahkan sendiri di sini —
+                 * tanpa baris ini, cape akan tampil 16x lebih besar dan
+                 * salah posisi total.
+                 */
+                matrices.scale(-0.0625f, -0.0625f, 0.0625f);
+
                 float swing = MathHelper.sin(player.age * 0.15f) * 2.0f;
                 ModelPart model = getOrBuildModel();
                 model.pitch = (float) Math.toRadians(6.0 + swing);
