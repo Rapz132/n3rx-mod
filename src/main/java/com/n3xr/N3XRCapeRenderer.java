@@ -48,16 +48,13 @@ public class N3XRCapeRenderer {
         }
 
         public static void render(WorldRenderContext context) {
-                if (!N3XRConfig.capeEnabled) return;
+                if (N3XRConfig.capeSelectedKey == null) return;
 
                 MinecraftClient mc = MinecraftClient.getInstance();
                 if (mc.player == null || mc.world == null) return;
 
-                Identifier capeTexture = N3XRCapeManager.getCapeTexture();
-                if (capeTexture == null) {
-                        N3XRCapeManager.requestCapeIfNeeded(mc);
-                        return;
-                }
+                Identifier capeTexture = N3XRCapeManager.getSelectedTexture();
+                if (capeTexture == null) return;
 
                 PlayerEntity player = mc.player;
 
