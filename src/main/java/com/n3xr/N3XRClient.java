@@ -50,6 +50,7 @@ public class N3XRClient implements ClientModInitializer {
 
         private static KeyBinding openSettingsKey;
         private static KeyBinding zoomKey;
+        private static KeyBinding cosmeticsKey;
         private final ArrayDeque<Long> clickTimes = new ArrayDeque<>();
         private final ArrayDeque<Long> tickTimes = new ArrayDeque<>();
 
@@ -95,6 +96,8 @@ public class N3XRClient implements ClientModInitializer {
                         "key.n3xr.settings", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.n3xr"));
                 zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                         "key.n3xr.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.n3xr"));
+                cosmeticsKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                        "key.n3xr.cosmetics", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "category.n3xr"));
 
                 hookMouseClicks();
 
@@ -103,6 +106,7 @@ public class N3XRClient implements ClientModInitializer {
                 });
                 WorldRenderEvents.LAST.register(this::renderBlockOverlay);
                 WorldRenderEvents.AFTER_ENTITIES.register(this::renderWorldNameTag);
+                WorldRenderEvents.AFTER_ENTITIES.register(com.n3xr.cosmetic.N3XRCapeRenderer::render);
 
                 ClientReceiveMessageEvents.ALLOW_CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
                         if (N3XRConfig.chatTimestampEnabled) {
@@ -119,6 +123,10 @@ public class N3XRClient implements ClientModInitializer {
                 ClientTickEvents.END_CLIENT_TICK.register(client -> {
                         while (openSettingsKey.wasPressed()) {
                                 if (client.currentScreen == null) client.setScreen(new N3XRHudEditScreen());
+                        }
+
+                        while (cosmeticsKey.wasPressed()) {
+                                if (client.currentScreen == null) client.setScreen(new N3XRCosmeticsScreen());
                         }
 
                         long now = System.currentTimeMillis();
