@@ -58,7 +58,7 @@ public class N3XRConfig {
         public static boolean keysRainbow = false;
         public static boolean showFavoritesOnly = false;
 
-        public static boolean capeEnabled = false;
+        public static String capeSelectedKey = null;
 
         public static float hudScale = 1.0f;
 
