@@ -159,7 +159,15 @@ public class N3XRCapeSelectScreen extends Screen {
                         fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 4);
 
                         int textColor = isSelected ? 0xFFFFFFFF : 0xFFCCCCCC;
-                        context.drawText(this.textRenderer, label, r[0] + 10, r[1] + (r[3] - 8) / 2, textColor, true);
+                        int iconSize = 18;
+                        if (key != null) {
+                                net.minecraft.util.Identifier iconTex = N3XRCapeManager.getIconFor(key);
+                                context.drawTexture(iconTex, r[0] + 4, r[1] + (r[3] - iconSize) / 2,
+                                        0, 0, iconSize, iconSize, iconSize, iconSize);
+                        }
+
+                        int textX = (key != null) ? r[0] + iconSize + 10 : r[0] + 10;
+                        context.drawText(this.textRenderer, label, textX, r[1] + (r[3] - 8) / 2, textColor, true);
                 }
 
                 int backX1 = backButtonRect[0], backY1 = backButtonRect[1];
