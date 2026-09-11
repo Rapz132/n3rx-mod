@@ -58,6 +58,8 @@ public class N3XRConfig {
         public static boolean keysRainbow = false;
         public static boolean showFavoritesOnly = false;
 
+        public static boolean capeEnabled = false;
+
         public static float hudScale = 1.0f;
 
 public static final java.util.Map<String, Float> moduleScale = new java.util.HashMap<>();
