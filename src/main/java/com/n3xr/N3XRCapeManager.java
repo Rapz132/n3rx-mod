@@ -12,7 +12,7 @@ import java.util.List;
  *
  * Cara menambah cape baru:
  * 1. Taruh file PNG (32x32, format cape standar Minecraft) di:
- *    assets/n3xr/textures/cosmetics/capes/{key}.png
+ *    assets/n3xr/textures/capes/{key}.png
  * 2. Tambah satu baris di REGISTER_CAPES di bawah ini dengan
  *    key yang sama persis dan nama tampilan yang diinginkan.
  */
@@ -35,7 +35,7 @@ public class N3XRCapeManager {
 
         public static Identifier getTextureFor(String key) {
                 if (key == null) return null;
-                return Identifier.of("n3xr", "textures/cosmetics/capes/" + key + ".png");
+                return Identifier.of("n3xr", "textures/capes/" + key + ".png");
         }
 
         /**
@@ -46,7 +46,7 @@ public class N3XRCapeManager {
          */
         public static Identifier getIconFor(String key) {
                 if (key == null) return null;
-                return Identifier.of("n3xr", "textures/cosmetics/capes/icons/" + key + ".png");
+                return Identifier.of("n3xr", "textures/capes/icons/" + key + ".png");
         }
 
         public static Identifier getSelectedTexture() {
