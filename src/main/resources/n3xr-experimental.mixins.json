@@ -8,7 +8,8 @@
   "NoBlockShadingMixin",
   "FogDisableMixin",
   "EntityCullingMixin",
-  "NoGlintMixin"
+  "NoGlintMixin",
+  "N3XRCapeFeatureMixin"
 ],
 	"injectors": {
 		"defaultRequire": 0
