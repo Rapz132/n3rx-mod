@@ -106,7 +106,9 @@ public class N3XRClient implements ClientModInitializer {
                 });
                 WorldRenderEvents.LAST.register(this::renderBlockOverlay);
                 WorldRenderEvents.AFTER_ENTITIES.register(this::renderWorldNameTag);
-                WorldRenderEvents.AFTER_ENTITIES.register(com.n3xr.cosmetic.N3XRCapeRenderer::render);
+                // Cape sekarang di-render lewat N3XRCapeFeatureMixin
+                // (inject ke CapeFeatureRenderer vanilla), bukan lagi
+                // lewat WorldRenderEvents.
 
                 ClientReceiveMessageEvents.ALLOW_CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
                         if (N3XRConfig.chatTimestampEnabled) {
