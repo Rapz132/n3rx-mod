@@ -6,6 +6,8 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.text.Text;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,9 @@ public class N3XRCapeSelectScreen extends Screen {
         private int dollX1, dollY1, dollX2, dollY2;
         private int panelBottom;
         private long lastRenderNanos = 0;
+        private float dollYaw = 20f;
+        private float dollPitch = -10f;
+        private boolean draggingDoll = false;
         private int[] backButtonRect;
 
         public N3XRCapeSelectScreen(Screen parent) {
@@ -139,7 +144,29 @@ public class N3XRCapeSelectScreen extends Screen {
                                 return true;
                         }
                 }
+
+                if (mouseX >= dollX1 && mouseX <= dollX2 && mouseY >= dollY1 && mouseY <= dollY2) {
+                        draggingDoll = true;
+                        return true;
+                }
+
                 return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+                if (draggingDoll) {
+                        dollYaw = (dollYaw + (float) deltaX * 1.0f) % 360f;
+                        dollPitch = Math.max(-45f, Math.min(45f, dollPitch - (float) deltaY * 1.0f));
+                        return true;
+                }
+                return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        }
+
+        @Override
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+                draggingDoll = false;
+                return super.mouseReleased(mouseX, mouseY, button);
         }
 
         @Override
@@ -179,15 +206,7 @@ public class N3XRCapeSelectScreen extends Screen {
                         fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 4);
 
                         int textColor = isSelected ? 0xFFFFFFFF : 0xFFCCCCCC;
-                        int iconSize = 18;
-                        if (key != null) {
-                                net.minecraft.util.Identifier iconTex = N3XRCapeManager.getIconFor(key);
-                                context.drawTexture(iconTex, r[0] + 4, r[1] + (r[3] - iconSize) / 2,
-                                        0, 0, iconSize, iconSize, iconSize, iconSize);
-                        }
-
-                        int textX = (key != null) ? r[0] + iconSize + 10 : r[0] + 10;
-                        context.drawText(this.textRenderer, label, textX, r[1] + (r[3] - 8) / 2, textColor, true);
+                        context.drawText(this.textRenderer, label, r[0] + 10, r[1] + (r[3] - 8) / 2, textColor, true);
                 }
 
                 renderDoll(context, mouseX, mouseY);
@@ -203,35 +222,35 @@ public class N3XRCapeSelectScreen extends Screen {
         }
 
         /**
-         * Panel preview 3D player doll. Memakai InventoryScreen.drawEntity
-         * bawaan Minecraft (dipakai juga di Survival Inventory), sehingga
-         * doll otomatis mengikuti arah kursor mouse persis seperti di
-         * inventory vanilla — tanpa perlu logic drag manual. Cape custom
-         * ikut tampil otomatis karena render pipeline yang dipakai sama
-         * dengan yang di-hook oleh N3XRCapeFeatureMixin.
+         * Panel preview 3D player doll. Memakai overload
+         * InventoryScreen.drawEntity yang menerima rotasi manual
+         * (Vector3f + Quaternionf), supaya bisa diputar bebas 360°
+         * dengan drag mouse — bukan cuma "menoleh" terbatas ke arah
+         * kursor seperti perilaku bawaan Inventory Screen vanilla.
+         * Cape custom ikut tampil otomatis karena render pipeline
+         * yang dipakai sama dengan yang di-hook oleh
+         * N3XRCapeFeatureMixin.
          */
         private void renderDoll(DrawContext context, int mouseX, int mouseY) {
                 MinecraftClient mc = MinecraftClient.getInstance();
                 if (mc.player == null) return;
 
-                int boxY1 = dollY1 + 10;
-                int boxY2 = dollY2 - 40;
-                int dollSize = 35;
+                float centerX = (dollX1 + dollX2) / 2f;
+                float centerY = dollY1 + 60f;
+                float dollSize = 35f;
 
-                // Parameter ke-6 (float2) di signature versi ini belum
-                // dikasih nama jelas oleh Yarn — dicoba dengan nilai netral
-                // 1.0f dulu. Kalau tampilannya masih aneh, ini yang perlu
-                // disesuaikan lebih lanjut.
+                Quaternionf rotation = new Quaternionf()
+                        .rotateY((float) Math.toRadians(dollYaw))
+                        .rotateX((float) Math.toRadians(dollPitch));
+
                 InventoryScreen.drawEntity(
                         context,
-                        dollX1,
-                        boxY1,
-                        dollX2,
-                        boxY2,
+                        centerX,
+                        centerY,
                         dollSize,
-                        1.0f,
-                        (float) mouseX,
-                        (float) mouseY,
+                        new Vector3f(0f, 0f, 0f),
+                        rotation,
+                        null,
                         mc.player
                 );
         }
