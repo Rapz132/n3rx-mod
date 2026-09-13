@@ -1,3 +1,4 @@
+
 package com.n3xr.cosmetic;
 
 import net.minecraft.util.Identifier;
@@ -27,6 +28,9 @@ public class N3XRCapeManager {
                 CAPES.add(new CapeEntry("brokenheart_cape", "Broken Heart Cape"));
                 CAPES.add(new CapeEntry("carrot_cape", "Carrot Cape"));
                 CAPES.add(new CapeEntry("cherryblosom_cape", "Cherry Blossom Cape"));
+                CAPES.add(new CapeEntry("cow_cape", "Cow Cape"));
+                CAPES.add(new CapeEntry("hearth_cape", "Hearth Cape"));
+                CAPES.add(new CapeEntry("spongebob_cape", "Spongebob Cape"));
         }
 
         public static List<CapeEntry> getAvailableCapes() {
