@@ -1,4 +1,3 @@
-
 package com.n3xr.cosmetic;
 
 import net.minecraft.util.Identifier;
