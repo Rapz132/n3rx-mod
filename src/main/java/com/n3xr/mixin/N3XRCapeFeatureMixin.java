@@ -13,6 +13,7 @@ import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -72,13 +73,19 @@ public abstract class N3XRCapeFeatureMixin {
 
                 matrices.push();
 
-                // Offset kecil ini meniru posisi cape vanilla (menempel
-                // sedikit di belakang punggung), karena matrices yang
-                // diterima di sini sudah dalam model-space yang sama
-                // seperti yang dipakai vanilla untuk cape resmi.
-                matrices.translate(0.0, 0.0, 0.125);
+                // Offset ini meniru posisi cape vanilla (menempel sedikit
+                // di belakang punggung). Digedein sedikit dari standar
+                // vanilla (0.125) supaya ada jarak jelas dari badan,
+                // tidak terlihat menyatu/menempel rata.
+                matrices.translate(0.0, 0.0, 0.15);
 
                 ModelPart model = N3XRCapeRenderer.getOrBuildModel();
+
+                // Tilt tetap ke luar + sedikit goyangan mengikuti waktu,
+                // supaya cape terlihat seperti kain terpisah yang
+                // menggantung, bukan menempel kaku ke badan.
+                float swing = MathHelper.sin(player.age * 0.15f) * 2.0f;
+                model.pitch = (float) Math.toRadians(6.0 + swing);
 
                 VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
                 model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV);
