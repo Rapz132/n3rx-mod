@@ -74,10 +74,10 @@ public abstract class N3XRCapeFeatureMixin {
                 matrices.push();
 
                 // Offset ini meniru posisi cape vanilla (menempel sedikit
-                // di belakang punggung). Digedein sedikit dari standar
-                // vanilla (0.125) supaya ada jarak jelas dari badan,
-                // tidak terlihat menyatu/menempel rata.
-                matrices.translate(0.0, 0.0, 0.15);
+                // di belakang punggung). Digedein signifikan dari standar
+                // vanilla (0.125) supaya ada celah jelas dari badan, tidak
+                // terlihat menyatu/menempel rata seperti sebelumnya.
+                matrices.translate(0.0, 0.0, 0.3);
 
                 ModelPart model = N3XRCapeRenderer.getOrBuildModel();
 
