@@ -214,20 +214,24 @@ public class N3XRCapeSelectScreen extends Screen {
                 MinecraftClient mc = MinecraftClient.getInstance();
                 if (mc.player == null) return;
 
-                int centerX = (dollX1 + dollX2) / 2;
-                int centerY = dollY1 + 20;
-                int dollSize = 40;
+                int boxY1 = dollY1 + 10;
+                int boxY2 = dollY2 - 40;
+                int dollSize = 35;
 
-                float relMouseX = centerX - mouseX;
-                float relMouseY = centerY + 30 - mouseY;
-
+                // Parameter ke-6 (float2) di signature versi ini belum
+                // dikasih nama jelas oleh Yarn — dicoba dengan nilai netral
+                // 1.0f dulu. Kalau tampilannya masih aneh, ini yang perlu
+                // disesuaikan lebih lanjut.
                 InventoryScreen.drawEntity(
                         context,
-                        centerX,
-                        centerY,
+                        dollX1,
+                        boxY1,
+                        dollX2,
+                        boxY2,
                         dollSize,
-                        relMouseX,
-                        relMouseY,
+                        1.0f,
+                        (float) mouseX,
+                        (float) mouseY,
                         mc.player
                 );
         }
