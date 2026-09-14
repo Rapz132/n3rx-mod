@@ -236,8 +236,8 @@ public class N3XRCapeSelectScreen extends Screen {
                 if (mc.player == null) return;
 
                 float centerX = (dollX1 + dollX2) / 2f;
-                float centerY = dollY1 + 60f;
-                float dollSize = 35f;
+                float centerY = (dollY1 + dollY2) / 2f + 30f;
+                float dollSize = 45f;
 
                 Quaternionf rotation = new Quaternionf()
                         .rotateY((float) Math.toRadians(dollYaw))
