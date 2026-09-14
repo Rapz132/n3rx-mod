@@ -73,19 +73,26 @@ public abstract class N3XRCapeFeatureMixin {
 
                 matrices.push();
 
-                // Offset ini meniru posisi cape vanilla (menempel sedikit
-                // di belakang punggung). Digedein signifikan dari standar
-                // vanilla (0.125) supaya ada celah jelas dari badan, tidak
-                // terlihat menyatu/menempel rata seperti sebelumnya.
-                matrices.translate(0.0, 0.0, 0.3);
+                boolean sneaking = player.isInSneakingPose();
+
+                // Saat sneaking, badan menekuk ke depan — cape didorong
+                // sedikit lebih jauh dan lebih turun supaya tidak
+                // menembus kepala. Nilai ini hasil perkiraan (belum
+                // ada referensi pasti dari source vanilla), jadi mungkin
+                // masih perlu disesuaikan lagi.
+                double zOffset = sneaking ? 0.45 : 0.3;
+                double yOffset = sneaking ? -0.2 : 0.0;
+                matrices.translate(0.0, yOffset, zOffset);
 
                 ModelPart model = N3XRCapeRenderer.getOrBuildModel();
 
-                // Tilt tetap ke luar + sedikit goyangan mengikuti waktu,
-                // supaya cape terlihat seperti kain terpisah yang
-                // menggantung, bukan menempel kaku ke badan.
-                float swing = MathHelper.sin(player.age * 0.15f) * 2.0f;
-                model.pitch = (float) Math.toRadians(6.0 + swing);
+                // Tilt dasar lebih besar saat sneaking (mengikuti
+                // kemiringan badan), dan goyangan diperbesar amplitudonya
+                // (dari 2 ke 6 derajat) plus dipercepat sedikit supaya
+                // terlihat jelas bergerak, tidak diam seperti sebelumnya.
+                float baseTilt = sneaking ? 30.0f : 6.0f;
+                float swing = MathHelper.sin(player.age * 0.2f) * 6.0f;
+                model.pitch = (float) Math.toRadians(baseTilt + swing);
 
                 VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
                 model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV);
