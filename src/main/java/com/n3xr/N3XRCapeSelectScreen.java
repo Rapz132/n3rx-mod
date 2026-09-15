@@ -41,8 +41,8 @@ public class N3XRCapeSelectScreen extends Screen {
         private int panelBottom;
         private long lastRenderNanos = 0;
         private float dollYaw = 20f;
-        private float dollPitch = -10f;
-        private boolean draggingDoll = false;
+        private int[] rotateLeftRect;
+        private int[] rotateRightRect;
         private int[] backButtonRect;
 
         public N3XRCapeSelectScreen(Screen parent) {
@@ -90,6 +90,11 @@ public class N3XRCapeSelectScreen extends Screen {
                         backW,
                         backH
                 };
+
+                int arrowW = 24, arrowH = 24;
+                int arrowY = dollY1 + (dollY2 - dollY1) / 2 - arrowH / 2;
+                rotateLeftRect = new int[]{dollX1 + 6, arrowY, arrowW, arrowH};
+                rotateRightRect = new int[]{dollX2 - arrowW - 6, arrowY, arrowW, arrowH};
         }
 
         private void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
@@ -145,28 +150,21 @@ public class N3XRCapeSelectScreen extends Screen {
                         }
                 }
 
-                if (mouseX >= dollX1 && mouseX <= dollX2 && mouseY >= dollY1 && mouseY <= dollY2) {
-                        draggingDoll = true;
+                if (rotateLeftRect != null
+                        && mouseX >= rotateLeftRect[0] && mouseX <= rotateLeftRect[0] + rotateLeftRect[2]
+                        && mouseY >= rotateLeftRect[1] && mouseY <= rotateLeftRect[1] + rotateLeftRect[3]) {
+                        dollYaw = (dollYaw - 30f + 360f) % 360f;
+                        return true;
+                }
+
+                if (rotateRightRect != null
+                        && mouseX >= rotateRightRect[0] && mouseX <= rotateRightRect[0] + rotateRightRect[2]
+                        && mouseY >= rotateRightRect[1] && mouseY <= rotateRightRect[1] + rotateRightRect[3]) {
+                        dollYaw = (dollYaw + 30f) % 360f;
                         return true;
                 }
 
                 return super.mouseClicked(mouseX, mouseY, button);
-        }
-
-        @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-                if (draggingDoll) {
-                        dollYaw = (dollYaw + (float) deltaX * 1.0f) % 360f;
-                        dollPitch = Math.max(-45f, Math.min(45f, dollPitch - (float) deltaY * 1.0f));
-                        return true;
-                }
-                return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-        }
-
-        @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-                draggingDoll = false;
-                return super.mouseReleased(mouseX, mouseY, button);
         }
 
         @Override
@@ -224,9 +222,9 @@ public class N3XRCapeSelectScreen extends Screen {
         /**
          * Panel preview 3D player doll. Memakai overload
          * InventoryScreen.drawEntity yang menerima rotasi manual
-         * (Vector3f + Quaternionf), supaya bisa diputar bebas 360°
-         * dengan drag mouse — bukan cuma "menoleh" terbatas ke arah
-         * kursor seperti perilaku bawaan Inventory Screen vanilla.
+         * (Vector3f + Quaternionf). Rotasi cuma yaw (kiri-kanan) lewat
+         * tombol panah, sengaja tidak pakai rotasi X (pitch) sama
+         * sekali supaya tidak ada risiko karakter terlihat terbalik.
          * Cape custom ikut tampil otomatis karena render pipeline
          * yang dipakai sama dengan yang di-hook oleh
          * N3XRCapeFeatureMixin.
@@ -236,12 +234,11 @@ public class N3XRCapeSelectScreen extends Screen {
                 if (mc.player == null) return;
 
                 float centerX = (dollX1 + dollX2) / 2f;
-                float centerY = (dollY1 + dollY2) / 2f + 30f;
-                float dollSize = 45f;
+                float centerY = dollY2 - 30f;
+                float dollSize = 50f;
 
                 Quaternionf rotation = new Quaternionf()
-                        .rotateY((float) Math.toRadians(dollYaw))
-                        .rotateX((float) Math.toRadians(dollPitch));
+                        .rotateY((float) Math.toRadians(dollYaw));
 
                 InventoryScreen.drawEntity(
                         context,
@@ -253,6 +250,18 @@ public class N3XRCapeSelectScreen extends Screen {
                         null,
                         mc.player
                 );
+
+                renderArrowButton(context, rotateLeftRect, "<", mouseX, mouseY);
+                renderArrowButton(context, rotateRightRect, ">", mouseX, mouseY);
+        }
+
+        private void renderArrowButton(DrawContext context, int[] rect, String label, int mouseX, int mouseY) {
+                boolean hovered = mouseX >= rect[0] && mouseX <= rect[0] + rect[2] && mouseY >= rect[1] && mouseY <= rect[1] + rect[3];
+                int bg = lerpColor(0xFF0A0505, 0xFF2A1414, hovered ? 1f : 0f);
+                fillRounded(context, rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3], bg, 4);
+                int lw = this.textRenderer.getWidth(label);
+                context.drawText(this.textRenderer, label,
+                        rect[0] + (rect[2] - lw) / 2, rect[1] + (rect[3] - 8) / 2, 0xFFFFFFFF, true);
         }
 
         @Override
