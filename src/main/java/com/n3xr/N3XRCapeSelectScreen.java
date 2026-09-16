@@ -153,14 +153,14 @@ public class N3XRCapeSelectScreen extends Screen {
                 if (rotateLeftRect != null
                         && mouseX >= rotateLeftRect[0] && mouseX <= rotateLeftRect[0] + rotateLeftRect[2]
                         && mouseY >= rotateLeftRect[1] && mouseY <= rotateLeftRect[1] + rotateLeftRect[3]) {
-                        dollYaw = (dollYaw - 30f + 360f) % 360f;
+                        dollYaw = (dollYaw + 30f) % 360f;
                         return true;
                 }
 
                 if (rotateRightRect != null
                         && mouseX >= rotateRightRect[0] && mouseX <= rotateRightRect[0] + rotateRightRect[2]
                         && mouseY >= rotateRightRect[1] && mouseY <= rotateRightRect[1] + rotateRightRect[3]) {
-                        dollYaw = (dollYaw + 30f) % 360f;
+                        dollYaw = (dollYaw - 30f + 360f) % 360f;
                         return true;
                 }
 
