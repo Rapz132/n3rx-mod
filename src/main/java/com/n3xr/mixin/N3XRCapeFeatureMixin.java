@@ -80,7 +80,11 @@ public abstract class N3XRCapeFeatureMixin {
                 // menembus kepala. Nilai ini hasil perkiraan (belum
                 // ada referensi pasti dari source vanilla), jadi mungkin
                 // masih perlu disesuaikan lagi.
-                double zOffset = sneaking ? 0.45 : 0.3;
+                // Sebelumnya offset Z positif justru mendorong cape ke
+                // DEPAN badan (kebalik, kelihatan sebelum diputar ke
+                // belakang) — dibalik jadi negatif supaya cape nempel
+                // di belakang, sesuai posisi cape yang benar.
+                double zOffset = sneaking ? -0.45 : -0.3;
                 double yOffset = sneaking ? -0.2 : 0.0;
                 matrices.translate(0.0, yOffset, zOffset);
 
