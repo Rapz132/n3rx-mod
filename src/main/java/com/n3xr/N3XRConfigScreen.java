@@ -349,17 +349,35 @@ public class N3XRConfigScreen extends Screen {
         }
 
         private void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
+                fillRoundedGradient(context, x1, y1, x2, y2, color, color, radius);
+        }
+
+        /**
+         * Versi gradient dari fillRounded — warna transisi halus dari atas
+         * (colorTop) ke bawah (colorBottom) per baris pixel, supaya
+         * background/card/toggle tidak terasa flat dan kasar.
+         */
+        private void fillRoundedGradient(DrawContext context, int x1, int y1, int x2, int y2, int colorTop, int colorBottom, int radius) {
                 radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
-                if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
-                context.fill(x1 + radius, y1, x2 - radius, y2, color);
-                context.fill(x1, y1 + radius, x1 + radius, y2 - radius, color);
-                context.fill(x2 - radius, y1 + radius, x2, y2 - radius, color);
-                for (int i = 0; i < radius; i++) {
-                        int dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - (radius - i) * (radius - i)));
-                        context.fill(x1 + dx, y1 + i, x1 + radius, y1 + i + 1, color);
-                        context.fill(x2 - radius, y1 + i, x2 - dx, y1 + i + 1, color);
-                        context.fill(x1 + dx, y2 - i - 1, x1 + radius, y2 - i, color);
-                        context.fill(x2 - radius, y2 - i - 1, x2 - dx, y2 - i, color);
+                int height = y2 - y1;
+                if (height <= 0) return;
+
+                for (int row = 0; row < height; row++) {
+                        float t = row / (float) Math.max(1, height - 1);
+                        int color = lerpColor(colorTop, colorBottom, t);
+                        int y = y1 + row;
+
+                        int dx = 0;
+                        if (radius > 0) {
+                                if (row < radius) {
+                                        int i = radius - row;
+                                        dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - i * i));
+                                } else if (row >= height - radius) {
+                                        int i = radius - (height - 1 - row);
+                                        dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - i * i));
+                                }
+                        }
+                        context.fill(x1 + dx, y, x2 - dx, y + 1, color);
                 }
         }
 
@@ -396,7 +414,7 @@ public class N3XRConfigScreen extends Screen {
                 dtSeconds = Math.min(dtSeconds, 0.1f);
                 lastRenderNanos = nowNanos;
 
-                fillRounded(context, panelX1, 8, panelX2, this.height - 8, 0xE00A0505, 6);
+                fillRoundedGradient(context, panelX1, 8, panelX2, this.height - 8, 0xE0160B0B, 0xE0080404, 6);
 
                 super.render(context, mouseX, mouseY, delta);
 
@@ -413,11 +431,12 @@ public class N3XRConfigScreen extends Screen {
                         tabAnimProgress[i] = approachProgress(tabAnimProgress[i], active, dtSeconds);
                         float t = tabAnimProgress[i];
 
-                        int bg = lerpColor(0xFF1A0E0E, 0xFFCC2222, t);
-                        fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 5);
+                        int bgTop = lerpColor(0xFF221212, 0xFFE05050, t);
+                        int bgBottom = lerpColor(0xFF140A0A, 0xFFB82C2C, t);
+                        fillRoundedGradient(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bgTop, bgBottom, 5);
 
                         if (t < 0.5f) {
-                                int borderColor = 0xFF553333;
+                                int borderColor = 0xFF4A3232;
                                 context.fill(r[0], r[1], r[0] + r[2], r[1] + 1, borderColor);
                                 context.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], borderColor);
                                 context.fill(r[0], r[1], r[0] + 1, r[1] + r[3], borderColor);
@@ -439,12 +458,13 @@ public class N3XRConfigScreen extends Screen {
                         int cx = gridX + col * (cardW + GAP), cy = gridY + row * (CARD_H + GAP);
 
                         boolean enabled = m.getEnabled().get();
-                        int borderColor = enabled ? 0xFFFF5555 : 0xFF553333;
+                        int borderColor = enabled ? 0xFFE05555 : 0xFF4A3232;
 
                         boolean hovered = mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + CARD_H;
-                        int cardBg = hovered ? 0xF01F1010 : 0xF0140A0C;
+                        int cardBgTop = hovered ? 0xF0271414 : 0xF01A0E0E;
+                        int cardBgBottom = hovered ? 0xF0170C0C : 0xF00E0808;
 
-                        fillRounded(context, cx, cy, cx + cardW, cy + CARD_H, cardBg, 4);
+                        fillRoundedGradient(context, cx, cy, cx + cardW, cy + CARD_H, cardBgTop, cardBgBottom, 4);
                         context.fill(cx, cy, cx + cardW, cy + 1, borderColor);
                         context.fill(cx, cy + CARD_H - 1, cx + cardW, cy + CARD_H, borderColor);
                         context.fill(cx, cy, cx + 1, cy + CARD_H, borderColor);
@@ -478,13 +498,14 @@ public class N3XRConfigScreen extends Screen {
                         toggleT = approachProgress(toggleT, enabled, dtSeconds);
                         toggleAnimProgress.put(m.name(), toggleT);
 
-                        int trackColor = lerpColor(0xFF332222, 0xFFCC3333, toggleT);
-                        fillRounded(context, toggleX1, toggleY1, toggleX2, toggleY1 + toggleH, trackColor, toggleH / 2);
+                        int trackTop = lerpColor(0xFF3A2828, 0xFFE05555, toggleT);
+                        int trackBottom = lerpColor(0xFF241616, 0xFFB82C2C, toggleT);
+                        fillRoundedGradient(context, toggleX1, toggleY1, toggleX2, toggleY1 + toggleH, trackTop, trackBottom, toggleH / 2);
                         int knobSize = toggleH - 4;
                         int knobTravelStart = toggleX1 + 2;
                         int knobTravelEnd = toggleX2 - knobSize - 2;
                         int knobX = (int) (knobTravelStart + (knobTravelEnd - knobTravelStart) * toggleT);
-                        fillRounded(context, knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF, knobSize / 2);
+                        fillRoundedGradient(context, knobX, toggleY1 + 2, knobX + knobSize, toggleY1 + 2 + knobSize, 0xFFFFFFFF, 0xFFE0E0E0, knobSize / 2);
 
                         if (m.hasColor()) {
                                 int gearX1 = cx + cardW - PAD - N3XRToggleButton.GEAR_W;
