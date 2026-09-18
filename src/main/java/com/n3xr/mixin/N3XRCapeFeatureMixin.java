@@ -84,7 +84,11 @@ public abstract class N3XRCapeFeatureMixin {
                 // DEPAN badan (kebalik, kelihatan sebelum diputar ke
                 // belakang) — dibalik jadi negatif supaya cape nempel
                 // di belakang, sesuai posisi cape yang benar.
-                double zOffset = sneaking ? -0.45 : -0.3;
+                // Dibalikin ke positif — masalah "kebalik" yang dimaksud
+                // ternyata soal gambar/artwork di kain cape yang mirror,
+                // bukan soal posisi depan/belakang. Posisi belakang
+                // (positif) ini sudah benar dari awal.
+                double zOffset = sneaking ? 0.45 : 0.3;
                 double yOffset = sneaking ? -0.2 : 0.0;
                 matrices.translate(0.0, yOffset, zOffset);
 
