@@ -6,22 +6,18 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.text.Text;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Screen list pilihan cape lokal (dibundling di mod, bukan dari
- * internet), plus panel preview 3D player doll di sebelah kanan.
- * Doll otomatis mengikuti arah kursor mouse (perilaku sama seperti
- * player doll bawaan di Inventory Screen vanilla) — ini juga
- * otomatis menampilkan cape custom yang dipilih, karena
- * InventoryScreen.drawEntity() memakai render pipeline entity yang
- * sama dengan N3XRCapeFeatureMixin.
- *
- * Dibuka dari N3XRCosmeticsScreen saat klik "Cloak".
+ * Screen list pilihan cape lokal, plus panel preview 3D player doll
+ * di sebelah kanan. Doll pakai overload bawaan InventoryScreen
+ * (bukan Quaternion manual — versi itu bikin karakter "jumpalitan"
+ * karena rotasi kita ketabrak orientasi dasar Minecraft sendiri).
+ * Overload ini dijamin render tegak karena itu logic asli
+ * Minecraft, dan tetap bisa "diputar" dengan menggerakkan mouse di
+ * atas panel (sama seperti player doll di Inventory Screen vanilla).
  */
 public class N3XRCapeSelectScreen extends Screen {
 
@@ -40,9 +36,6 @@ public class N3XRCapeSelectScreen extends Screen {
         private int dollX1, dollY1, dollX2, dollY2;
         private int panelBottom;
         private long lastRenderNanos = 0;
-        private float dollYaw = 20f;
-        private int[] rotateLeftRect;
-        private int[] rotateRightRect;
         private int[] backButtonRect;
 
         public N3XRCapeSelectScreen(Screen parent) {
@@ -68,7 +61,6 @@ public class N3XRCapeSelectScreen extends Screen {
 
                 int y = listY1 + 34;
 
-                // Baris "None" untuk menonaktifkan cape.
                 rowRects.add(new int[]{listX1 + 8, y, LIST_PANEL_W - 16, ROW_H - 4});
                 hoverProgress.add(0f);
                 y += ROW_H;
@@ -90,11 +82,6 @@ public class N3XRCapeSelectScreen extends Screen {
                         backW,
                         backH
                 };
-
-                int arrowW = 24, arrowH = 24;
-                int arrowY = dollY1 + (dollY2 - dollY1) / 2 - arrowH / 2;
-                rotateLeftRect = new int[]{dollX1 + 6, arrowY, arrowW, arrowH};
-                rotateRightRect = new int[]{dollX2 - arrowW - 6, arrowY, arrowW, arrowH};
         }
 
         private void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
@@ -149,21 +136,6 @@ public class N3XRCapeSelectScreen extends Screen {
                                 return true;
                         }
                 }
-
-                if (rotateLeftRect != null
-                        && mouseX >= rotateLeftRect[0] && mouseX <= rotateLeftRect[0] + rotateLeftRect[2]
-                        && mouseY >= rotateLeftRect[1] && mouseY <= rotateLeftRect[1] + rotateLeftRect[3]) {
-                        dollYaw = (dollYaw + 30f) % 360f;
-                        return true;
-                }
-
-                if (rotateRightRect != null
-                        && mouseX >= rotateRightRect[0] && mouseX <= rotateRightRect[0] + rotateRightRect[2]
-                        && mouseY >= rotateRightRect[1] && mouseY <= rotateRightRect[1] + rotateRightRect[3]) {
-                        dollYaw = (dollYaw - 30f + 360f) % 360f;
-                        return true;
-                }
-
                 return super.mouseClicked(mouseX, mouseY, button);
         }
 
@@ -220,48 +192,33 @@ public class N3XRCapeSelectScreen extends Screen {
         }
 
         /**
-         * Panel preview 3D player doll. Memakai overload
-         * InventoryScreen.drawEntity yang menerima rotasi manual
-         * (Vector3f + Quaternionf). Rotasi cuma yaw (kiri-kanan) lewat
-         * tombol panah, sengaja tidak pakai rotasi X (pitch) sama
-         * sekali supaya tidak ada risiko karakter terlihat terbalik.
-         * Cape custom ikut tampil otomatis karena render pipeline
-         * yang dipakai sama dengan yang di-hook oleh
-         * N3XRCapeFeatureMixin.
+         * Panel preview 3D player doll, pakai overload bawaan
+         * InventoryScreen.drawEntity yang menerima bounding box
+         * (x1,y1,x2,y2) + mouseX/mouseY (bukan Quaternion manual).
+         * Ini logic asli Minecraft, jadi orientasi dijamin tegak, dan
+         * karakter otomatis "menoleh" mengikuti posisi kursor mouse
+         * saat digerakkan di atas panel — itu cara "diputar"-nya.
          */
         private void renderDoll(DrawContext context, int mouseX, int mouseY) {
                 MinecraftClient mc = MinecraftClient.getInstance();
                 if (mc.player == null) return;
 
-                float centerX = (dollX1 + dollX2) / 2f;
-                float centerY = dollY2 - 30f;
-                float dollSize = 50f;
-
-                Quaternionf rotation = new Quaternionf()
-                        .rotateY((float) Math.toRadians(dollYaw));
+                int boxY1 = dollY1 + 10;
+                int boxY2 = dollY2 - 20;
+                int dollSize = 40;
 
                 InventoryScreen.drawEntity(
                         context,
-                        centerX,
-                        centerY,
+                        dollX1,
+                        boxY1,
+                        dollX2,
+                        boxY2,
                         dollSize,
-                        new Vector3f(0f, 0f, 0f),
-                        rotation,
-                        null,
+                        1.0f,
+                        (float) mouseX,
+                        (float) mouseY,
                         mc.player
                 );
-
-                renderArrowButton(context, rotateLeftRect, "<", mouseX, mouseY);
-                renderArrowButton(context, rotateRightRect, ">", mouseX, mouseY);
-        }
-
-        private void renderArrowButton(DrawContext context, int[] rect, String label, int mouseX, int mouseY) {
-                boolean hovered = mouseX >= rect[0] && mouseX <= rect[0] + rect[2] && mouseY >= rect[1] && mouseY <= rect[1] + rect[3];
-                int bg = lerpColor(0xFF0A0505, 0xFF2A1414, hovered ? 1f : 0f);
-                fillRounded(context, rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3], bg, 4);
-                int lw = this.textRenderer.getWidth(label);
-                context.drawText(this.textRenderer, label,
-                        rect[0] + (rect[2] - lw) / 2, rect[1] + (rect[3] - 8) / 2, 0xFFFFFFFF, true);
         }
 
         @Override
