@@ -10,9 +10,14 @@ public class N3XRHudEditScreen extends Screen {
         private static final int BOX_W = 80;
         private static final int BOX_H = 12;
         private static final int SNAP_GRID = 5;
+        private static final int HANDLE_R = 4;
 
         private String dragging = null;
         private int dragOffX, dragOffY;
+
+        private String resizing = null;
+        private double resizeStartMouseX;
+        private float resizeStartScale;
 
         public N3XRHudEditScreen() {
                 super(Text.literal("N3XR HUD"));
@@ -60,64 +65,130 @@ public class N3XRHudEditScreen extends Screen {
                         context.fill(0, gcy, this.width, gcy + 1, 0x55FF5555);
                 }
 
-                if (N3XRConfig.showFps) drawBox(context, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY, "FPS".equals(dragging));
-                if (N3XRConfig.showArmor) drawBox(context, "ArmorHUD", N3XRConfig.armorX, N3XRConfig.armorY, "Armor".equals(dragging));
-                if (N3XRConfig.showCps) drawBox(context, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY, "CPS".equals(dragging));
-                if (N3XRConfig.showPing) drawBox(context, "Ping", N3XRConfig.pingX, N3XRConfig.pingY, "Ping".equals(dragging));
-                if (N3XRConfig.showKeystrokes) drawBox(context, "Keystrokes", N3XRConfig.keysX, N3XRConfig.keysY, "Keys".equals(dragging));
-                if (N3XRConfig.showServerIp) drawBox(context, "ServerIP", N3XRConfig.serverIpX, N3XRConfig.serverIpY, "ServerIP".equals(dragging));
-                if (N3XRConfig.showTps) drawBox(context, "TPS", N3XRConfig.tpsX, N3XRConfig.tpsY, "TPS".equals(dragging));
-                if (N3XRConfig.showCompass) drawBox(context, "Compass", N3XRConfig.compassX, N3XRConfig.compassY, "Compass".equals(dragging));
-                if (N3XRConfig.showSpeed) drawBox(context, "Speed", N3XRConfig.speedX, N3XRConfig.speedY, "Speed".equals(dragging));
-                if (N3XRConfig.showCoords) drawBox(context, "Coords", N3XRConfig.coordsX, N3XRConfig.coordsY, "Coords".equals(dragging));
-                if (N3XRConfig.showPlayerCount) drawBox(context, "PlayerCount", N3XRConfig.playerCountX, N3XRConfig.playerCountY, "PlayerCount".equals(dragging));
-                if (N3XRConfig.showMemoryUsage) drawBox(context, "Memory", N3XRConfig.memoryX, N3XRConfig.memoryY, "Memory".equals(dragging));
-                if (N3XRConfig.showCpuUsage) drawBox(context, "CPU", N3XRConfig.cpuX, N3XRConfig.cpuY, "CPU".equals(dragging));
-                if (N3XRConfig.showBiomeInfo) drawBox(context, "Biome", N3XRConfig.biomeX, N3XRConfig.biomeY, "Biome".equals(dragging));
-                if (N3XRConfig.showPotions) drawBox(context, "Potions", N3XRConfig.potionsX, N3XRConfig.potionsY, "Potions".equals(dragging));
-                if (N3XRConfig.showRealTime) drawBox(context, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY, "RealTime".equals(dragging));
-                if (N3XRConfig.showInventoryDisplay) drawBox(context, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY, "Inventory".equals(dragging));
-                if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY, "DayCounter".equals(dragging));
+                if (N3XRConfig.showFps) drawBox(context, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY);
+                if (N3XRConfig.showArmor) drawBox(context, "Armor", N3XRConfig.armorX, N3XRConfig.armorY);
+                if (N3XRConfig.showCps) drawBox(context, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY);
+                if (N3XRConfig.showPing) drawBox(context, "Ping", N3XRConfig.pingX, N3XRConfig.pingY);
+                if (N3XRConfig.showKeystrokes) drawBox(context, "Keys", N3XRConfig.keysX, N3XRConfig.keysY);
+                if (N3XRConfig.showServerIp) drawBox(context, "ServerIP", N3XRConfig.serverIpX, N3XRConfig.serverIpY);
+                if (N3XRConfig.showTps) drawBox(context, "TPS", N3XRConfig.tpsX, N3XRConfig.tpsY);
+                if (N3XRConfig.showCompass) drawBox(context, "Compass", N3XRConfig.compassX, N3XRConfig.compassY);
+                if (N3XRConfig.showSpeed) drawBox(context, "Speed", N3XRConfig.speedX, N3XRConfig.speedY);
+                if (N3XRConfig.showCoords) drawBox(context, "Coords", N3XRConfig.coordsX, N3XRConfig.coordsY);
+                if (N3XRConfig.showPlayerCount) drawBox(context, "PlayerCount", N3XRConfig.playerCountX, N3XRConfig.playerCountY);
+                if (N3XRConfig.showMemoryUsage) drawBox(context, "Memory", N3XRConfig.memoryX, N3XRConfig.memoryY);
+                if (N3XRConfig.showCpuUsage) drawBox(context, "CPU", N3XRConfig.cpuX, N3XRConfig.cpuY);
+                if (N3XRConfig.showBiomeInfo) drawBox(context, "Biome", N3XRConfig.biomeX, N3XRConfig.biomeY);
+                if (N3XRConfig.showPotions) drawBox(context, "Potions", N3XRConfig.potionsX, N3XRConfig.potionsY);
+                if (N3XRConfig.showRealTime) drawBox(context, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY);
+                if (N3XRConfig.showInventoryDisplay) drawBox(context, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY);
+                if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY);
 
-                Text hint = Text.literal("Drag modules to reposition \u00b7 Right Shift to close");
+                Text hint = Text.literal("Drag modules to reposition \u00b7 Drag \u25cf to resize \u00b7 Right Shift to close");
                 int hw = this.textRenderer.getWidth(hint);
                 context.drawText(this.textRenderer, hint, (this.width - hw) / 2, this.height - 16, 0xAAAAAA, true);
         }
 
-        private void drawBox(DrawContext context, String label, int x, int y, boolean active) {
+        /**
+         * Menggambar box module dengan ukuran mengikuti scale-nya
+         * sendiri (N3XRConfig.getScale(key)), plus handle bulat (●) di
+         * pojok kanan-bawah yang bisa di-drag untuk memperbesar atau
+         * memperkecil scale module itu langsung secara visual.
+         */
+        private void drawBox(DrawContext context, String key, int x, int y) {
+                float scale = N3XRConfig.getScale(key);
+                int w = (int) (BOX_W * scale);
+                int h = (int) (BOX_H * scale);
+
+                boolean active = key.equals(dragging) || key.equals(resizing);
                 int borderColor = active ? 0xFFFFFFFF : 0xFFFF5555;
-                context.fill(x - 1, y - 1, x + BOX_W + 1, y, borderColor);
-                context.fill(x - 1, y + BOX_H, x + BOX_W + 1, y + BOX_H + 1, borderColor);
-                context.fill(x - 1, y - 1, x, y + BOX_H + 1, borderColor);
-                context.fill(x + BOX_W, y - 1, x + BOX_W + 1, y + BOX_H + 1, borderColor);
-                context.drawText(this.textRenderer, label, x + 3, y + 2, 0xFFFFFF, true);
+
+                context.fill(x - 1, y - 1, x + w + 1, y, borderColor);
+                context.fill(x - 1, y + h, x + w + 1, y + h + 1, borderColor);
+                context.fill(x - 1, y - 1, x, y + h + 1, borderColor);
+                context.fill(x + w, y - 1, x + w + 1, y + h + 1, borderColor);
+                context.drawText(this.textRenderer, key, x + 3, y + 2, 0xFFFFFF, true);
+
+                int hx = x + w;
+                int hy = y + h;
+                int handleColor = key.equals(resizing) ? 0xFFFFFFFF : 0xFFFF5555;
+                context.fill(hx - HANDLE_R, hy - HANDLE_R, hx + HANDLE_R, hy + HANDLE_R, handleColor);
+        }
+
+        private int boxW(String key) {
+                return (int) (BOX_W * N3XRConfig.getScale(key));
+        }
+
+        private int boxH(String key) {
+                return (int) (BOX_H * N3XRConfig.getScale(key));
+        }
+
+        private boolean inHandle(double mx, double my, String key, int x, int y) {
+                int hx = x + boxW(key);
+                int hy = y + boxH(key);
+                return mx >= hx - HANDLE_R && mx <= hx + HANDLE_R && my >= hy - HANDLE_R && my <= hy + HANDLE_R;
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                if (N3XRConfig.showFps && inBox(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY)) { dragging = "FPS"; setOffset(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY); return true; }
-                if (N3XRConfig.showArmor && inBox(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY)) { dragging = "Armor"; setOffset(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY); return true; }
-                if (N3XRConfig.showCps && inBox(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY)) { dragging = "CPS"; setOffset(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY); return true; }
-                if (N3XRConfig.showPing && inBox(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY)) { dragging = "Ping"; setOffset(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY); return true; }
-                if (N3XRConfig.showKeystrokes && inBox(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY)) { dragging = "Keys"; setOffset(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY); return true; }
-                if (N3XRConfig.showServerIp && inBox(mouseX, mouseY, N3XRConfig.serverIpX, N3XRConfig.serverIpY)) { dragging = "ServerIP"; setOffset(mouseX, mouseY, N3XRConfig.serverIpX, N3XRConfig.serverIpY); return true; }
-                if (N3XRConfig.showTps && inBox(mouseX, mouseY, N3XRConfig.tpsX, N3XRConfig.tpsY)) { dragging = "TPS"; setOffset(mouseX, mouseY, N3XRConfig.tpsX, N3XRConfig.tpsY); return true; }
-                if (N3XRConfig.showCompass && inBox(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY)) { dragging = "Compass"; setOffset(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY); return true; }
-                if (N3XRConfig.showSpeed && inBox(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY)) { dragging = "Speed"; setOffset(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY); return true; }
-                if (N3XRConfig.showCoords && inBox(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY)) { dragging = "Coords"; setOffset(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY); return true; }
-                if (N3XRConfig.showPlayerCount && inBox(mouseX, mouseY, N3XRConfig.playerCountX, N3XRConfig.playerCountY)) { dragging = "PlayerCount"; setOffset(mouseX, mouseY, N3XRConfig.playerCountX, N3XRConfig.playerCountY); return true; }
-                if (N3XRConfig.showMemoryUsage && inBox(mouseX, mouseY, N3XRConfig.memoryX, N3XRConfig.memoryY)) { dragging = "Memory"; setOffset(mouseX, mouseY, N3XRConfig.memoryX, N3XRConfig.memoryY); return true; }
-                if (N3XRConfig.showCpuUsage && inBox(mouseX, mouseY, N3XRConfig.cpuX, N3XRConfig.cpuY)) { dragging = "CPU"; setOffset(mouseX, mouseY, N3XRConfig.cpuX, N3XRConfig.cpuY); return true; }
-                if (N3XRConfig.showBiomeInfo && inBox(mouseX, mouseY, N3XRConfig.biomeX, N3XRConfig.biomeY)) { dragging = "Biome"; setOffset(mouseX, mouseY, N3XRConfig.biomeX, N3XRConfig.biomeY); return true; }
-                if (N3XRConfig.showPotions && inBox(mouseX, mouseY, N3XRConfig.potionsX, N3XRConfig.potionsY)) { dragging = "Potions"; setOffset(mouseX, mouseY, N3XRConfig.potionsX, N3XRConfig.potionsY); return true; }
-                if (N3XRConfig.showRealTime && inBox(mouseX, mouseY, N3XRConfig.realTimeX, N3XRConfig.realTimeY)) { dragging = "RealTime"; setOffset(mouseX, mouseY, N3XRConfig.realTimeX, N3XRConfig.realTimeY); return true; }
-                if (N3XRConfig.showInventoryDisplay && inBox(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) { dragging = "Inventory"; setOffset(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY); return true; }
-                if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
+                if (tryStartResize(mouseX, mouseY, "FPS", N3XRConfig.showFps, N3XRConfig.fpsX, N3XRConfig.fpsY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Armor", N3XRConfig.showArmor, N3XRConfig.armorX, N3XRConfig.armorY)) return true;
+                if (tryStartResize(mouseX, mouseY, "CPS", N3XRConfig.showCps, N3XRConfig.cpsX, N3XRConfig.cpsY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Ping", N3XRConfig.showPing, N3XRConfig.pingX, N3XRConfig.pingY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Keys", N3XRConfig.showKeystrokes, N3XRConfig.keysX, N3XRConfig.keysY)) return true;
+                if (tryStartResize(mouseX, mouseY, "ServerIP", N3XRConfig.showServerIp, N3XRConfig.serverIpX, N3XRConfig.serverIpY)) return true;
+                if (tryStartResize(mouseX, mouseY, "TPS", N3XRConfig.showTps, N3XRConfig.tpsX, N3XRConfig.tpsY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Compass", N3XRConfig.showCompass, N3XRConfig.compassX, N3XRConfig.compassY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Speed", N3XRConfig.showSpeed, N3XRConfig.speedX, N3XRConfig.speedY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Coords", N3XRConfig.showCoords, N3XRConfig.coordsX, N3XRConfig.coordsY)) return true;
+                if (tryStartResize(mouseX, mouseY, "PlayerCount", N3XRConfig.showPlayerCount, N3XRConfig.playerCountX, N3XRConfig.playerCountY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Memory", N3XRConfig.showMemoryUsage, N3XRConfig.memoryX, N3XRConfig.memoryY)) return true;
+                if (tryStartResize(mouseX, mouseY, "CPU", N3XRConfig.showCpuUsage, N3XRConfig.cpuX, N3XRConfig.cpuY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Biome", N3XRConfig.showBiomeInfo, N3XRConfig.biomeX, N3XRConfig.biomeY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Potions", N3XRConfig.showPotions, N3XRConfig.potionsX, N3XRConfig.potionsY)) return true;
+                if (tryStartResize(mouseX, mouseY, "RealTime", N3XRConfig.showRealTime, N3XRConfig.realTimeX, N3XRConfig.realTimeY)) return true;
+                if (tryStartResize(mouseX, mouseY, "Inventory", N3XRConfig.showInventoryDisplay, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) return true;
+                if (tryStartResize(mouseX, mouseY, "DayCounter", N3XRConfig.showDayCounter, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) return true;
+
+                if (N3XRConfig.showFps && inBox(mouseX, mouseY, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY)) { dragging = "FPS"; setOffset(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY); return true; }
+                if (N3XRConfig.showArmor && inBox(mouseX, mouseY, "Armor", N3XRConfig.armorX, N3XRConfig.armorY)) { dragging = "Armor"; setOffset(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY); return true; }
+                if (N3XRConfig.showCps && inBox(mouseX, mouseY, "CPS", N3XRConfig.cpsX, N3XRConfig.cpsY)) { dragging = "CPS"; setOffset(mouseX, mouseY, N3XRConfig.cpsX, N3XRConfig.cpsY); return true; }
+                if (N3XRConfig.showPing && inBox(mouseX, mouseY, "Ping", N3XRConfig.pingX, N3XRConfig.pingY)) { dragging = "Ping"; setOffset(mouseX, mouseY, N3XRConfig.pingX, N3XRConfig.pingY); return true; }
+                if (N3XRConfig.showKeystrokes && inBox(mouseX, mouseY, "Keys", N3XRConfig.keysX, N3XRConfig.keysY)) { dragging = "Keys"; setOffset(mouseX, mouseY, N3XRConfig.keysX, N3XRConfig.keysY); return true; }
+                if (N3XRConfig.showServerIp && inBox(mouseX, mouseY, "ServerIP", N3XRConfig.serverIpX, N3XRConfig.serverIpY)) { dragging = "ServerIP"; setOffset(mouseX, mouseY, N3XRConfig.serverIpX, N3XRConfig.serverIpY); return true; }
+                if (N3XRConfig.showTps && inBox(mouseX, mouseY, "TPS", N3XRConfig.tpsX, N3XRConfig.tpsY)) { dragging = "TPS"; setOffset(mouseX, mouseY, N3XRConfig.tpsX, N3XRConfig.tpsY); return true; }
+                if (N3XRConfig.showCompass && inBox(mouseX, mouseY, "Compass", N3XRConfig.compassX, N3XRConfig.compassY)) { dragging = "Compass"; setOffset(mouseX, mouseY, N3XRConfig.compassX, N3XRConfig.compassY); return true; }
+                if (N3XRConfig.showSpeed && inBox(mouseX, mouseY, "Speed", N3XRConfig.speedX, N3XRConfig.speedY)) { dragging = "Speed"; setOffset(mouseX, mouseY, N3XRConfig.speedX, N3XRConfig.speedY); return true; }
+                if (N3XRConfig.showCoords && inBox(mouseX, mouseY, "Coords", N3XRConfig.coordsX, N3XRConfig.coordsY)) { dragging = "Coords"; setOffset(mouseX, mouseY, N3XRConfig.coordsX, N3XRConfig.coordsY); return true; }
+                if (N3XRConfig.showPlayerCount && inBox(mouseX, mouseY, "PlayerCount", N3XRConfig.playerCountX, N3XRConfig.playerCountY)) { dragging = "PlayerCount"; setOffset(mouseX, mouseY, N3XRConfig.playerCountX, N3XRConfig.playerCountY); return true; }
+                if (N3XRConfig.showMemoryUsage && inBox(mouseX, mouseY, "Memory", N3XRConfig.memoryX, N3XRConfig.memoryY)) { dragging = "Memory"; setOffset(mouseX, mouseY, N3XRConfig.memoryX, N3XRConfig.memoryY); return true; }
+                if (N3XRConfig.showCpuUsage && inBox(mouseX, mouseY, "CPU", N3XRConfig.cpuX, N3XRConfig.cpuY)) { dragging = "CPU"; setOffset(mouseX, mouseY, N3XRConfig.cpuX, N3XRConfig.cpuY); return true; }
+                if (N3XRConfig.showBiomeInfo && inBox(mouseX, mouseY, "Biome", N3XRConfig.biomeX, N3XRConfig.biomeY)) { dragging = "Biome"; setOffset(mouseX, mouseY, N3XRConfig.biomeX, N3XRConfig.biomeY); return true; }
+                if (N3XRConfig.showPotions && inBox(mouseX, mouseY, "Potions", N3XRConfig.potionsX, N3XRConfig.potionsY)) { dragging = "Potions"; setOffset(mouseX, mouseY, N3XRConfig.potionsX, N3XRConfig.potionsY); return true; }
+                if (N3XRConfig.showRealTime && inBox(mouseX, mouseY, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY)) { dragging = "RealTime"; setOffset(mouseX, mouseY, N3XRConfig.realTimeX, N3XRConfig.realTimeY); return true; }
+                if (N3XRConfig.showInventoryDisplay && inBox(mouseX, mouseY, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) { dragging = "Inventory"; setOffset(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY); return true; }
+                if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
                 return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        private boolean tryStartResize(double mouseX, double mouseY, String key, boolean visible, int x, int y) {
+                if (!visible) return false;
+                if (!inHandle(mouseX, mouseY, key, x, y)) return false;
+                resizing = key;
+                resizeStartMouseX = mouseX;
+                resizeStartScale = N3XRConfig.getScale(key);
+                return true;
         }
 
         @Override
         public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+                if (resizing != null) {
+                        double dragDistance = mouseX - resizeStartMouseX;
+                        float newScale = resizeStartScale + (float) (dragDistance * 0.01);
+                        N3XRConfig.setScale(resizing, newScale);
+                        return true;
+                }
+
                 if (dragging != null) {
                         int nx = (int) mouseX - dragOffX;
                         int ny = (int) mouseY - dragOffY;
@@ -153,11 +224,12 @@ public class N3XRHudEditScreen extends Screen {
         @Override
         public boolean mouseReleased(double mouseX, double mouseY, int button) {
                 dragging = null;
+                resizing = null;
                 return super.mouseReleased(mouseX, mouseY, button);
         }
 
-        private boolean inBox(double mx, double my, int x, int y) {
-                return mx >= x && mx <= x + BOX_W && my >= y && my <= y + BOX_H;
+        private boolean inBox(double mx, double my, String key, int x, int y) {
+                return mx >= x && mx <= x + boxW(key) && my >= y && my <= y + boxH(key);
         }
 
         private void setOffset(double mx, double my, int x, int y) {
