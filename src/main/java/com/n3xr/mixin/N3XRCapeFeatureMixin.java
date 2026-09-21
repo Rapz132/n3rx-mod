@@ -80,19 +80,18 @@ public abstract class N3XRCapeFeatureMixin {
                 // menembus kepala. Nilai ini hasil perkiraan (belum
                 // ada referensi pasti dari source vanilla), jadi mungkin
                 // masih perlu disesuaikan lagi.
-                // Sebelumnya offset Z positif justru mendorong cape ke
-                // DEPAN badan (kebalik, kelihatan sebelum diputar ke
-                // belakang) — dibalik jadi negatif supaya cape nempel
-                // di belakang, sesuai posisi cape yang benar.
-                // Dibalikin ke positif — masalah "kebalik" yang dimaksud
-                // ternyata soal gambar/artwork di kain cape yang mirror,
-                // bukan soal posisi depan/belakang. Posisi belakang
-                // (positif) ini sudah benar dari awal.
                 double zOffset = sneaking ? 0.45 : 0.3;
                 double yOffset = sneaking ? -0.2 : 0.0;
                 matrices.translate(0.0, yOffset, zOffset);
 
                 ModelPart model = N3XRCapeRenderer.getOrBuildModel();
+
+                // Vanilla CapeFeatureRenderer selalu memutar model cape
+                // 180 derajat di sumbu Y sebelum render, karena geometri
+                // & UV cape (lihat N3XRCapeRenderer) dibuat dengan asumsi
+                // rotasi ini diterapkan. Tanpa baris ini, tekstur kelihatan
+                // mirror/kebalik — inilah penyebab bug "cape kebalik".
+                model.yaw = (float) Math.PI;
 
                 // Tilt dasar lebih besar saat sneaking (mengikuti
                 // kemiringan badan), dan goyangan diperbesar amplitudonya
