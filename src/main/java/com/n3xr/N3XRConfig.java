@@ -53,6 +53,8 @@ public class N3XRConfig {
         public static boolean combatPerformanceModeEnabled = false;
         public static boolean weatherReducerEnabled = false;
         public static boolean noGlintEnabled = false;
+        public static boolean motionBlurEnabled = false;
+        public static float motionBlurStrength = 0.45f; // 0.0 (no trail) - 0.9 (long trail)
         public static int smartRenderOriginalDistance = -1;
         public static boolean guidesEnabled = true;
         public static boolean keysRainbow = false;
