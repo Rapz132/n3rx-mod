@@ -1,4 +1,3 @@
-
 package com.n3xr.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
