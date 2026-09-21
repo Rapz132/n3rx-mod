@@ -2,6 +2,7 @@ package com.n3xr;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -22,7 +23,7 @@ import java.nio.FloatBuffer;
  *   2) Capture ulang layar (yang sekarang sudah tercampur) ke texture
  *      yang sama, jadi bahan campuran untuk frame berikutnya.
  *
- * Sengaja ditulis pakai OpenGL mentah (LWJGL GL11/13/15/20/30) saja,
+ * Sengaja ditulis pakai OpenGL mentah (LWJGL GL11/12/13/15/20/30) saja,
  * BUKAN lewat wrapper Minecraft (Window/Framebuffer/Tessellator).
  * Alasannya: nomor mapping intermediary buat kelas-kelas render
  * Minecraft beda-beda tiap build 1.21.x, dan aku nggak bisa
@@ -170,8 +171,8 @@ public final class N3XRMotionBlur {
                 GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP_TO_EDGE);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP_TO_EDGE);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
     }
 
