@@ -25,6 +25,8 @@ public class N3XRConfigStorage {
 		boolean showRealTime, itemUpdateEnabled, fastCrystalEnabled, pingOptimizerEnabled;
 		boolean healthIndicatorEnabled, chatTimestampEnabled, showDayCounter;
 		boolean snapEnabled, guidesEnabled, keysRainbow, showFavoritesOnly;
+		boolean motionBlurEnabled;
+		float motionBlurStrength;
 		int timezoneIndex;
 		float hudScale;
 
@@ -77,6 +79,8 @@ public class N3XRConfigStorage {
 		d.guidesEnabled = N3XRConfig.guidesEnabled;
 		d.keysRainbow = N3XRConfig.keysRainbow;
 		d.showFavoritesOnly = N3XRConfig.showFavoritesOnly;
+		d.motionBlurEnabled = N3XRConfig.motionBlurEnabled;
+		d.motionBlurStrength = N3XRConfig.motionBlurStrength;
 		d.timezoneIndex = N3XRConfig.timezoneIndex;
 		d.hudScale = N3XRConfig.hudScale;
 
@@ -173,6 +177,8 @@ public class N3XRConfigStorage {
 			N3XRConfig.guidesEnabled = d.guidesEnabled;
 			N3XRConfig.keysRainbow = d.keysRainbow;
 			N3XRConfig.showFavoritesOnly = d.showFavoritesOnly;
+			N3XRConfig.motionBlurEnabled = d.motionBlurEnabled;
+			if (d.motionBlurStrength > 0) N3XRConfig.motionBlurStrength = d.motionBlurStrength;
 			N3XRConfig.timezoneIndex = d.timezoneIndex;
 			if (d.hudScale > 0) N3XRConfig.hudScale = d.hudScale;
 
