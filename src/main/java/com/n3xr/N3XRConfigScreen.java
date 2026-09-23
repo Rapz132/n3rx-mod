@@ -109,6 +109,8 @@ public class N3XRConfigScreen extends Screen {
                         () -> N3XRConfig.hitColorEnabled, v -> N3XRConfig.hitColorEnabled = v, () -> N3XRConfig.hitColor, v -> N3XRConfig.hitColor = v, false));
                 allModules.add(new ModuleDef("Hitbox", "Shows entity hitbox outlines.", icon("hitbox"), Category.COMBAT, true,
                         () -> N3XRConfig.hitboxEnabled, v -> N3XRConfig.hitboxEnabled = v, () -> N3XRConfig.hitboxColor, v -> N3XRConfig.hitboxColor = v, false));
+                allModules.add(new ModuleDef("Hit Range", "Draws a circle around you showing your hit reach distance.", icon("hitrange"), Category.COMBAT, true,
+                        () -> N3XRConfig.hitRangeEnabled, v -> N3XRConfig.hitRangeEnabled = v, () -> N3XRConfig.hitRangeColor, v -> N3XRConfig.hitRangeColor = v, false));
 
                 allModules.add(new ModuleDef("Zoom", "Adds zoom capabilities.", icon("zoom"), Category.UTILITY, false,
                         () -> N3XRConfig.zoomEnabled, v -> N3XRConfig.zoomEnabled = v, () -> 0xFFFFFF, v -> {}, false));
