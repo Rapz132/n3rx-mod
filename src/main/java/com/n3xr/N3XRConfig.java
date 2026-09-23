@@ -34,6 +34,12 @@ public class N3XRConfig {
         public static boolean chatTimestampEnabled = false;
         public static boolean showDayCounter = false;
 
+        // Hit Range: lingkaran radius jangkauan hit di sekitar player,
+        // warna bisa di-custom (lihat N3XRHitRange.java buat render-nya
+        // dan N3XRConfigScreen buat entry module-nya).
+        public static boolean hitRangeEnabled = false;
+        public static int hitRangeColor = 0xFF3333;
+
         public static boolean snapEnabled = false;
         public static boolean smartRenderEnabled = false;
         public static boolean noBlockShadingEnabled = false;
