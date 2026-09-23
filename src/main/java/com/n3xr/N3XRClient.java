@@ -1,4 +1,4 @@
-package com.n3xr;
+lpackage com.n3xr;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -105,6 +105,10 @@ public class N3XRClient implements ClientModInitializer {
                         com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
                 });
                 WorldRenderEvents.LAST.register(this::renderBlockOverlay);
+                WorldRenderEvents.LAST.register(N3XRMotionBlur::onWorldRenderLast);
+                // Hit Range: lingkaran radius jangkauan hit di sekitar player
+                // (module baru, lihat N3XRHitRange.java).
+                WorldRenderEvents.LAST.register(N3XRHitRange::onWorldRenderLast);
                 WorldRenderEvents.AFTER_ENTITIES.register(this::renderWorldNameTag);
                 // Cape sekarang di-render lewat N3XRCapeFeatureMixin
                 // (inject ke CapeFeatureRenderer vanilla), bukan lagi
