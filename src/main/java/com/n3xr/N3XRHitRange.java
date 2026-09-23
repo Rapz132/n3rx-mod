@@ -80,7 +80,7 @@ public final class N3XRHitRange {
         // Posisi player yang di-interpolasi antara tick sebelumnya dan
         // sekarang, biar lingkarannya ngikut gerakan dengan mulus
         // (nggak "patah-patah" ngikut tick rate).
-        float tickDelta = context.tickDelta();
+        float tickDelta = context.tickCounter().getTickDelta(false);
         Entity player = mc.player;
         double px = MathHelper.lerp(tickDelta, player.prevX, player.getX());
         double py = MathHelper.lerp(tickDelta, player.prevY, player.getY());
