@@ -1,4 +1,4 @@
-lpackage com.n3xr;
+package com.n3xr;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
