@@ -142,6 +142,7 @@ public final class N3XRHitRange {
         GL20.glUseProgram(0);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDisable(GL11.GL_BLEND);
+        GL11.glLineWidth(1.0f); // reset supaya nggak "bocor" ke rendering lain (mis. garis chunk border/hitbox pas F3 aktif)
     }
 
     private static void ensureGlResources() {
