@@ -1,3 +1,4 @@
+
 package com.n3xr;
 
 import net.minecraft.client.gui.DrawContext;
@@ -10,8 +11,10 @@ import java.util.List;
 
 /**
  * Screen sidebar untuk fitur cosmetic N3XR, dibuka lewat keybind X.
- * Cuma "Cloak" (cape) yang fungsional sekarang — mengambil texture
- * dari skinmc.net lewat N3XRCapeManager. Slot lain ditandai "Soon".
+ * "Cloak" (cape) dan "Hat" sekarang fungsional — cape ambil texture
+ * dari N3XRCapeManager, hat ambil geometri+texture dari
+ * N3XRHatManager (lihat package com.n3xr.hats). Slot lain ditandai
+ * "Soon".
  */
 public class N3XRCosmeticsScreen extends Screen {
 
@@ -31,7 +34,7 @@ public class N3XRCosmeticsScreen extends Screen {
         public N3XRCosmeticsScreen() {
                 super(Text.literal("N3 Cosmetics"));
 
-                items.add(new CosmeticItem("hat", "Hat", false));
+                items.add(new CosmeticItem("hat", "Hat", true));
                 items.add(new CosmeticItem("head", "Head", false));
                 items.add(new CosmeticItem("body", "Body", false));
                 items.add(new CosmeticItem("shield", "Shield", false));
@@ -105,6 +108,8 @@ public class N3XRCosmeticsScreen extends Screen {
                         if (mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
                                 if (item.key().equals("cloak")) {
                                         this.client.setScreen(new N3XRCapeSelectScreen(this));
+                                } else if (item.key().equals("hat")) {
+                                        this.client.setScreen(new N3XRHatSelectScreen(this));
                                 }
                                 return true;
                         }
@@ -130,7 +135,8 @@ public class N3XRCosmeticsScreen extends Screen {
                         CosmeticItem item = items.get(i);
                         int[] r = itemRects.get(i);
 
-                        boolean isActive = item.key().equals("cloak") && N3XRConfig.capeSelectedKey != null;
+                        boolean isActive = (item.key().equals("cloak") && N3XRConfig.capeSelectedKey != null)
+                                || (item.key().equals("hat") && N3XRConfig.hatSelectedKey != null);
                         boolean hovered = item.implemented()
                                 && mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3];
 
