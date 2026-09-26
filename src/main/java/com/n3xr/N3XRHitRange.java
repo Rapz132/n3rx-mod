@@ -9,7 +9,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 /**
@@ -67,8 +66,8 @@ public final class N3XRHitRange {
         matrices.translate(px - camPos.x, py - camPos.y + 0.05, pz - camPos.z);
 
         VertexConsumer buffer = context.consumers().getBuffer(RenderLayer.getLines());
-        Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
-        Matrix3f normalMatrix = matrices.peek().getNormalMatrix();
+        MatrixStack.Entry entry = matrices.peek();
+        Matrix4f positionMatrix = entry.getPositionMatrix();
 
         for (int i = 0; i < SEGMENTS; i++) {
             double angle1 = (Math.PI * 2.0 * i) / SEGMENTS;
@@ -79,8 +78,8 @@ public final class N3XRHitRange {
             float x2 = (float) (Math.cos(angle2) * RADIUS);
             float z2 = (float) (Math.sin(angle2) * RADIUS);
 
-            buffer.vertex(positionMatrix, x1, 0f, z1).color(r, g, b, a).normal(normalMatrix, 0f, 1f, 0f);
-            buffer.vertex(positionMatrix, x2, 0f, z2).color(r, g, b, a).normal(normalMatrix, 0f, 1f, 0f);
+            buffer.vertex(positionMatrix, x1, 0f, z1).color(r, g, b, a).normal(entry, 0f, 1f, 0f);
+            buffer.vertex(positionMatrix, x2, 0f, z2).color(r, g, b, a).normal(entry, 0f, 1f, 0f);
         }
 
         matrices.pop();
