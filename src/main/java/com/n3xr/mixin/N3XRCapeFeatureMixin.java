@@ -116,6 +116,13 @@ public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity,
                                 // supaya hat otomatis ngikut arah pandang kepala.
                                 this.getContextModel().head.rotate(matrices);
 
+                                // N3XRStrawHatModel didesain pakai konvensi "Y+ ke atas"
+                                // (y=8 artinya 8 unit ke atas dari kepala), padahal sistem
+                                // render vanilla di titik ini pakai "Y+ ke bawah" -- tanpa
+                                // flip ini, hat malah nongol 8 unit ke BAWAH kepala
+                                // (kelihatan di pinggang/perut, bukan di atas kepala).
+                                matrices.scale(1.0f, -1.0f, 1.0f);
+
                                 VertexConsumer hatConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(hatTexture));
                                 hatModel.render(matrices, hatConsumer, light, OverlayTexture.DEFAULT_UV);
 
