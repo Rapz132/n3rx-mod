@@ -37,25 +37,23 @@ public class N3XRStrawHatModel {
                         ModelData modelData = new ModelData();
                         ModelPartData root = modelData.getRoot();
 
-                        // Brim: pinggiran lebar & tipis, dari addBox(-28,-8,8, 20,0,19)
-                        // di pivot bone (8,24,-8) -> dileburin jadi x[-20,0] y[16,16] z[0,19],
-                        // lalu di-center ulang jadi x[-10,10] z[-9.5,9.5], tebal dinaikkan
-                        // ke 1px (dari 0px asli, supaya nggak degenerate).
+                        // Brim: pinggiran lebar & tipis. Koordinat Y di sini pakai
+                        // konvensi vanilla (Y+ ke BAWAH dari pivot head) -- makanya
+                        // nilainya negatif (negatif = ke atas). y[-9,-8] artinya
+                        // "8 sampai 9 unit di ATAS kepala".
                         root.addChild(
                                 "brim",
                                 ModelPartBuilder.create().uv(20, 0)
-                                        .cuboid(-10.0f, 8.0f, -9.5f, 20.0f, 1.0f, 19.0f),
+                                        .cuboid(-10.0f, -9.0f, -9.5f, 20.0f, 1.0f, 19.0f),
                                 ModelTransform.pivot(0.0f, 0.0f, 0.0f)
                         );
 
-                        // Crown: bagian yang menutup kepala, dari addBox(-20,-13,8, 12,5,9)
-                        // -> dileburin jadi x[-12,0] y[11,16] z[0,9], di-center ulang jadi
-                        // x[-6,6] z[-4.5,4.5], dan Y digeser supaya dasarnya nempel di y=8
-                        // (puncak kepala vanilla) -> y[8,13].
+                        // Crown: bagian yang menutup kepala. y[-13,-8] artinya "8
+                        // sampai 13 unit di ATAS kepala" (konvensi vanilla, Y+ ke bawah).
                         root.addChild(
                                 "crown",
                                 ModelPartBuilder.create().uv(12, 9)
-                                        .cuboid(-6.0f, 8.0f, -4.5f, 12.0f, 5.0f, 9.0f),
+                                        .cuboid(-6.0f, -13.0f, -4.5f, 12.0f, 5.0f, 9.0f),
                                 ModelTransform.pivot(0.0f, 0.0f, 0.0f)
                         );
 
