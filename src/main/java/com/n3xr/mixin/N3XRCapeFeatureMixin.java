@@ -1,4 +1,3 @@
-
 package com.n3xr.mixin;
 
 import com.n3xr.N3XRConfig;
