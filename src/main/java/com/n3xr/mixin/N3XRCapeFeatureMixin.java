@@ -3,15 +3,19 @@ package com.n3xr.mixin;
 import com.n3xr.N3XRConfig;
 import com.n3xr.cosmetic.N3XRCapeManager;
 import com.n3xr.cosmetic.N3XRCapeRenderer;
+import com.n3xr.hats.N3XRHatManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.PlayerEntityModel;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;
+import net.minecraft.client.render.entity.feature.FeatureRenderer;
+import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,36 +24,41 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Mengganti render cape vanilla dengan cape custom N3XR, dengan
- * inject langsung ke CapeFeatureRenderer.render() milik vanilla
- * (bukan WorldRenderEvents seperti percobaan sebelumnya).
+ * Mengganti render cape vanilla dengan cape custom N3XR (inject ke
+ * CapeFeatureRenderer.render() vanilla), SEKALIGUS render Hat
+ * cosmetic (nempel ke head bone).
  *
- * Keuntungan pendekatan ini: matrices yang diterima di titik ini
- * SUDAH berada di ruang model-space yang benar (posisi, rotasi
- * badan, dan skala 1/16-blok sudah diterapkan otomatis oleh
- * LivingEntityRenderer sebelum method ini dipanggil) — sehingga
- * tidak perlu menghitung ulang translate/rotate/scale secara
- * manual seperti pada implementasi WorldRenderEvents sebelumnya,
- * yang berulang kali salah (posisi "ngawur").
+ * Hat digabung di mixin YANG SAMA dengan cape (bukan mixin
+ * terpisah) supaya nggak ada masalah urutan eksekusi: cape mixin
+ * ini nge-cancel() render vanilla di akhir, dan kalau ada 2 mixin
+ * beda yang sama-sama @Inject di titik HEAD method yang sama, Mixin
+ * framework nggak menjamin urutan render-nya -- bisa jadi salah
+ * satu (cape atau hat) nggak ke-render sama sekali tergantung mana
+ * yang jalan duluan. Digabung di sini, urutannya pasti: cape dulu,
+ * baru hat, baru cancel.
  *
- * Hanya diterapkan untuk local player (fitur cosmetic ini
- * client-side, hanya terlihat oleh diri sendiri). Jika
- * capeSelectedKey null, method dibiarkan berjalan normal (cape
- * vanilla resmi, jika ada, tetap tampil apa adanya).
- *
- * require = 0 supaya jika signature CapeFeatureRenderer.render()
- * berbeda di versi Minecraft lain, hanya fitur ini yang tidak
- * aktif tanpa menjatuhkan seluruh mod.
+ * Class ini sekarang extends FeatureRenderer<T,M> (generic sama
+ * persis kayak CapeFeatureRenderer aslinya) supaya bisa manggil
+ * this.getContextModel() -- dipakai buat ambil transform head bone
+ * ASLI vanilla (posisi + rotasi ngikut arah pandang kepala player
+ * saat itu), jadi hat otomatis noleh/nunduk bareng kepala tanpa kita
+ * itung ulang rotasi manual sendiri (beda dari cape yang emang harus
+ * dihitung manual karena capenya "ngayun", bukan solid nempel).
  */
 @Mixin(CapeFeatureRenderer.class)
-public abstract class N3XRCapeFeatureMixin {
+public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity, M extends PlayerEntityModel<T>>
+                extends FeatureRenderer<T, M> {
+
+        public N3XRCapeFeatureMixin(FeatureRendererContext<T, M> context) {
+                super(context);
+        }
 
         @Inject(method = "render", at = @At("HEAD"), cancellable = true, require = 0)
-        private void n3xr$renderCustomCape(
+        private void n3xr$renderCapeAndHat(
                 MatrixStack matrices,
                 VertexConsumerProvider vertexConsumers,
                 int light,
-                AbstractClientPlayerEntity player,
+                T player,
                 float limbAngle,
                 float limbDistance,
                 float tickDelta,
@@ -58,53 +67,61 @@ public abstract class N3XRCapeFeatureMixin {
                 float headPitch,
                 CallbackInfo ci
         ) {
-                if (N3XRConfig.capeSelectedKey == null) return;
-
                 MinecraftClient mc = MinecraftClient.getInstance();
                 if (mc.player == null || player != mc.player) return;
-
-                Identifier capeTexture = N3XRCapeManager.getSelectedTexture();
-                if (capeTexture == null) return;
 
                 if (player.isInvisible()) {
                         ci.cancel();
                         return;
                 }
 
-                matrices.push();
+                // ================= CAPE =================
+                if (N3XRConfig.capeSelectedKey != null) {
+                        Identifier capeTexture = N3XRCapeManager.getSelectedTexture();
+                        if (capeTexture != null) {
+                                matrices.push();
 
-                boolean sneaking = player.isInSneakingPose();
+                                boolean sneaking = player.isInSneakingPose();
 
-                // Saat sneaking, badan menekuk ke depan — cape didorong
-                // sedikit lebih jauh dan lebih turun supaya tidak
-                // menembus kepala. Nilai ini hasil perkiraan (belum
-                // ada referensi pasti dari source vanilla), jadi mungkin
-                // masih perlu disesuaikan lagi.
-                double zOffset = sneaking ? 0.45 : 0.3;
-                double yOffset = sneaking ? -0.2 : 0.0;
-                matrices.translate(0.0, yOffset, zOffset);
+                                double zOffset = sneaking ? 0.45 : 0.3;
+                                double yOffset = sneaking ? -0.2 : 0.0;
+                                matrices.translate(0.0, yOffset, zOffset);
 
-                ModelPart model = N3XRCapeRenderer.getOrBuildModel();
+                                ModelPart capeModel = N3XRCapeRenderer.getOrBuildModel();
 
-                // Vanilla CapeFeatureRenderer selalu memutar model cape
-                // 180 derajat di sumbu Y sebelum render, karena geometri
-                // & UV cape (lihat N3XRCapeRenderer) dibuat dengan asumsi
-                // rotasi ini diterapkan. Tanpa baris ini, tekstur kelihatan
-                // mirror/kebalik — inilah penyebab bug "cape kebalik".
-                model.yaw = (float) Math.PI;
+                                // Vanilla CapeFeatureRenderer selalu memutar model cape
+                                // 180 derajat di sumbu Y sebelum render.
+                                capeModel.yaw = (float) Math.PI;
 
-                // Tilt dasar lebih besar saat sneaking (mengikuti
-                // kemiringan badan), dan goyangan diperbesar amplitudonya
-                // (dari 2 ke 6 derajat) plus dipercepat sedikit supaya
-                // terlihat jelas bergerak, tidak diam seperti sebelumnya.
-                float baseTilt = sneaking ? 30.0f : 6.0f;
-                float swing = MathHelper.sin(player.age * 0.2f) * 6.0f;
-                model.pitch = (float) Math.toRadians(baseTilt + swing);
+                                float baseTilt = sneaking ? 30.0f : 6.0f;
+                                float swing = MathHelper.sin(player.age * 0.2f) * 6.0f;
+                                capeModel.pitch = (float) Math.toRadians(baseTilt + swing);
 
-                VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
-                model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV);
+                                VertexConsumer capeConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
+                                capeModel.render(matrices, capeConsumer, light, OverlayTexture.DEFAULT_UV);
 
-                matrices.pop();
+                                matrices.pop();
+                        }
+                }
+
+                // ================= HAT =================
+                if (N3XRConfig.hatSelectedKey != null) {
+                        Identifier hatTexture = N3XRHatManager.getSelectedTexture();
+                        ModelPart hatModel = N3XRHatManager.getSelectedModel();
+                        if (hatTexture != null && hatModel != null) {
+                                matrices.push();
+
+                                // Pindah ke transform head bone ASLI vanilla (pivot +
+                                // rotasi yang udah dihitung vanilla buat frame ini),
+                                // supaya hat otomatis ngikut arah pandang kepala.
+                                this.getContextModel().head.rotate(matrices);
+
+                                VertexConsumer hatConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(hatTexture));
+                                hatModel.render(matrices, hatConsumer, light, OverlayTexture.DEFAULT_UV);
+
+                                matrices.pop();
+                        }
+                }
 
                 ci.cancel();
         }
