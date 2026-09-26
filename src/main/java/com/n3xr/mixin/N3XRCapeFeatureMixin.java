@@ -1,3 +1,4 @@
+
 package com.n3xr.mixin;
 
 import com.n3xr.N3XRConfig;
@@ -6,7 +7,7 @@ import com.n3xr.cosmetic.N3XRCapeRenderer;
 import com.n3xr.hats.N3XRHatManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.PlayerEntityModel;
+import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
