@@ -18,8 +18,7 @@ import net.minecraft.client.model.TexturedModelData;
  * (leher). X/Z nggak perlu di-center ulang, udah simetris dari
  * sononya di file aslinya.
  *
- * Texture 64x64 (sesuai info dari user -- file export nulis 32x32,
- * tapi file texture asli yang dipakai 64x64).
+ * Texture 128x128 (sesuai info dari user).
  */
 public class N3XRHornModel {
 
@@ -68,7 +67,7 @@ public class N3XRHornModel {
                                 ModelTransform.of(7.4142f, -7.4142f, -1.0f, 0.0f, 0.0f, 0.7854f)
                         );
 
-                        TexturedModelData texturedModelData = TexturedModelData.of(modelData, 64, 64);
+                        TexturedModelData texturedModelData = TexturedModelData.of(modelData, 128, 128);
                         model = texturedModelData.createModel();
                 }
                 return model;
