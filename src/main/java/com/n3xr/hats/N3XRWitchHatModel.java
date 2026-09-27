@@ -36,37 +36,43 @@ public class N3XRWitchHatModel {
                         ModelPartData root = modelData.getRoot();
 
                         // Brim (piringan lebar) + 2 lapis dasar kerucut topi.
+                        // Semua Y digeser -8 dari hasil export mentah -- soalnya
+                        // originnya keliatan nganggep "0 = pas di kepala", padahal
+                        // pivot yang kita pakai (head.rotate()) itu di DASAR kepala
+                        // (leher). Tanpa geser ini, hat nongol di badan/leher,
+                        // bukan di atas kepala (persis kayak straw hat sebelum
+                        // di-fix).
                         ModelPartData cone = root.addChild(
                                 "cone",
                                 ModelPartBuilder.create()
-                                        .uv(0, 0).cuboid(-7.0f, 0.0f, -7.0f, 14.0f, 0.5f, 14.0f)
-                                        .uv(3, 17).cuboid(-4.0f, -0.9f, -4.0f, 8.0f, 0.9f, 8.0f, new Dilation(0.25f))
-                                        .uv(0, 26).cuboid(-4.0f, -3.0f, -4.0f, 8.0f, 3.0f, 8.0f),
+                                        .uv(0, 0).cuboid(-7.0f, -8.0f, -7.0f, 14.0f, 0.5f, 14.0f)
+                                        .uv(3, 17).cuboid(-4.0f, -8.9f, -4.0f, 8.0f, 0.9f, 8.0f, new Dilation(0.25f))
+                                        .uv(0, 26).cuboid(-4.0f, -11.0f, -4.0f, 8.0f, 3.0f, 8.0f),
                                 ModelTransform.pivot(0.0f, 0.0f, 0.0f)
                         );
 
-                        // 3 potongan kerucut yang dimiringkan (bikin efek "melengkung
-                        // ke satu sisi" khas topi penyihir) -- child dari "cone",
-                        // rotasi di sumbu roll (Z).
+                        // 3 potongan kerucut yang dimiringkan -- pivot Y juga
+                        // ikut digeser -8, koordinat cuboid lokal di masing-masing
+                        // (relatif ke pivotnya sendiri) tetap sama.
                         cone.addChild(
                                 "tip_lower",
                                 ModelPartBuilder.create().uv(0, 36)
                                         .cuboid(-4.5f, -2.0f, 1.0f, 2.5f, 4.0f, 2.0f),
-                                ModelTransform.of(2.8f, -4.0f, -2.0f, 0.0f, 0.0f, 0.7854f)
+                                ModelTransform.of(2.8f, -12.0f, -2.0f, 0.0f, 0.0f, 0.7854f)
                         );
 
                         cone.addChild(
                                 "tip_mid",
                                 ModelPartBuilder.create().uv(33, 35)
                                         .cuboid(-4.0f, -1.8f, 0.0f, 4.0f, 2.8f, 4.0f),
-                                ModelTransform.of(1.5f, -3.0f, -2.0f, 0.0f, 0.0f, 0.3927f)
+                                ModelTransform.of(1.5f, -11.0f, -2.0f, 0.0f, 0.0f, 0.3927f)
                         );
 
                         cone.addChild(
                                 "tip_base",
                                 ModelPartBuilder.create().uv(32, 26)
                                         .cuboid(-7.0f, -1.5f, -1.0f, 6.0f, 2.5f, 6.0f),
-                                ModelTransform.of(3.5f, -1.0f, -2.0f, 0.0f, 0.0f, 0.3927f)
+                                ModelTransform.of(3.5f, -9.0f, -2.0f, 0.0f, 0.0f, 0.3927f)
                         );
 
                         // 64x64 -- sesuai LayerDefinition.create(...,64,64) di file export.
