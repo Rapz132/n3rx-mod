@@ -33,6 +33,8 @@ public class N3XRHatManager {
         static {
                 HATS.add(new HatEntry("straw_hat", "Straw Hat", N3XRStrawHatModel::getOrBuildModel));
                 HATS.add(new HatEntry("witch_hat", "Witch Hat", N3XRWitchHatModel::getOrBuildModel));
+                HATS.add(new HatEntry("horn", "Horn", N3XRHornModel::getOrBuildModel));
+                HATS.add(new HatEntry("china_hat", "China Hat", N3XRChinaHatModel::getOrBuildModel));
                 // Tambah entry lain di sini kalau model hat lain udah jadi, contoh:
                 // HATS.add(new HatEntry("mushroom_hat", "Mushroom Hat", N3XRMushroomHatModel::getOrBuildModel));
                 // HATS.add(new HatEntry("top_hat", "Top Hat", N3XRTopHatModel::getOrBuildModel));
