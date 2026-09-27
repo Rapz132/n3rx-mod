@@ -37,23 +37,21 @@ public class N3XRStrawHatModel {
                         ModelData modelData = new ModelData();
                         ModelPartData root = modelData.getRoot();
 
-                        // Brim: pinggiran lebar & tipis. Koordinat Y di sini pakai
-                        // konvensi vanilla (Y+ ke BAWAH dari pivot head) -- makanya
-                        // nilainya negatif (negatif = ke atas). y[-9,-8] artinya
-                        // "8 sampai 9 unit di ATAS kepala".
+                        // Brim: pinggiran lebar & tipis. Dinaikin 2 unit dari versi
+                        // sebelumnya (y[-9,-8] -> y[-11,-10]) karena kelihatan
+                        // "kedalaman"/sunk ke kepala.
                         root.addChild(
                                 "brim",
                                 ModelPartBuilder.create().uv(20, 0)
-                                        .cuboid(-10.0f, -9.0f, -9.5f, 20.0f, 1.0f, 19.0f),
+                                        .cuboid(-10.0f, -11.0f, -9.5f, 20.0f, 1.0f, 19.0f),
                                 ModelTransform.pivot(0.0f, 0.0f, 0.0f)
                         );
 
-                        // Crown: bagian yang menutup kepala. y[-13,-8] artinya "8
-                        // sampai 13 unit di ATAS kepala" (konvensi vanilla, Y+ ke bawah).
+                        // Crown: juga dinaikin 2 unit (y[-13,-8] -> y[-15,-10]).
                         root.addChild(
                                 "crown",
                                 ModelPartBuilder.create().uv(12, 9)
-                                        .cuboid(-6.0f, -13.0f, -4.5f, 12.0f, 5.0f, 9.0f),
+                                        .cuboid(-6.0f, -15.0f, -4.5f, 12.0f, 5.0f, 9.0f),
                                 ModelTransform.pivot(0.0f, 0.0f, 0.0f)
                         );
 
