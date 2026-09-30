@@ -10,6 +10,7 @@
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
+  "N3XRPlayerListEntryMixin",
   "ChatHudMixin"
 ],
 	"injectors": {
