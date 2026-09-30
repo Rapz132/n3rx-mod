@@ -1,4 +1,3 @@
-
 package com.n3xr;
 
 import net.minecraft.client.gui.DrawContext;
@@ -34,7 +33,7 @@ public class N3XRCosmeticsScreen extends Screen {
         public N3XRCosmeticsScreen() {
                 super(Text.literal("N3 Cosmetics"));
 
-                items.add(new CosmeticItem("hat", "Hat", true));
+                items.add(new CosmeticItem("hat", "Hat", false));
                 items.add(new CosmeticItem("head", "Head", false));
                 items.add(new CosmeticItem("body", "Body", false));
                 items.add(new CosmeticItem("shield", "Shield", false));
