@@ -525,7 +525,9 @@ public class N3XRClient implements ClientModInitializer {
                 var vertexConsumers =
                         mc.getBufferBuilders().getEntityVertexConsumers();
 
-                Text nameWithIcon = Text.literal("⚡ ").append(displayName);
+                Text nameWithIcon = Text.literal("\uE000 ")
+                        .styled(s -> s.withFont(Identifier.of("n3xr", "icons")))
+                        .append(displayName);
 
                 int spacing = 4;
 
