@@ -3,6 +3,7 @@ package com.n3xr.mixin;
 import com.n3xr.N3XRConfig;
 import com.n3xr.cosmetic.N3XRCapeManager;
 import com.n3xr.cosmetic.N3XRCapeRenderer;
+import com.n3xr.cosmetic.N3XRExternalCapeManager;
 import com.n3xr.hats.N3XRHatManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
@@ -28,22 +29,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * CapeFeatureRenderer.render() vanilla), SEKALIGUS render Hat
  * cosmetic (nempel ke head bone).
  *
- * Hat digabung di mixin YANG SAMA dengan cape (bukan mixin
- * terpisah) supaya nggak ada masalah urutan eksekusi: cape mixin
- * ini nge-cancel() render vanilla di akhir, dan kalau ada 2 mixin
- * beda yang sama-sama @Inject di titik HEAD method yang sama, Mixin
- * framework nggak menjamin urutan render-nya -- bisa jadi salah
- * satu (cape atau hat) nggak ke-render sama sekali tergantung mana
- * yang jalan duluan. Digabung di sini, urutannya pasti: cape dulu,
- * baru hat, baru cancel.
+ * CAPE sekarang berlaku untuk SEMUA player yang dilihat (bukan cuma
+ * diri sendiri):
+ *   1) Kalau ini diri sendiri DAN ada cape N3XR lokal yang dipilih
+ *      -> pakai itu (prioritas tertinggi).
+ *   2) Kalau nggak, cek N3XRExternalCapeManager (OptiFine Cape API,
+ *      berbasis username) -- berlaku untuk SIAPA SAJA, nggak cuma
+ *      diri sendiri, supaya sesama pengguna N3XR saling lihat cape
+ *      masing-masing kalau mereka terdaftar di layanan itu.
+ *   3) Kalau dua-duanya nggak ada, BIARIN vanilla render seperti
+ *      biasa (jangan di-cancel) -- supaya cape asli Mojang/premium
+ *      player lain (yang bukan user N3XR) tetap kelihatan normal,
+ *      nggak ke-hide gara-gara mixin ini.
  *
- * Class ini sekarang extends FeatureRenderer<T,M> (generic sama
- * persis kayak CapeFeatureRenderer aslinya) supaya bisa manggil
+ * HAT masih cuma buat diri sendiri (belum ada sumber eksternal
+ * buat hat).
+ *
+ * Hat & cape digabung di mixin YANG SAMA (bukan terpisah) supaya
+ * nggak ada masalah urutan eksekusi antar-mixin yang sama-sama
+ * nge-cancel() di titik HEAD yang sama.
+ *
+ * Class ini extends FeatureRenderer<T,M> (generic sama persis kayak
+ * CapeFeatureRenderer aslinya) supaya bisa manggil
  * this.getContextModel() -- dipakai buat ambil transform head bone
- * ASLI vanilla (posisi + rotasi ngikut arah pandang kepala player
- * saat itu), jadi hat otomatis noleh/nunduk bareng kepala tanpa kita
- * itung ulang rotasi manual sendiri (beda dari cape yang emang harus
- * dihitung manual karena capenya "ngayun", bukan solid nempel).
+ * ASLI vanilla, jadi hat otomatis noleh/nunduk bareng kepala.
  */
 @Mixin(CapeFeatureRenderer.class)
 public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity, M extends PlayerEntityModel<T>>
@@ -68,64 +77,70 @@ public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity,
                 CallbackInfo ci
         ) {
                 MinecraftClient mc = MinecraftClient.getInstance();
-                if (mc.player == null || player != mc.player) return;
+                if (mc.player == null) return;
 
                 if (player.isInvisible()) {
                         ci.cancel();
                         return;
                 }
 
+                boolean isSelf = player == mc.player;
+                boolean renderedSomething = false;
+
                 // ================= CAPE =================
-                if (N3XRConfig.capeSelectedKey != null) {
-                        Identifier capeTexture = N3XRCapeManager.getSelectedTexture();
-                        if (capeTexture != null) {
-                                matrices.push();
-
-                                boolean sneaking = player.isInSneakingPose();
-
-                                double zOffset = sneaking ? 0.45 : 0.3;
-                                double yOffset = sneaking ? -0.2 : 0.0;
-                                matrices.translate(0.0, yOffset, zOffset);
-
-                                ModelPart capeModel = N3XRCapeRenderer.getOrBuildModel();
-
-                                // Vanilla CapeFeatureRenderer selalu memutar model cape
-                                // 180 derajat di sumbu Y sebelum render.
-                                capeModel.yaw = (float) Math.PI;
-
-                                float baseTilt = sneaking ? 30.0f : 6.0f;
-                                float swing = MathHelper.sin(player.age * 0.2f) * 6.0f;
-                                capeModel.pitch = (float) Math.toRadians(baseTilt + swing);
-
-                                VertexConsumer capeConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
-                                capeModel.render(matrices, capeConsumer, light, OverlayTexture.DEFAULT_UV);
-
-                                matrices.pop();
-                        }
+                Identifier capeTexture = null;
+                if (isSelf && N3XRConfig.capeSelectedKey != null) {
+                        capeTexture = N3XRCapeManager.getSelectedTexture();
+                }
+                if (capeTexture == null) {
+                        capeTexture = N3XRExternalCapeManager.getCapeTexture(player.getGameProfile().getName());
                 }
 
-                // ================= HAT =================
-                if (N3XRConfig.hatSelectedKey != null) {
+                if (capeTexture != null) {
+                        matrices.push();
+
+                        boolean sneaking = player.isInSneakingPose();
+
+                        double zOffset = sneaking ? 0.45 : 0.3;
+                        double yOffset = sneaking ? -0.2 : 0.0;
+                        matrices.translate(0.0, yOffset, zOffset);
+
+                        ModelPart capeModel = N3XRCapeRenderer.getOrBuildModel();
+
+                        // Vanilla CapeFeatureRenderer selalu memutar model cape
+                        // 180 derajat di sumbu Y sebelum render.
+                        capeModel.yaw = (float) Math.PI;
+
+                        float baseTilt = sneaking ? 30.0f : 6.0f;
+                        float swing = MathHelper.sin(player.age * 0.2f) * 6.0f;
+                        capeModel.pitch = (float) Math.toRadians(baseTilt + swing);
+
+                        VertexConsumer capeConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
+                        capeModel.render(matrices, capeConsumer, light, OverlayTexture.DEFAULT_UV);
+
+                        matrices.pop();
+                        renderedSomething = true;
+                }
+
+                // ================= HAT (cuma diri sendiri) =================
+                if (isSelf && N3XRConfig.hatSelectedKey != null) {
                         Identifier hatTexture = N3XRHatManager.getSelectedTexture();
                         ModelPart hatModel = N3XRHatManager.getSelectedModel();
                         if (hatTexture != null && hatModel != null) {
                                 matrices.push();
 
-                                // Pindah ke transform head bone ASLI vanilla (pivot +
-                                // rotasi yang udah dihitung vanilla buat frame ini),
-                                // supaya hat otomatis ngikut arah pandang kepala.
-                                // N3XRStrawHatModel geometrinya udah didesain pakai
-                                // konvensi Y+ ke bawah (sama kayak vanilla), jadi nggak
-                                // perlu flip/scale tambahan di sini lagi.
                                 this.getContextModel().head.rotate(matrices);
 
                                 VertexConsumer hatConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(hatTexture));
                                 hatModel.render(matrices, hatConsumer, light, OverlayTexture.DEFAULT_UV);
 
                                 matrices.pop();
+                                renderedSomething = true;
                         }
                 }
 
-                ci.cancel();
+                if (renderedSomething) {
+                        ci.cancel();
+                }
         }
 }
