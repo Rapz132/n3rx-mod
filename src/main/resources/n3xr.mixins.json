@@ -11,6 +11,7 @@
   "LivingEntityAccessor",
   "EntityHitboxMixin",
   "N3XRPlayerListEntryMixin",
+  "N3XRTitleScreenMixin",
   "ChatHudMixin"
 ],
 	"injectors": {
