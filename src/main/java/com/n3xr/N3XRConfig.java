@@ -69,6 +69,11 @@ public class N3XRConfig {
         public static String capeSelectedKey = null;
         public static String hatSelectedKey = null;
 
+        // Fast Server: list server favorit buat quick-connect dari main
+        // menu (lihat N3XRFastServerScreen).
+        public record FavoriteServer(String name, String ip) {}
+        public static final java.util.List<FavoriteServer> favoriteServers = new java.util.ArrayList<>();
+
         public static float hudScale = 1.0f;
 
 public static final java.util.Map<String, Float> moduleScale = new java.util.HashMap<>();
