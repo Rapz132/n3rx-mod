@@ -525,9 +525,12 @@ public class N3XRClient implements ClientModInitializer {
                 var vertexConsumers =
                         mc.getBufferBuilders().getEntityVertexConsumers();
 
-                Text nameWithIcon = Text.literal("\uE000 ")
-                        .styled(s -> s.withFont(Identifier.of("n3xr", "icons")))
-                        .append(displayName);
+                MutableText nameIcon = Text.literal("\uE000")
+                        .styled(s -> s.withFont(Identifier.of("n3xr", "icons")));
+                // Sibling di bawah root kosong, bukan parent-child, sama
+                // kayak fix di N3XRPlayerListEntryMixin (lihat komentar di
+                // situ) -- biar font custom icon nggak nular ke huruf nama.
+                Text nameWithIcon = Text.literal("").append(nameIcon).append(" ").append(displayName);
 
                 int spacing = 4;
 
