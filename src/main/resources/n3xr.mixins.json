@@ -10,6 +10,7 @@
   "ScoreboardOverlayMixin",
   "LivingEntityAccessor",
   "EntityHitboxMixin",
+  "N3XRGameMenuScreenMixin",
   "N3XRPlayerListEntryMixin",
   "N3XRTitleScreenMixin",
   "ChatHudMixin"
