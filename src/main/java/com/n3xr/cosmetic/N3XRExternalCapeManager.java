@@ -60,13 +60,20 @@ public final class N3XRExternalCapeManager {
         }
 
         private static void fetchAsync(String username) {
+                // https (bukan http) -- Android (PojavLauncher dkk) nge-block
+                // traffic HTTP cleartext secara default sejak Android 9+,
+                // request http:// bisa gagal diam-diam tanpa exception yang
+                // jelas di beberapa device.
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://s.optifine.net/capes/" + username + ".png"))
+                        .uri(URI.create("https://s.optifine.net/capes/" + username + ".png"))
                         .GET()
                         .build();
 
+                System.out.println("[N3XR] Fetching cape for " + username + "...");
+
                 HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
                         .thenAccept(response -> {
+                                System.out.println("[N3XR] Cape fetch for " + username + " -> HTTP " + response.statusCode());
                                 if (response.statusCode() != 200) {
                                         CACHE.put(username, new Entry(State.NOT_FOUND, null));
                                         return;
@@ -82,12 +89,15 @@ public final class N3XRExternalCapeManager {
                                                 Identifier id = Identifier.of("n3xr", "dynamic/cape/" + sanitize(username));
                                                 MinecraftClient.getInstance().getTextureManager().registerTexture(id, texture);
                                                 CACHE.put(username, new Entry(State.LOADED, id));
+                                                System.out.println("[N3XR] Cape loaded for " + username);
                                         });
                                 } catch (IOException e) {
+                                        System.out.println("[N3XR] Cape decode failed for " + username + ": " + e.getMessage());
                                         CACHE.put(username, new Entry(State.FAILED, null));
                                 }
                         })
                         .exceptionally(ex -> {
+                                System.out.println("[N3XR] Cape fetch EXCEPTION for " + username + ": " + ex);
                                 CACHE.put(username, new Entry(State.FAILED, null));
                                 return null;
                         });
