@@ -525,13 +525,11 @@ public class N3XRClient implements ClientModInitializer {
                 var vertexConsumers =
                         mc.getBufferBuilders().getEntityVertexConsumers();
 
-                // TES DIAGNOSTIK SEMENTARA: pakai emoji bawaan (bukan font
-                // custom kita) buat mastiin apakah masalahnya di FONT
-                // CUSTOM-nya, atau di struktur sibling-text-nya. Kalau
-                // emoji ini MUNCUL di game, berarti custom font kita yang
-                // bermasalah khusus di render 3D -- balikin lagi ke versi
-                // font custom setelah ketauan hasilnya.
-                MutableText nameIcon = Text.literal("⚡");
+                MutableText nameIcon = Text.literal("\uE000")
+                        .styled(s -> s.withFont(Identifier.of("n3xr", "icons")));
+                // Sibling di bawah root kosong, bukan parent-child, biar
+                // font custom icon nggak nular ke huruf nama (lihat
+                // komentar sama di N3XRPlayerListEntryMixin).
                 Text nameWithIcon = Text.literal("").append(nameIcon).append(" ").append(displayName);
 
                 int spacing = 4;
