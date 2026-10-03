@@ -42,7 +42,11 @@ public abstract class N3XRPlayerListEntryMixin {
                 MutableText icon = Text.literal("\uE000")
                         .styled(s -> s.withFont(Identifier.of("n3xr", "icons")));
 
-                MutableText prefixed = icon.copy().append(" ").append(base);
+                // Icon & nama di-append sebagai SIBLING di bawah root kosong
+                // netral -- BUKAN "icon.append(base)" (itu bikin base jadi
+                // child icon, ikut warisin font custom icon, bikin semua
+                // huruf nama ilang jadi kotak "missing glyph").
+                MutableText prefixed = Text.literal("").append(icon).append(" ").append(base);
                 cir.setReturnValue(prefixed);
         }
 }
