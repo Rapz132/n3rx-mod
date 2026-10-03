@@ -66,12 +66,12 @@ public class N3XRFastServerScreen extends Screen {
 
                 if (addingNew) {
                         nameField = new TextFieldWidget(this.textRenderer, panelX1 + 8, y, PANEL_W - 16, 16, Text.literal("Nama server"));
-                        nameField.setPlaceholder(Text.literal("Nama (mis. Cookie SMP)"));
+                        nameField.setPlaceholder(Text.literal("Name (e.g. Cookie SMP)"));
                         this.addDrawableChild(nameField);
                         y += 22;
 
                         ipField = new TextFieldWidget(this.textRenderer, panelX1 + 8, y, PANEL_W - 16, 16, Text.literal("IP server"));
-                        ipField.setPlaceholder(Text.literal("IP (mis. cookiesmp.my.id)"));
+                        ipField.setPlaceholder(Text.literal("IP (e.g. cookiesmp.my.id)"));
                         this.addDrawableChild(ipField);
                         y += 22;
                 }
@@ -240,7 +240,7 @@ public class N3XRFastServerScreen extends Screen {
                 }
 
                 if (N3XRConfig.favoriteServers.isEmpty() && !addingNew) {
-                        String msg = "Belum ada server favorit";
+                        String msg = "No favorite servers yet";
                         int mw = this.textRenderer.getWidth(msg);
                         context.drawText(this.textRenderer, msg, panelX1 + (PANEL_W - mw) / 2, panelY1 + 40, 0xFF888888, false);
                 }
