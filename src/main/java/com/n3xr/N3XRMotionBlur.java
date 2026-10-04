@@ -23,18 +23,19 @@ import java.nio.FloatBuffer;
  *   2) Capture ulang layar (yang sekarang sudah tercampur) ke texture
  *      yang sama, jadi bahan campuran untuk frame berikutnya.
  *
- * Sengaja ditulis pakai OpenGL mentah (LWJGL GL11/12/13/15/20/30) saja,
- * BUKAN lewat wrapper Minecraft (Window/Framebuffer/Tessellator).
- * Alasannya: nomor mapping intermediary buat kelas-kelas render
- * Minecraft beda-beda tiap build 1.21.x, dan aku nggak bisa
- * mastiin nomor yang tepat untuk project ini tanpa build langsung
- * di environment kamu. Panggilan GL mentah di file ini murni OpenGL
- * standar (bukan API Minecraft), jadi seharusnya langsung compile
- * apa adanya, berapapun versi Yarn yang dipakai project ini.
+ * SHADER PAKAI GLSL ES 1.00 (bukan GLSL 150 versi sebelumnya) --
+ * ini perubahan penting buat kompatibilitas lintas-device: "#version
+ * 150" itu syntax Desktop OpenGL 3.2+ (pakai in/out, custom out
+ * fragColor), yang nggak semua GPU Android (lewat layer translasi
+ * PojavLauncher/GL4ES) terima dengan sama, tergantung vendor
+ * GPU-nya (Adreno/Mali/PowerVR beda-beda). GLSL ES 1.00 (OpenGL
+ * ES 2.0) itu baseline paling universal yang hampir pasti didukung
+ * di semua device Android.
  *
- * Kalau nanti mau tambah slider strength di UI, tinggal contek pola
- * tombol +/- yang sudah ada di N3XRGeneralSettingsScreen buat hudScale,
- * tapi bind ke N3XRConfig.motionBlurStrength (rentang 0.0 - 0.9).
+ * Juga ditambahin pengecekan compile/link status shader -- kalau
+ * GAGAL compile di device tertentu, module ini otomatis nonaktifin
+ * dirinya sendiri (log error sekali, lalu diem, nggak crash/spam
+ * tiap frame) daripada bikin game force-close.
  */
 public final class N3XRMotionBlur {
 
@@ -51,35 +52,42 @@ public final class N3XRMotionBlur {
     private static int uTexLoc = -1;
 
     private static boolean primed = false;
+    private static boolean initialized = false;
+    private static boolean unsupported = false;
 
+    // GLSL ES 1.00 -- attribute/varying (bukan in/out), gl_FragColor
+    // bawaan (bukan custom "out" variable). Ini syntax paling
+    // universal buat GPU Android.
     private static final String VERTEX_SRC =
-            "#version 150\n" +
-            "in vec2 aPos;\n" +
-            "in vec2 aUv;\n" +
-            "out vec2 vUv;\n" +
+            "#version 100\n" +
+            "attribute vec2 aPos;\n" +
+            "attribute vec2 aUv;\n" +
+            "varying vec2 vUv;\n" +
             "void main() {\n" +
             "    vUv = aUv;\n" +
             "    gl_Position = vec4(aPos, 0.0, 1.0);\n" +
             "}\n";
 
     private static final String FRAGMENT_SRC =
-            "#version 150\n" +
-            "in vec2 vUv;\n" +
-            "out vec4 fragColor;\n" +
+            "#version 100\n" +
+            "precision mediump float;\n" +
+            "varying vec2 vUv;\n" +
             "uniform sampler2D uTex;\n" +
             "uniform float uAlpha;\n" +
             "void main() {\n" +
-            "    vec4 c = texture(uTex, vUv);\n" +
-            "    fragColor = vec4(c.rgb, uAlpha);\n" +
+            "    vec4 c = texture2D(uTex, vUv);\n" +
+            "    gl_FragColor = vec4(c.rgb, uAlpha);\n" +
             "}\n";
 
     public static void onWorldRenderLast(WorldRenderContext context) {
+        if (unsupported) return;
         if (!N3XRConfig.motionBlurEnabled) {
             primed = false;
             return;
         }
 
         ensureGlResources();
+        if (unsupported) return;
 
         int[] viewport = new int[4];
         GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);
@@ -101,10 +109,19 @@ public final class N3XRMotionBlur {
     }
 
     private static void ensureGlResources() {
-        if (program != -1) return;
+        if (initialized) return;
+        initialized = true;
 
         int vs = compileShader(GL20.GL_VERTEX_SHADER, VERTEX_SRC);
         int fs = compileShader(GL20.GL_FRAGMENT_SHADER, FRAGMENT_SRC);
+
+        if (vs == -1 || fs == -1) {
+            System.out.println("[N3XR] Motion Blur: shader gagal di-compile di GPU/driver ini -- module dinonaktifkan.");
+            unsupported = true;
+            if (vs != -1) GL20.glDeleteShader(vs);
+            if (fs != -1) GL20.glDeleteShader(fs);
+            return;
+        }
 
         program = GL20.glCreateProgram();
         GL20.glAttachShader(program, vs);
@@ -115,6 +132,16 @@ public final class N3XRMotionBlur {
 
         GL20.glDeleteShader(vs);
         GL20.glDeleteShader(fs);
+
+        int linkStatus = GL20.glGetProgrami(program, GL20.GL_LINK_STATUS);
+        if (linkStatus == GL11.GL_FALSE) {
+            String log = GL20.glGetProgramInfoLog(program);
+            System.out.println("[N3XR] Motion Blur: gagal link shader program -- module dinonaktifkan. Log: " + log);
+            GL20.glDeleteProgram(program);
+            program = -1;
+            unsupported = true;
+            return;
+        }
 
         uAlphaLoc = GL20.glGetUniformLocation(program, "uAlpha");
         uTexLoc = GL20.glGetUniformLocation(program, "uTex");
@@ -153,10 +180,24 @@ public final class N3XRMotionBlur {
         textureId = GL11.glGenTextures();
     }
 
+    /**
+     * Compile 1 shader dan cek status compile-nya. Return -1 (bukan
+     * id shader) kalau gagal, supaya caller bisa deteksi kegagalan
+     * dan nonaktifin module dengan bersih (bukan lanjut pakai shader
+     * id yang invalid/setengah jadi).
+     */
     private static int compileShader(int type, String src) {
         int id = GL20.glCreateShader(type);
         GL20.glShaderSource(id, src);
         GL20.glCompileShader(id);
+
+        int status = GL20.glGetShaderi(id, GL20.GL_COMPILE_STATUS);
+        if (status == GL11.GL_FALSE) {
+            String log = GL20.glGetShaderInfoLog(id);
+            System.out.println("[N3XR] Motion Blur: shader compile error: " + log);
+            GL20.glDeleteShader(id);
+            return -1;
+        }
         return id;
     }
 
