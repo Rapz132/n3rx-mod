@@ -14,7 +14,9 @@ public class N3XRUpdatesScreen extends Screen {
                         "- N3XR Cosmetics (cape system, cosmetics menu)",
                         "- Fixed various bugs",
                         "- Smoother UI colors and transitions",
-                        "- New Module: Motion Blur"
+                        "- New Module: Motion Blur,Hit Range",
+"- New Menu in Main menu Minecraft"
+
                 },
                 {
                         "v1.0.0 - Initial Release",
