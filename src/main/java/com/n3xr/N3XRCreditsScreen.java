@@ -27,7 +27,7 @@ public class N3XRCreditsScreen extends Screen {
 		int tw = this.textRenderer.getWidth(title);
 		context.drawText(this.textRenderer, title, (this.width - tw) / 2, 20, 0xFFFF5555, true);
 
-		String[] lines = { "Created by @44pzx", "Version 1.0.0", "Built with Fabric" };
+		String[] lines = { "Created by @44pzx", "Version 1.2.0", "Built with Fabric" };
 		int y = 55;
 		for (String line : lines) {
 			int lw = this.textRenderer.getWidth(line);
