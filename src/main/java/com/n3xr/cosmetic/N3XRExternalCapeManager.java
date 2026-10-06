@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
-import net.minecraft.class_1011;
-import net.minecraft.class_1043;
-import net.minecraft.class_2960;
-import net.minecraft.class_310;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.util.Identifier;
 
 /**
  * Fetch cape dari OptiFine Cape (s.optifine.net), berdasarkan USERNAME
@@ -31,7 +31,7 @@ public final class N3XRExternalCapeManager {
 
         private enum State { LOADING, LOADED, NOT_FOUND, FAILED, INVALID }
 
-        private record Entry(State state, class_2960 textureId) {}
+        private record Entry(State state, Identifier textureId) {}
 
         /** Username Minecraft asli: 3-16 karakter, huruf/angka/underscore. */
         private static final Pattern VALID_NAME = Pattern.compile("^[A-Za-z0-9_]{1,16}$");
@@ -49,7 +49,7 @@ public final class N3XRExternalCapeManager {
          * (loading / nggak ada / gagal). Dipanggil dari render thread,
          * jadi dibungkus try/catch supaya nggak pernah melempar exception.
          */
-        public static class_2960 getCapeTexture(String username) {
+        public static Identifier getCapeTexture(String username) {
                 try {
                         if (username == null || username.isBlank()) return null;
 
@@ -110,13 +110,13 @@ public final class N3XRExternalCapeManager {
                                 CACHE.put(username, new Entry(State.NOT_FOUND, null));
                                 return;
                         }
-                        class_1011 image = class_1011.method_49277(response.body());
+                        NativeImage image = NativeImage.read(response.body());
                         // Registrasi texture harus di render thread.
-                        class_310.method_1551().execute(() -> {
+                        MinecraftClient.getInstance().execute(() -> {
                                 try {
-                                        class_1043 texture = new class_1043(image);
-                                        class_2960 id = class_2960.method_60655("n3xr", "dynamic/cape/" + sanitize(username));
-                                        class_310.method_1551().method_1531().method_4616(id, texture);
+                                        NativeImageBackedTexture texture = new NativeImageBackedTexture(image);
+                                        Identifier id = Identifier.of("n3xr", "dynamic/cape/" + sanitize(username));
+                                        MinecraftClient.getInstance().getTextureManager().registerTexture(id, texture);
                                         CACHE.put(username, new Entry(State.LOADED, id));
                                 } catch (Throwable t) {
                                         CACHE.put(username, new Entry(State.FAILED, null));
