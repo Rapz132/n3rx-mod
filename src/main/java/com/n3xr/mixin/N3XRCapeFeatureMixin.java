@@ -7,7 +7,6 @@ import com.n3xr.cosmetic.N3XRExternalCapeManager;
 import com.n3xr.hats.N3XRHatManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -16,9 +15,13 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
+import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RotationAxis;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,30 +32,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * CapeFeatureRenderer.render() vanilla), SEKALIGUS render Hat
  * cosmetic (nempel ke head bone).
  *
- * CAPE sekarang berlaku untuk SEMUA player yang dilihat (bukan cuma
- * diri sendiri):
+ * CAPE berlaku untuk SEMUA player yang dilihat (bukan cuma diri sendiri):
  *   1) Kalau ini diri sendiri DAN ada cape N3XR lokal yang dipilih
  *      -> pakai itu (prioritas tertinggi).
  *   2) Kalau nggak, cek N3XRExternalCapeManager (OptiFine Cape API,
- *      berbasis username) -- berlaku untuk SIAPA SAJA, nggak cuma
- *      diri sendiri, supaya sesama pengguna N3XR saling lihat cape
- *      masing-masing kalau mereka terdaftar di layanan itu.
+ *      berbasis username).
  *   3) Kalau dua-duanya nggak ada, BIARIN vanilla render seperti
- *      biasa (jangan di-cancel) -- supaya cape asli Mojang/premium
- *      player lain (yang bukan user N3XR) tetap kelihatan normal,
- *      nggak ke-hide gara-gara mixin ini.
+ *      biasa (jangan di-cancel), supaya cape asli player lain tetap
+ *      kelihatan normal.
  *
- * HAT masih cuma buat diri sendiri (belum ada sumber eksternal
- * buat hat).
+ * Fisika & posisi cape (termasuk saat sneak) sekarang PERSIS sama
+ * dengan CapeFeatureRenderer vanilla: cape tertarik waktu lari,
+ * naik waktu lompat, goyang waktu belok, dan nempel ke punggung
+ * waktu sneak.
  *
- * Hat & cape digabung di mixin YANG SAMA (bukan terpisah) supaya
- * nggak ada masalah urutan eksekusi antar-mixin yang sama-sama
- * nge-cancel() di titik HEAD yang sama.
+ * HAT masih cuma buat diri sendiri (belum ada sumber eksternal).
+ *
+ * Hat & cape digabung di mixin YANG SAMA supaya nggak ada masalah
+ * urutan eksekusi antar-mixin yang sama-sama nge-cancel() di HEAD.
  *
  * Class ini extends FeatureRenderer<T,M> (generic sama persis kayak
- * CapeFeatureRenderer aslinya) supaya bisa manggil
- * this.getContextModel() -- dipakai buat ambil transform head bone
- * ASLI vanilla, jadi hat otomatis noleh/nunduk bareng kepala.
+ * CapeFeatureRenderer aslinya) supaya bisa manggil getContextModel()
+ * -- dipakai buat ambil transform head bone vanilla, jadi hat
+ * otomatis noleh/nunduk bareng kepala.
  */
 @Mixin(CapeFeatureRenderer.class)
 public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity, M extends PlayerEntityModel<T>>
@@ -96,24 +98,48 @@ public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity,
                         capeTexture = N3XRExternalCapeManager.getCapeTexture(player.getGameProfile().getName());
                 }
 
-                if (capeTexture != null) {
-                        matrices.push();
-
+                // Pakai elytra -> cape disembunyikan (sama kayak vanilla).
+                if (capeTexture != null && !player.getEquippedStack(EquipmentSlot.CHEST).isOf(Items.ELYTRA)) {
                         boolean sneaking = player.isInSneakingPose();
+                        boolean wearingChest = !player.getEquippedStack(EquipmentSlot.CHEST).isEmpty();
 
-                        double zOffset = sneaking ? 0.45 : 0.3;
-                        double yOffset = sneaking ? -0.2 : 0.0;
-                        matrices.translate(0.0, yOffset, zOffset);
+                        matrices.push();
+                        matrices.translate(0.0F, 0.0F, 0.125F);
 
+                        // --- fisika cape persis vanilla (CapeFeatureRenderer) ---
+                        double dx = MathHelper.lerp((double) tickDelta, player.prevCapeX, player.capeX)
+                                        - MathHelper.lerp((double) tickDelta, player.prevX, player.getX());
+                        double dy = MathHelper.lerp((double) tickDelta, player.prevCapeY, player.capeY)
+                                        - MathHelper.lerp((double) tickDelta, player.prevY, player.getY());
+                        double dz = MathHelper.lerp((double) tickDelta, player.prevCapeZ, player.capeZ)
+                                        - MathHelper.lerp((double) tickDelta, player.prevZ, player.getZ());
+
+                        float bodyYawDeg = MathHelper.lerpAngleDegrees(tickDelta, player.prevBodyYaw, player.bodyYaw);
+                        double sinYaw = MathHelper.sin(bodyYawDeg * 0.017453292F);
+                        double cosYaw = -MathHelper.cos(bodyYawDeg * 0.017453292F);
+
+                        float lift = MathHelper.clamp((float) dy * 10.0F, -6.0F, 32.0F);
+                        float back = MathHelper.clamp((float) (dx * sinYaw + dz * cosYaw) * 100.0F, 0.0F, 150.0F);
+                        float side = MathHelper.clamp((float) (dx * cosYaw - dz * sinYaw) * 100.0F, -20.0F, 20.0F);
+
+                        float stride = MathHelper.lerp(tickDelta, player.prevStrideDistance, player.strideDistance);
+                        lift += MathHelper.sin(MathHelper.lerp(tickDelta, player.prevHorizontalSpeed, player.horizontalSpeed) * 6.0F)
+                                        * 32.0F * stride;
+
+                        if (sneaking) lift += 25.0F;
+
+                        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(6.0F + back / 2.0F + lift));
+                        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(side / 2.0F));
+                        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F - side / 2.0F));
+
+                        // --- posisi cape saat sneak, nilai sama kayak vanilla ---
                         ModelPart capeModel = N3XRCapeRenderer.getOrBuildModel();
-
-                        // Vanilla CapeFeatureRenderer selalu memutar model cape
-                        // 180 derajat di sumbu Y sebelum render.
-                        capeModel.yaw = (float) Math.PI;
-
-                        float baseTilt = sneaking ? 30.0f : 6.0f;
-                        float swing = MathHelper.sin(player.age * 0.2f) * 6.0f;
-                        capeModel.pitch = (float) Math.toRadians(baseTilt + swing);
+                        capeModel.pitch = 0.0F;
+                        capeModel.yaw = 0.0F;
+                        capeModel.roll = 0.0F;
+                        capeModel.pivotX = 0.0F;
+                        capeModel.pivotY = sneaking ? (wearingChest ? 0.8F : 1.85F) : 0.0F;
+                        capeModel.pivotZ = sneaking ? (wearingChest ? 0.3F : 1.4F) : 0.0F;
 
                         VertexConsumer capeConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTexture));
                         capeModel.render(matrices, capeConsumer, light, OverlayTexture.DEFAULT_UV);
