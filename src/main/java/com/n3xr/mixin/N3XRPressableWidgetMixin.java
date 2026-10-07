@@ -1,6 +1,5 @@
 package com.n3xr.mixin;
 
-import com.n3xr.N3XRDraw;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -42,10 +41,10 @@ public abstract class N3XRPressableWidgetMixin extends ClickableWidget {
 
                 int x = this.getX(), y = this.getY(), w = this.getWidth(), h = this.getHeight();
                 int base = this.active ? 0xC00A0505 : 0x80000000;
-                int bg = N3XRDraw.lerpColor(base, 0xE0B82C2C, n3xr$hover);
-                N3XRDraw.fillRounded(context, x, y, x + w, y + h, bg, Math.min(8, h / 2));
+                int bg = n3xr$lerpColor(base, 0xE0B82C2C, n3xr$hover);
+                n3xr$fillRounded(context, x, y, x + w, y + h, bg, Math.min(8, h / 2));
 
-                int textColor = this.active ? N3XRDraw.lerpColor(0xFFCCAAAA, 0xFFFFFFFF, n3xr$hover) : 0xFFA0A0A0;
+                int textColor = this.active ? n3xr$lerpColor(0xFFCCAAAA, 0xFFFFFFFF, n3xr$hover) : 0xFFA0A0A0;
                 int textY = y + (h - 8) / 2;
                 Text msg = this.getMessage();
 
@@ -58,5 +57,31 @@ public abstract class N3XRPressableWidgetMixin extends ClickableWidget {
                 }
 
                 ci.cancel();
+        }
+
+        private static void n3xr$fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
+                radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
+                if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
+                context.fill(x1 + radius, y1, x2 - radius, y2, color);
+                context.fill(x1, y1 + radius, x1 + radius, y2 - radius, color);
+                context.fill(x2 - radius, y1 + radius, x2, y2 - radius, color);
+                for (int i = 0; i < radius; i++) {
+                        int dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - (radius - i) * (radius - i)));
+                        context.fill(x1 + dx, y1 + i, x1 + radius, y1 + i + 1, color);
+                        context.fill(x2 - radius, y1 + i, x2 - dx, y1 + i + 1, color);
+                        context.fill(x1 + dx, y2 - i - 1, x1 + radius, y2 - i, color);
+                        context.fill(x2 - radius, y2 - i - 1, x2 - dx, y2 - i, color);
+                }
+        }
+
+        private static int n3xr$lerpColor(int colorA, int colorB, float t) {
+                t = Math.max(0f, Math.min(1f, t));
+                int aA = (colorA >> 24) & 0xFF, rA = (colorA >> 16) & 0xFF, gA = (colorA >> 8) & 0xFF, bA = colorA & 0xFF;
+                int aB = (colorB >> 24) & 0xFF, rB = (colorB >> 16) & 0xFF, gB = (colorB >> 8) & 0xFF, bB = colorB & 0xFF;
+                int a = (int) (aA + (aB - aA) * t);
+                int r = (int) (rA + (rB - rA) * t);
+                int g = (int) (gA + (gB - gA) * t);
+                int b = (int) (bA + (bB - bA) * t);
+                return (a << 24) | (r << 16) | (g << 8) | b;
         }
 }
