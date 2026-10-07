@@ -12,6 +12,7 @@
   "N3XRCapeFeatureMixin",
   "N3XRGameMenuScreenMixin",
   "N3XRPlayerListEntryMixin",
+  "N3XRPressableWidgetMixin",
   "N3XRTitleScreenMixin",
   "ChatHudMixin"
 ],
