@@ -117,7 +117,7 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                 n3xr$lastRenderNanos = now;
 
                 // ================= panel kiri =================
-                n3xr$fillRounded(context, n3xr$panelX1, n3xr$panelY1, n3xr$panelX2, n3xr$panelY2, 0xC00A0505, 5);
+                n3xr$fillRounded(context, n3xr$panelX1, n3xr$panelY1, n3xr$panelX2, n3xr$panelY2, 0xC00A0505, 9);
 
                 for (int i = 0; i < n3xr$rowRects.length; i++) {
                         int[] r = n3xr$rowRects[i];
@@ -127,7 +127,7 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                         n3xr$hover[i] += (target - n3xr$hover[i]) * Math.min(1f, dt * 12f);
 
                         int bg = n3xr$lerpColor(0x000A0505, 0x90B82C2C, n3xr$hover[i]);
-                        n3xr$fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 3);
+                        n3xr$fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 8);
 
                         int textColor = n3xr$lerpColor(0xFFCCAAAA, 0xFFFFFFFF, n3xr$hover[i]);
                         int tw = this.textRenderer.getWidth(n3xr$labels[i]);
@@ -148,14 +148,14 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                 int ntw = this.textRenderer.getWidth(name);
                 int ntX = n3xr$playerCx - ntw / 2;
                 int ntY = (int) (n3xr$originY - 0.5F * n3xr$scale) - 18;
-                n3xr$fillRounded(context, ntX - 5, ntY - 3, ntX + ntw + 5, ntY + 11, 0xC00A0505, 3);
+                n3xr$fillRounded(context, ntX - 5, ntY - 3, ntX + ntw + 5, ntY + 11, 0xC00A0505, 7);
                 context.drawText(this.textRenderer, name, ntX, ntY, 0xFFFFFFFF, false);
 
                 // tombol Cosmetics di bawah player
                 int[] c = n3xr$cosRect;
                 n3xr$cosHover += ((n3xr$inside(c, mouseX, mouseY) ? 1f : 0f) - n3xr$cosHover) * Math.min(1f, dt * 12f);
                 n3xr$fillRounded(context, c[0], c[1], c[0] + c[2], c[1] + c[3],
-                        n3xr$lerpColor(0xC00A0505, 0xE0B82C2C, n3xr$cosHover), 3);
+                        n3xr$lerpColor(0xC00A0505, 0xE0B82C2C, n3xr$cosHover), 8);
                 String cosLabel = "Cosmetics";
                 int cw = this.textRenderer.getWidth(cosLabel);
                 context.drawText(this.textRenderer, cosLabel, c[0] + (c[2] - cw) / 2, c[1] + (c[3] - 8) / 2,
@@ -164,7 +164,7 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                 // ================= panel akun pojok kanan atas =================
                 int pw = 124, ph = 28;
                 int ax2 = this.width - 8, ax1 = ax2 - pw, ay1 = 8, ay2 = ay1 + ph;
-                n3xr$fillRounded(context, ax1, ay1, ax2, ay2, 0xC00A0505, 5);
+                n3xr$fillRounded(context, ax1, ay1, ax2, ay2, 0xC00A0505, 9);
                 try {
                         SkinTextures skin = n3xr$skin();
                         // wajah (8,8) + lapisan hat (40,8), texture skin 64x64
@@ -285,6 +285,30 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                 int overlay = OverlayTexture.DEFAULT_UV;
                 VertexConsumerProvider.Immediate vc = context.getVertexConsumers();
 
+                // CAPE DIGAMBAR PALING DULU. Layer emissive (badan) nggak nulis depth buffer,
+                // jadi kalau cape digambar setelah badan dia bakal nimpa badan (muncul di depan).
+                // Dengan urutan ini badan nimpa cape dari depan, dan cape tetap bener pas model diputar.
+                // cape cosmetic (posisi diam, kemiringan sama kayak vanilla)
+                if (N3XRConfig.capeSelectedKey != null) {
+                        Identifier capeTex = N3XRCapeManager.getSelectedTexture();
+                        if (capeTex != null) {
+                                ms.push();
+                                ms.translate(0.0F, 0.0F, 0.125F);
+                                ms.multiply(RotationAxis.POSITIVE_X.rotationDegrees(6.0F));
+                                ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
+                                ModelPart cape = N3XRCapeRenderer.getOrBuildModel();
+                                cape.pitch = 0.0F;
+                                cape.yaw = 0.0F;
+                                cape.roll = 0.0F;
+                                cape.pivotX = 0.0F;
+                                cape.pivotY = 0.0F;
+                                cape.pivotZ = 0.0F;
+                                VertexConsumer cc = vc.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTex));
+                                cape.render(ms, cc, light, overlay);
+                                ms.pop();
+                        }
+                }
+
                 // emissive = tanpa lighting, jadi nggak gelap di menu
                 VertexConsumer skinConsumer = vc.getBuffer(RenderLayer.getEntityTranslucentEmissive(tex));
                 m.head.render(ms, skinConsumer, light, overlay);
@@ -309,27 +333,6 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                                 m.head.rotate(ms);
                                 VertexConsumer hc = vc.getBuffer(RenderLayer.getEntityCutoutNoCull(hatTex));
                                 hatModel.render(ms, hc, light, overlay);
-                                ms.pop();
-                        }
-                }
-
-                // cape cosmetic (posisi diam, kemiringan sama kayak vanilla)
-                if (N3XRConfig.capeSelectedKey != null) {
-                        Identifier capeTex = N3XRCapeManager.getSelectedTexture();
-                        if (capeTex != null) {
-                                ms.push();
-                                ms.translate(0.0F, 0.0F, 0.125F);
-                                ms.multiply(RotationAxis.POSITIVE_X.rotationDegrees(6.0F));
-                                ms.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
-                                ModelPart cape = N3XRCapeRenderer.getOrBuildModel();
-                                cape.pitch = 0.0F;
-                                cape.yaw = 0.0F;
-                                cape.roll = 0.0F;
-                                cape.pivotX = 0.0F;
-                                cape.pivotY = 0.0F;
-                                cape.pivotZ = 0.0F;
-                                VertexConsumer cc = vc.getBuffer(RenderLayer.getEntityCutoutNoCull(capeTex));
-                                cape.render(ms, cc, light, overlay);
                                 ms.pop();
                         }
                 }
