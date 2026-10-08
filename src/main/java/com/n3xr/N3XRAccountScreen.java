@@ -77,12 +77,12 @@ public class N3XRAccountScreen extends Screen {
         private void addAccount() {
                 String name = nameField.getText().trim();
                 if (!N3XRAccounts.isValidName(name)) {
-                        message = "Username 1-16 karakter: huruf, angka, atau _";
+                        message = "Username must be 1-16 characters: letters, numbers or _";
                         messageColor = 0xFFFF5555;
                         return;
                 }
                 if (!N3XRAccounts.add(name)) {
-                        message = "Akun itu sudah ada";
+                        message = "That account already exists";
                         messageColor = 0xFFFF5555;
                         return;
                 }
@@ -109,10 +109,10 @@ public class N3XRAccountScreen extends Screen {
                 int cx = this.width / 2;
                 context.drawCenteredTextWithShadow(this.textRenderer, this.title, cx, 18, 0xFFFFFFFF);
                 context.drawCenteredTextWithShadow(this.textRenderer,
-                        Text.literal("Akun offline (crack). Untuk akun premium pakai IAS."), cx, 30, 0xFFAAAAAA);
+                        Text.literal("Offline (cracked) accounts. For premium accounts, use IAS."), cx, 30, 0xFFAAAAAA);
 
                 if (nameField != null && nameField.getText().isEmpty() && !nameField.isFocused()) {
-                        context.drawText(this.textRenderer, "Username baru...", cx - 95, 50, 0xFF777777, false);
+                        context.drawText(this.textRenderer, "New username...", cx - 95, 50, 0xFF777777, false);
                 }
                 if (!message.isEmpty()) {
                         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(message), cx, this.height - 46, messageColor);
