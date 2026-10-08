@@ -53,6 +53,8 @@ public class N3XRConfigStorage {
 		Boolean resourceManagerEnabled;
 		Integer resourceManagerMode;
 		Boolean combatPerformanceModeEnabled, weatherReducerEnabled, noGlintEnabled;
+		Boolean showTotemCount;
+		Integer totemCountX, totemCountY, totemCountColor;
 
 		String capeSelectedKey;
 		String hatSelectedKey;
@@ -171,6 +173,10 @@ public class N3XRConfigStorage {
 		d.combatPerformanceModeEnabled = N3XRConfig.combatPerformanceModeEnabled;
 		d.weatherReducerEnabled = N3XRConfig.weatherReducerEnabled;
 		d.noGlintEnabled = N3XRConfig.noGlintEnabled;
+		d.showTotemCount = N3XRConfig.showTotemCount;
+		d.totemCountX = N3XRConfig.totemCountX;
+		d.totemCountY = N3XRConfig.totemCountY;
+		d.totemCountColor = N3XRConfig.totemCountColor;
 
 		d.capeSelectedKey = N3XRConfig.capeSelectedKey;
 		d.hatSelectedKey = N3XRConfig.hatSelectedKey;
@@ -321,6 +327,10 @@ public class N3XRConfigStorage {
 			if (d.combatPerformanceModeEnabled != null) N3XRConfig.combatPerformanceModeEnabled = d.combatPerformanceModeEnabled;
 			if (d.weatherReducerEnabled != null) N3XRConfig.weatherReducerEnabled = d.weatherReducerEnabled;
 			if (d.noGlintEnabled != null) N3XRConfig.noGlintEnabled = d.noGlintEnabled;
+			if (d.showTotemCount != null) N3XRConfig.showTotemCount = d.showTotemCount;
+			if (d.totemCountX != null) N3XRConfig.totemCountX = d.totemCountX;
+			if (d.totemCountY != null) N3XRConfig.totemCountY = d.totemCountY;
+			if (d.totemCountColor != null) N3XRConfig.totemCountColor = d.totemCountColor;
 
 			// null = nggak ada yang dipilih (cape/hat dilepas)
 			N3XRConfig.capeSelectedKey = d.capeSelectedKey;
