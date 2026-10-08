@@ -474,6 +474,11 @@ public class N3XRClient implements ClientModInitializer {
         private void renderWorldNameTag(WorldRenderContext context) {
                 if (!N3XRConfig.showNameTag && !N3XRConfig.healthIndicatorEnabled) return;
 
+                // Nametag sekarang dirender lewat N3XRSelfLabelMixin + N3XRNameTagMixin
+                // (label bawaan + icon N3XR). Renderer di bawah ini cuma jadi cadangan:
+                // jalan hanya kalau mixin-nya gagal ke-apply.
+                if (com.n3xr.nametag.N3XRNameTag.handledByMixin) return;
+
                 MinecraftClient mc = MinecraftClient.getInstance();
 
                 if (mc.player == null || mc.world == null) return;
@@ -525,10 +530,14 @@ public class N3XRClient implements ClientModInitializer {
                 var vertexConsumers =
                         mc.getBufferBuilders().getEntityVertexConsumers();
 
-                // Icon dibalikin dihapus dari sini (nametag 3D) -- cuma
-                // nama + HP polos kayak semula. Icon tetep ada di tab
-                // list (lihat N3XRPlayerListEntryMixin), nggak kesentuh.
-                Text nameWithIcon = displayName;
+                // Icon N3XR (font n3xr:icons, karakter U+E000) di depan nama.
+                // Icon dan nama dijadikan sibling di root kosong, JANGAN nama
+                // di-append ke icon: kalau nggak, huruf nama ikut font icon
+                // dan berubah jadi kotak.
+                Text nameWithIcon = Text.empty()
+                        .append(Text.literal("\uE000").styled(s -> s.withFont(Identifier.of("n3xr", "icons"))))
+                        .append(" ")
+                        .append(displayName);
 
                 int spacing = 4;
 
