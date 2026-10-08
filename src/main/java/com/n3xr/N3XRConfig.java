@@ -33,6 +33,7 @@ public class N3XRConfig {
         public static boolean healthIndicatorEnabled = false;
         public static boolean chatTimestampEnabled = false;
         public static boolean showDayCounter = false;
+        public static boolean showTotemCount = false;
 
         // Hit Range: lingkaran radius jangkauan hit di sekitar player,
         // warna bisa di-custom (lihat N3XRHitRange.java buat render-nya
@@ -112,6 +113,7 @@ public static final java.util.Map<String, Float> moduleScale = new java.util.Has
         public static int inventoryDisplayX = 5, inventoryDisplayY = 400;
         public static int realTimeX = 5, realTimeY = 365;
         public static int dayCounterX = 5, dayCounterY = 380;
+        public static int totemCountX = 5, totemCountY = 395;
 
         public static int fpsColor = 0xFFFFFF;
         public static int cpsColor = 0xFFFFFF;
@@ -134,6 +136,7 @@ public static final java.util.Map<String, Float> moduleScale = new java.util.Has
         public static int blockOutlineColor = 0xFF3333;
         public static int healthIndicatorColor = 0xFF55FF55;
         public static int dayCounterColor = 0xFFFFFF;
+        public static int totemCountColor = 0xFFFFFF;
 
         public static final int[] PRESET_COLORS = {
                 0xFFFFFF, 0xFF5555, 0xFF8800, 0xFFFF55, 0xAAFF55,
