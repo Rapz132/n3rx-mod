@@ -204,6 +204,7 @@ public class N3XRClient implements ClientModInitializer {
                         if (N3XRConfig.showRealTime) renderRealTime(context, mc);
                         if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
                         if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
+                        if (N3XRConfig.showTotemCount) com.n3xr.totemcount.N3XRTotemCount.render(context, mc);
                 });
         }
 
