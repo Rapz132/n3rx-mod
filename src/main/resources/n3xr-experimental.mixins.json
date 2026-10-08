@@ -1,4 +1,3 @@
-
 {
 	"required": false,
 	"minVersion": "0.8",
@@ -9,7 +8,11 @@
   "FogDisableMixin",
   "EntityCullingMixin",
   "NoGlintMixin",
-  "N3XRCapeFeatureMixin"
+  "N3XRPressableWidgetMixin",
+  "N3XRSessionAccessor",
+  "N3XRSelfLabelMixin",
+  "N3XRCapeFeatureMixin",
+  "N3XRNameTagMixin"
 ],
 	"injectors": {
 		"defaultRequire": 0
