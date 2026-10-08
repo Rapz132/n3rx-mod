@@ -3,6 +3,7 @@ package com.n3xr.mixin;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.n3xr.N3XRConfig;
+import com.n3xr.N3XRAccountScreen;
 import com.n3xr.N3XRConfigScreen;
 import com.n3xr.N3XRCosmeticsScreen;
 import com.n3xr.N3XRFastServerScreen;
@@ -64,6 +65,8 @@ public abstract class N3XRTitleScreenMixin extends Screen {
         private final String[] n3xr$labels = {"N3XR Client", "Fast Server", "Social", "Settings"};
         private final float[] n3xr$hover = new float[4];
         private float n3xr$cosHover = 0f;
+        private float n3xr$accHover = 0f;
+        private int[] n3xr$accRect;     // panel akun pojok kanan atas (klik = account switcher)
         private int n3xr$panelX1, n3xr$panelY1, n3xr$panelX2, n3xr$panelY2;
         private int[][] n3xr$rowRects;
         private long n3xr$lastRenderNanos = 0;
@@ -162,18 +165,38 @@ public abstract class N3XRTitleScreenMixin extends Screen {
                         n3xr$lerpColor(0xFFCCAAAA, 0xFFFFFFFF, n3xr$cosHover), false);
 
                 // ================= panel akun pojok kanan atas =================
-                int pw = 124, ph = 28;
+                // [icon switch] [head] [username]  -> klik buat buka account switcher
+                int pw = 150, ph = 28;
                 int ax2 = this.width - 8, ax1 = ax2 - pw, ay1 = 8, ay2 = ay1 + ph;
-                n3xr$fillRounded(context, ax1, ay1, ax2, ay2, 0xC00A0505, 9);
+                n3xr$accRect = new int[]{ax1, ay1, pw, ph};
+                n3xr$accHover += ((n3xr$inside(n3xr$accRect, mouseX, mouseY) ? 1f : 0f) - n3xr$accHover) * Math.min(1f, dt * 12f);
+                n3xr$fillRounded(context, ax1, ay1, ax2, ay2, n3xr$lerpColor(0xC00A0505, 0xE0B82C2C, n3xr$accHover), 9);
+
+                n3xr$drawSwitchIcon(context, ax1 + 9, ay1 + 9,
+                        n3xr$lerpColor(0xFFCCAAAA, 0xFFFFFFFF, n3xr$accHover));
                 try {
                         SkinTextures skin = n3xr$skin();
                         // wajah (8,8) + lapisan hat (40,8), texture skin 64x64
-                        context.drawTexture(skin.texture(), ax1 + 5, ay1 + 5, 18, 18, 8.0F, 8.0F, 8, 8, 64, 64);
-                        context.drawTexture(skin.texture(), ax1 + 5, ay1 + 5, 18, 18, 40.0F, 8.0F, 8, 8, 64, 64);
+                        context.drawTexture(skin.texture(), ax1 + 26, ay1 + 5, 18, 18, 8.0F, 8.0F, 8, 8, 64, 64);
+                        context.drawTexture(skin.texture(), ax1 + 26, ay1 + 5, 18, 18, 40.0F, 8.0F, 8, 8, 64, 64);
                 } catch (Throwable ignored) {
                 }
-                String shown = this.textRenderer.trimToWidth(name, pw - 34);
-                context.drawText(this.textRenderer, shown, ax1 + 29, ay1 + (ph - 8) / 2, 0xFFFFFFFF, false);
+                String shown = this.textRenderer.trimToWidth(name, pw - 54);
+                context.drawText(this.textRenderer, shown, ax1 + 50, ay1 + (ph - 8) / 2, 0xFFFFFFFF, false);
+        }
+
+        /** Icon switch (dua panah bolak-balik), 10x10 px. */
+        private void n3xr$drawSwitchIcon(DrawContext context, int x, int y, int color) {
+                // panah atas -> kanan
+                context.fill(x, y + 2, x + 7, y + 3, color);
+                context.fill(x + 7, y, x + 8, y + 5, color);
+                context.fill(x + 8, y + 1, x + 9, y + 4, color);
+                context.fill(x + 9, y + 2, x + 10, y + 3, color);
+                // panah bawah -> kiri
+                context.fill(x + 3, y + 7, x + 10, y + 8, color);
+                context.fill(x + 2, y + 5, x + 3, y + 10, color);
+                context.fill(x + 1, y + 6, x + 2, y + 9, color);
+                context.fill(x, y + 7, x + 1, y + 8, color);
         }
 
         @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true, require = 0)
@@ -182,6 +205,12 @@ public abstract class N3XRTitleScreenMixin extends Screen {
 
                 if (n3xr$inside(n3xr$cosRect, mouseX, mouseY)) {
                         this.client.setScreen(new N3XRCosmeticsScreen());
+                        cir.setReturnValue(true);
+                        return;
+                }
+
+                if (n3xr$inside(n3xr$accRect, mouseX, mouseY)) {
+                        this.client.setScreen(new N3XRAccountScreen(this));
                         cir.setReturnValue(true);
                         return;
                 }
