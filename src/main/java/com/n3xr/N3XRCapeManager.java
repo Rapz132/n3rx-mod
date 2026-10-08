@@ -1,9 +1,9 @@
 package com.n3xr.cosmetic;
 
-import net.minecraft.util.Identifier;
-
+import com.n3xr.customcape.N3XRCustomCape;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.util.Identifier;
 
 /**
  * Registry cape lokal — bukan fetch dari internet. Semua cape
@@ -15,6 +15,9 @@ import java.util.List;
  *    assets/n3xr/textures/capes/{key}.png
  * 2. Tambah satu baris di REGISTER_CAPES di bawah ini dengan
  *    key yang sama persis dan nama tampilan yang diinginkan.
+ *
+ * Khusus key "custom": texture-nya bukan dari PNG di dalam mod, tapi
+ * gambar buatan user sendiri (lihat customcape/N3XRCustomCape).
  */
 public class N3XRCapeManager {
 
@@ -30,6 +33,7 @@ public class N3XRCapeManager {
                 CAPES.add(new CapeEntry("cow_cape", "Cow Cape"));
                 CAPES.add(new CapeEntry("hearth_cape", "Hearth Cape"));
                 CAPES.add(new CapeEntry("spongebob_cape", "Spongebob Cape"));
+                CAPES.add(new CapeEntry(N3XRCustomCape.KEY, "Custom Cape (draw your own)"));
         }
 
         public static List<CapeEntry> getAvailableCapes() {
@@ -38,6 +42,7 @@ public class N3XRCapeManager {
 
         public static Identifier getTextureFor(String key) {
                 if (key == null) return null;
+                if (N3XRCustomCape.KEY.equals(key)) N3XRCustomCape.ensureRegistered();
                 return Identifier.of("n3xr", "textures/capes/" + key + ".png");
         }
 
