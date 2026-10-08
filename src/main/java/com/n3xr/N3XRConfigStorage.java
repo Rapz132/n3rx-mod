@@ -39,7 +39,34 @@ public class N3XRConfigStorage {
 		int playerCountColor, memoryColor, cpuColor, biomeColor, potionsColor, realTimeColor, blockOutlineColor, healthIndicatorColor, dayCounterColor;
 
 		int[] crosshairPixels;
+
+		// --- ditambahkan belakangan: pakai tipe boxed, jadi kalau config lama
+		// belum punya field ini nilainya null dan default di N3XRConfig dipertahankan ---
+		Boolean hitRangeEnabled;
+		Integer hitRangeColor;
+		Boolean smartRenderEnabled, noBlockShadingEnabled, fogDisabledEnabled, entityCullingEnabled;
+		Float entityCullingDistance;
+		Boolean fpsGovernorEnabled;
+		Integer fpsGovernorTarget;
+		Boolean itemEntityOptimizerEnabled;
+		Float itemEntityCullingDistance;
+		Boolean resourceManagerEnabled;
+		Integer resourceManagerMode;
+		Boolean combatPerformanceModeEnabled, weatherReducerEnabled, noGlintEnabled;
+
+		String capeSelectedKey;
+		String hatSelectedKey;
+		java.util.List<Fav> favoriteServers;
+		java.util.Map<String, Float> moduleScale;
 	}
+
+	private static class Fav {
+		String name;
+		String ip;
+	}
+
+	private static String lastSaved = null;
+	private static boolean hookRegistered = false;
 
 	public static void save() {
 		Data d = new Data();
@@ -128,14 +155,66 @@ public class N3XRConfigStorage {
 
 		d.crosshairPixels = N3XRConfig.crosshairPixels;
 
-		try (Writer writer = Files.newBufferedWriter(CONFIG_PATH, StandardCharsets.UTF_8)) {
-			GSON.toJson(d, writer);
+		d.hitRangeEnabled = N3XRConfig.hitRangeEnabled;
+		d.hitRangeColor = N3XRConfig.hitRangeColor;
+		d.smartRenderEnabled = N3XRConfig.smartRenderEnabled;
+		d.noBlockShadingEnabled = N3XRConfig.noBlockShadingEnabled;
+		d.fogDisabledEnabled = N3XRConfig.fogDisabledEnabled;
+		d.entityCullingEnabled = N3XRConfig.entityCullingEnabled;
+		d.entityCullingDistance = N3XRConfig.entityCullingDistance;
+		d.fpsGovernorEnabled = N3XRConfig.fpsGovernorEnabled;
+		d.fpsGovernorTarget = N3XRConfig.fpsGovernorTarget;
+		d.itemEntityOptimizerEnabled = N3XRConfig.itemEntityOptimizerEnabled;
+		d.itemEntityCullingDistance = N3XRConfig.itemEntityCullingDistance;
+		d.resourceManagerEnabled = N3XRConfig.resourceManagerEnabled;
+		d.resourceManagerMode = N3XRConfig.resourceManagerMode;
+		d.combatPerformanceModeEnabled = N3XRConfig.combatPerformanceModeEnabled;
+		d.weatherReducerEnabled = N3XRConfig.weatherReducerEnabled;
+		d.noGlintEnabled = N3XRConfig.noGlintEnabled;
+
+		d.capeSelectedKey = N3XRConfig.capeSelectedKey;
+		d.hatSelectedKey = N3XRConfig.hatSelectedKey;
+
+		d.favoriteServers = new java.util.ArrayList<>();
+		for (N3XRConfig.FavoriteServer fs : N3XRConfig.favoriteServers) {
+			Fav f = new Fav();
+			f.name = fs.name();
+			f.ip = fs.ip();
+			d.favoriteServers.add(f);
+		}
+		d.moduleScale = new java.util.HashMap<>(N3XRConfig.moduleScale);
+
+		String json = GSON.toJson(d);
+		if (json.equals(lastSaved)) return; // nggak ada yang berubah, nggak usah nulis ulang
+
+		// tulis ke file sementara dulu, baru ditukar: kalau game ke-kill pas lagi nulis,
+		// n3xr.json yang lama nggak rusak / kosong
+		Path tmp = CONFIG_PATH.resolveSibling("n3xr.json.tmp");
+		try (Writer writer = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
+			writer.write(json);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		try {
+			try {
+				Files.move(tmp, CONFIG_PATH, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+					java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+			} catch (java.nio.file.AtomicMoveNotSupportedException e) {
+				Files.move(tmp, CONFIG_PATH, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			}
+			lastSaved = json;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static void load() {
+		if (!hookRegistered) {
+			hookRegistered = true;
+			// simpan terakhir kali pas game ditutup
+			Runtime.getRuntime().addShutdownHook(new Thread(N3XRConfigStorage::save, "n3xr-config-save"));
+		}
 		if (!Files.exists(CONFIG_PATH)) return;
 		try (Reader reader = Files.newBufferedReader(CONFIG_PATH, StandardCharsets.UTF_8)) {
 			Data d = GSON.fromJson(reader, Data.class);
@@ -225,8 +304,51 @@ public class N3XRConfigStorage {
 			N3XRConfig.dayCounterColor = d.dayCounterColor;
 
 			if (d.crosshairPixels != null) N3XRConfig.crosshairPixels = d.crosshairPixels;
-		} catch (IOException e) {
+
+			if (d.hitRangeEnabled != null) N3XRConfig.hitRangeEnabled = d.hitRangeEnabled;
+			if (d.hitRangeColor != null) N3XRConfig.hitRangeColor = d.hitRangeColor;
+			if (d.smartRenderEnabled != null) N3XRConfig.smartRenderEnabled = d.smartRenderEnabled;
+			if (d.noBlockShadingEnabled != null) N3XRConfig.noBlockShadingEnabled = d.noBlockShadingEnabled;
+			if (d.fogDisabledEnabled != null) N3XRConfig.fogDisabledEnabled = d.fogDisabledEnabled;
+			if (d.entityCullingEnabled != null) N3XRConfig.entityCullingEnabled = d.entityCullingEnabled;
+			if (d.entityCullingDistance != null && d.entityCullingDistance > 0) N3XRConfig.entityCullingDistance = d.entityCullingDistance;
+			if (d.fpsGovernorEnabled != null) N3XRConfig.fpsGovernorEnabled = d.fpsGovernorEnabled;
+			if (d.fpsGovernorTarget != null && d.fpsGovernorTarget > 0) N3XRConfig.fpsGovernorTarget = d.fpsGovernorTarget;
+			if (d.itemEntityOptimizerEnabled != null) N3XRConfig.itemEntityOptimizerEnabled = d.itemEntityOptimizerEnabled;
+			if (d.itemEntityCullingDistance != null && d.itemEntityCullingDistance > 0) N3XRConfig.itemEntityCullingDistance = d.itemEntityCullingDistance;
+			if (d.resourceManagerEnabled != null) N3XRConfig.resourceManagerEnabled = d.resourceManagerEnabled;
+			if (d.resourceManagerMode != null && d.resourceManagerMode >= 0 && d.resourceManagerMode <= 2) N3XRConfig.resourceManagerMode = d.resourceManagerMode;
+			if (d.combatPerformanceModeEnabled != null) N3XRConfig.combatPerformanceModeEnabled = d.combatPerformanceModeEnabled;
+			if (d.weatherReducerEnabled != null) N3XRConfig.weatherReducerEnabled = d.weatherReducerEnabled;
+			if (d.noGlintEnabled != null) N3XRConfig.noGlintEnabled = d.noGlintEnabled;
+
+			// null = nggak ada yang dipilih (cape/hat dilepas)
+			N3XRConfig.capeSelectedKey = d.capeSelectedKey;
+			N3XRConfig.hatSelectedKey = d.hatSelectedKey;
+
+			if (d.favoriteServers != null) {
+				N3XRConfig.favoriteServers.clear();
+				for (Fav f : d.favoriteServers) {
+					if (f != null && f.name != null && f.ip != null) {
+						N3XRConfig.favoriteServers.add(new N3XRConfig.FavoriteServer(f.name, f.ip));
+					}
+				}
+			}
+			if (d.moduleScale != null) {
+				N3XRConfig.moduleScale.clear();
+				for (java.util.Map.Entry<String, Float> e : d.moduleScale.entrySet()) {
+					if (e.getKey() != null && e.getValue() != null) N3XRConfig.setScale(e.getKey(), e.getValue());
+				}
+			}
+		} catch (IOException | RuntimeException e) {
+			// IOException atau JSON rusak: jangan sampai game crash pas start.
+			// File rusak disimpan sebagai n3xr.json.broken, setting balik ke default.
 			e.printStackTrace();
+			try {
+				Files.move(CONFIG_PATH, CONFIG_PATH.resolveSibling("n3xr.json.broken"),
+					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException ignored) {
+			}
 		}
 	}
 			}
