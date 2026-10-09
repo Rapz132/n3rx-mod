@@ -36,14 +36,19 @@ public final class N3XRNameTag {
                 return !mc.options.getPerspective().isFirstPerson();
         }
 
-        public static Text build(PlayerEntity player) {
+        /** Sisipkan icon N3XR di depan teks apa pun (nametag, tab list). */
+        public static Text withIcon(Text base) {
                 MutableText icon = Text.literal("\uE000").styled(s -> s.withFont(ICON_FONT));
-
-                MutableText name = player.getDisplayName().copy()
-                        .styled(s -> s.withColor(TextColor.fromRgb(N3XRConfig.nameTagColor & 0xFFFFFF)));
 
                 // Icon dan nama jadi sibling di root kosong, JANGAN nama di-append ke icon:
                 // kalau nggak, nama ikut font icon dan hurufnya jadi kotak.
-                return Text.empty().append(icon).append(" ").append(name);
+                return Text.empty().append(icon).append(" ").append(base);
+        }
+
+        /** Nametag player sendiri: icon + nama (warna sesuai pengaturan modul Name Tag). */
+        public static Text build(PlayerEntity player) {
+                MutableText name = player.getDisplayName().copy()
+                        .styled(s -> s.withColor(TextColor.fromRgb(N3XRConfig.nameTagColor & 0xFFFFFF)));
+                return withIcon(name);
         }
 }
