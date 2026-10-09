@@ -1,9 +1,9 @@
 package com.n3xr;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 
 public class N3XRHudEditScreen extends Screen {
 
@@ -83,6 +83,7 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showRealTime) drawBox(context, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY);
                 if (N3XRConfig.showInventoryDisplay) drawBox(context, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY);
                 if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY);
+                if (N3XRConfig.showTotemCount) drawBox(context, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY);
 
                 Text hint = Text.literal("Drag modules to reposition \u00b7 Drag \u25cf to resize \u00b7 Right Shift to close");
                 int hw = this.textRenderer.getWidth(hint);
@@ -149,6 +150,7 @@ public class N3XRHudEditScreen extends Screen {
                 if (tryStartResize(mouseX, mouseY, "RealTime", N3XRConfig.showRealTime, N3XRConfig.realTimeX, N3XRConfig.realTimeY)) return true;
                 if (tryStartResize(mouseX, mouseY, "Inventory", N3XRConfig.showInventoryDisplay, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) return true;
                 if (tryStartResize(mouseX, mouseY, "DayCounter", N3XRConfig.showDayCounter, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) return true;
+                if (tryStartResize(mouseX, mouseY, "TotemCount", N3XRConfig.showTotemCount, N3XRConfig.totemCountX, N3XRConfig.totemCountY)) return true;
 
                 if (N3XRConfig.showFps && inBox(mouseX, mouseY, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY)) { dragging = "FPS"; setOffset(mouseX, mouseY, N3XRConfig.fpsX, N3XRConfig.fpsY); return true; }
                 if (N3XRConfig.showArmor && inBox(mouseX, mouseY, "Armor", N3XRConfig.armorX, N3XRConfig.armorY)) { dragging = "Armor"; setOffset(mouseX, mouseY, N3XRConfig.armorX, N3XRConfig.armorY); return true; }
@@ -168,6 +170,7 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showRealTime && inBox(mouseX, mouseY, "RealTime", N3XRConfig.realTimeX, N3XRConfig.realTimeY)) { dragging = "RealTime"; setOffset(mouseX, mouseY, N3XRConfig.realTimeX, N3XRConfig.realTimeY); return true; }
                 if (N3XRConfig.showInventoryDisplay && inBox(mouseX, mouseY, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) { dragging = "Inventory"; setOffset(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY); return true; }
                 if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
+                if (N3XRConfig.showTotemCount && inBox(mouseX, mouseY, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY)) { dragging = "TotemCount"; setOffset(mouseX, mouseY, N3XRConfig.totemCountX, N3XRConfig.totemCountY); return true; }
                 return super.mouseClicked(mouseX, mouseY, button);
         }
 
@@ -215,6 +218,7 @@ public class N3XRHudEditScreen extends Screen {
                                 case "RealTime" -> { N3XRConfig.realTimeX = nx; N3XRConfig.realTimeY = ny; }
                                 case "Inventory" -> { N3XRConfig.inventoryDisplayX = nx; N3XRConfig.inventoryDisplayY = ny; }
                                 case "DayCounter" -> { N3XRConfig.dayCounterX = nx; N3XRConfig.dayCounterY = ny; }
+                                case "TotemCount" -> { N3XRConfig.totemCountX = nx; N3XRConfig.totemCountY = ny; }
                         }
                         return true;
                 }
