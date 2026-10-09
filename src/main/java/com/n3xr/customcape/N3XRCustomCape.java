@@ -35,6 +35,11 @@ public final class N3XRCustomCape {
         private static boolean loaded = false;
         private static boolean registered = false;
 
+        /** Sudah pernah di-Save di editor (file PNG-nya ada)? */
+        public static boolean hasSavedFile() {
+                return Files.exists(FILE);
+        }
+
         public static int[] getPixelsCopy() {
                 load();
                 return PIXELS.clone();
@@ -71,7 +76,10 @@ public final class N3XRCustomCape {
         private static void load() {
                 if (loaded) return;
                 loaded = true;
-                if (!Files.exists(FILE)) return;
+                if (!Files.exists(FILE)) {
+                        fillStarter();
+                        return;
+                }
                 try (InputStream in = Files.newInputStream(FILE); NativeImage image = NativeImage.read(in)) {
                         if (image.getWidth() >= 11 && image.getHeight() >= 17) {
                                 for (int y = 0; y < H; y++) {
@@ -82,6 +90,20 @@ public final class N3XRCustomCape {
                         }
                 } catch (IOException | RuntimeException e) {
                         e.printStackTrace();
+                }
+        }
+
+        /**
+         * Desain awal kalau belum ada gambar tersimpan: cape merah dengan bingkai terang,
+         * supaya memilih Custom Cape pertama kali nggak berujung cape transparan (nggak kelihatan).
+         */
+        private static void fillStarter() {
+                int body = 0xFFB82C2C, edge = 0xFFFF5555;
+                for (int y = 0; y < H; y++) {
+                        for (int x = 0; x < W; x++) {
+                                boolean border = x == 0 || y == 0 || x == W - 1 || y == H - 1;
+                                PIXELS[y * W + x] = border ? edge : body;
+                        }
                 }
         }
 
