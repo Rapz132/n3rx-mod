@@ -2,6 +2,7 @@ package com.n3xr;
 
 import com.n3xr.cosmetic.N3XRCapeManager;
 import com.n3xr.customcape.N3XRCapeEditorScreen;
+import com.n3xr.customcape.N3XRCustomCape;
 import java.util.List;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -162,6 +163,11 @@ public class N3XRCapeSelectScreen extends Screen {
                         if (inside(r, mouseX, mouseY)) {
                                 int idx = r[4];
                                 N3XRConfig.capeSelectedKey = (idx == 0) ? null : capes.get(idx - 1).key();
+
+                                // Custom Cape yang belum pernah digambar: langsung buka editor
+                                if (N3XRCustomCape.KEY.equals(N3XRConfig.capeSelectedKey) && !N3XRCustomCape.hasSavedFile()) {
+                                        this.client.setScreen(new N3XRCapeEditorScreen(this));
+                                }
                                 return true;
                         }
                 }
