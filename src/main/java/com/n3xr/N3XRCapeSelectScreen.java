@@ -1,23 +1,24 @@
 package com.n3xr;
 
 import com.n3xr.cosmetic.N3XRCapeManager;
+import com.n3xr.customcape.N3XRCapeEditorScreen;
+import java.util.List;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Screen list pilihan cape lokal, plus panel preview 3D player doll
  * di sebelah kanan. Doll pakai overload bawaan InventoryScreen
- * (bukan Quaternion manual — versi itu bikin karakter "jumpalitan"
- * karena rotasi kita ketabrak orientasi dasar Minecraft sendiri).
- * Overload ini dijamin render tegak karena itu logic asli
- * Minecraft, dan tetap bisa "diputar" dengan menggerakkan mouse di
- * atas panel (sama seperti player doll di Inventory Screen vanilla).
+ * (bukan Quaternion manual), dan tetap bisa "diputar" dengan menggerakkan
+ * mouse di atas panel.
+ *
+ * Tambahan:
+ *  - Tombol "Draw Custom Cape" di atas doll buat buka editor cape gambar sendiri.
+ *  - List dibagi per halaman (tombol < dan >, atau scroll mouse) supaya
+ *    semua cape muat di layar kecil.
  */
 public class N3XRCapeSelectScreen extends Screen {
 
@@ -27,16 +28,25 @@ public class N3XRCapeSelectScreen extends Screen {
         private static final int DOLL_PANEL_W = 140;
         private static final int PANEL_GAP = 10;
         private static final int ROW_H = 28;
+        private static final int TOP = 20;
+        private static final int TITLE_H = 34;
+        private static final int BOTTOM_BAR_H = 34;
 
-        private final List<int[]> rowRects = new ArrayList<>();
-        private final List<Float> hoverProgress = new ArrayList<>();
+        /** Satu baris di halaman aktif: {x, y, w, h, indexEntri}. Index 0 = "None". */
+        private final java.util.ArrayList<int[]> rowRects = new java.util.ArrayList<>();
+        private float[] hoverProgress = new float[0];
         private List<N3XRCapeManager.CapeEntry> capes;
 
         private int listX1, listY1, listX2, listY2;
         private int dollX1, dollY1, dollX2, dollY2;
-        private int panelBottom;
+        private int visibleRows = 1;
+        private int totalEntries = 1;
+        private int page = 0;
+        private int pageCount = 1;
+
         private long lastRenderNanos = 0;
-        private int[] backButtonRect;
+        private int[] backButtonRect, prevButtonRect, nextButtonRect, drawButtonRect;
+        private float drawHover = 0f;
 
         public N3XRCapeSelectScreen(Screen parent) {
                 super(Text.literal("Select Cape"));
@@ -46,42 +56,47 @@ public class N3XRCapeSelectScreen extends Screen {
         @Override
         protected void init() {
                 capes = N3XRCapeManager.getAvailableCapes();
+                totalEntries = capes.size() + 1; // +1 buat "None"
 
                 int totalW = LIST_PANEL_W + PANEL_GAP + DOLL_PANEL_W;
                 listX1 = this.width / 2 - totalW / 2;
                 listX2 = listX1 + LIST_PANEL_W;
-                listY1 = 20;
+                listY1 = TOP;
 
                 dollX1 = listX2 + PANEL_GAP;
                 dollX2 = dollX1 + DOLL_PANEL_W;
                 dollY1 = listY1;
 
-                rowRects.clear();
-                hoverProgress.clear();
+                // jumlah baris yang muat di layar (minimal 3), sisanya dibagi per halaman
+                int rowsArea = this.height - TOP - 10 - TITLE_H - BOTTOM_BAR_H;
+                visibleRows = Math.max(3, Math.min(totalEntries, rowsArea / ROW_H));
+                pageCount = (totalEntries + visibleRows - 1) / visibleRows;
+                page = Math.max(0, Math.min(page, pageCount - 1));
 
-                int y = listY1 + 34;
+                rebuildRows();
 
-                rowRects.add(new int[]{listX1 + 8, y, LIST_PANEL_W - 16, ROW_H - 4});
-                hoverProgress.add(0f);
-                y += ROW_H;
-
-                for (int i = 0; i < capes.size(); i++) {
-                        rowRects.add(new int[]{listX1 + 8, y, LIST_PANEL_W - 16, ROW_H - 4});
-                        hoverProgress.add(0f);
-                        y += ROW_H;
-                }
-
-                panelBottom = y + 40;
+                int panelBottom = listY1 + TITLE_H + visibleRows * ROW_H + BOTTOM_BAR_H;
                 listY2 = panelBottom;
                 dollY2 = panelBottom;
 
-                int backW = 100, backH = 18;
-                backButtonRect = new int[]{
-                        this.width / 2 - backW / 2,
-                        panelBottom - backH - 8,
-                        backW,
-                        backH
-                };
+                int barY = panelBottom - 26;
+                backButtonRect = new int[]{listX1 + LIST_PANEL_W / 2 - 40, barY, 80, 18};
+                prevButtonRect = new int[]{listX1 + 10, barY, 24, 18};
+                nextButtonRect = new int[]{listX2 - 34, barY, 24, 18};
+
+                drawButtonRect = new int[]{dollX1 + 8, dollY1 + 10, DOLL_PANEL_W - 16, 20};
+        }
+
+        private void rebuildRows() {
+                rowRects.clear();
+                hoverProgress = new float[totalEntries];
+                int y = listY1 + TITLE_H;
+                int start = page * visibleRows;
+                int end = Math.min(totalEntries, start + visibleRows);
+                for (int idx = start; idx < end; idx++) {
+                        rowRects.add(new int[]{listX1 + 8, y, LIST_PANEL_W - 16, ROW_H - 4, idx});
+                        y += ROW_H;
+                }
         }
 
         private void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
@@ -116,27 +131,50 @@ public class N3XRCapeSelectScreen extends Screen {
                 return current + (target - current) * speed;
         }
 
+        private boolean inside(int[] r, double x, double y) {
+                return r != null && x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3];
+        }
+
+        private void changePage(int delta) {
+                int next = Math.max(0, Math.min(pageCount - 1, page + delta));
+                if (next != page) {
+                        page = next;
+                        rebuildRows();
+                }
+        }
+
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                if (backButtonRect != null
-                        && mouseX >= backButtonRect[0] && mouseX <= backButtonRect[0] + backButtonRect[2]
-                        && mouseY >= backButtonRect[1] && mouseY <= backButtonRect[1] + backButtonRect[3]) {
+                if (inside(backButtonRect, mouseX, mouseY)) {
                         this.client.setScreen(parent);
                         return true;
                 }
+                if (inside(drawButtonRect, mouseX, mouseY)) {
+                        this.client.setScreen(new N3XRCapeEditorScreen(this));
+                        return true;
+                }
+                if (pageCount > 1) {
+                        if (inside(prevButtonRect, mouseX, mouseY)) { changePage(-1); return true; }
+                        if (inside(nextButtonRect, mouseX, mouseY)) { changePage(1); return true; }
+                }
 
-                for (int i = 0; i < rowRects.size(); i++) {
-                        int[] r = rowRects.get(i);
-                        if (mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
-                                if (i == 0) {
-                                        N3XRConfig.capeSelectedKey = null;
-                                } else {
-                                        N3XRConfig.capeSelectedKey = capes.get(i - 1).key();
-                                }
+                for (int[] r : rowRects) {
+                        if (inside(r, mouseX, mouseY)) {
+                                int idx = r[4];
+                                N3XRConfig.capeSelectedKey = (idx == 0) ? null : capes.get(idx - 1).key();
                                 return true;
                         }
                 }
                 return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+                if (pageCount > 1 && mouseX >= listX1 && mouseX <= listX2) {
+                        changePage(verticalAmount > 0 ? -1 : 1);
+                        return true;
+                }
+                return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         }
 
         @Override
@@ -155,56 +193,64 @@ public class N3XRCapeSelectScreen extends Screen {
                 int tw = this.textRenderer.getWidth(title);
                 context.drawText(this.textRenderer, title, listX1 + (LIST_PANEL_W - tw) / 2, listY1 + 10, 0xFFFF3333, true);
 
-                for (int i = 0; i < rowRects.size(); i++) {
-                        int[] r = rowRects.get(i);
-
-                        String key = (i == 0) ? null : capes.get(i - 1).key();
-                        String label = (i == 0) ? "None (disable cape)" : capes.get(i - 1).displayName();
+                for (int[] r : rowRects) {
+                        int idx = r[4];
+                        String key = (idx == 0) ? null : capes.get(idx - 1).key();
+                        String label = (idx == 0) ? "None (disable cape)" : capes.get(idx - 1).displayName();
 
                         boolean isSelected = java.util.Objects.equals(N3XRConfig.capeSelectedKey, key);
-                        boolean hovered = mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3];
+                        boolean hovered = inside(r, mouseX, mouseY);
 
-                        float hover = approach(hoverProgress.get(i), hovered, dtSeconds);
-                        hoverProgress.set(i, hover);
+                        float hover = approach(hoverProgress[idx], hovered, dtSeconds);
+                        hoverProgress[idx] = hover;
 
-                        int bg;
-                        if (isSelected) {
-                                bg = lerpColor(0xFFCC2222, 0xFFFF5555, hover);
-                        } else {
-                                bg = lerpColor(0xFF0A0505, 0xFF1F0F0F, hover);
-                        }
+                        int bg = isSelected ? lerpColor(0xFFCC2222, 0xFFFF5555, hover) : lerpColor(0xFF0A0505, 0xFF1F0F0F, hover);
                         fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 4);
 
                         int textColor = isSelected ? 0xFFFFFFFF : 0xFFCCCCCC;
                         context.drawText(this.textRenderer, label, r[0] + 10, r[1] + (r[3] - 8) / 2, textColor, true);
                 }
 
+                // ----- tombol Draw Custom Cape (di atas doll) -----
+                int[] d = drawButtonRect;
+                drawHover = approach(drawHover, inside(d, mouseX, mouseY), dtSeconds);
+                fillRounded(context, d[0], d[1], d[0] + d[2], d[1] + d[3], lerpColor(0xFFB82C2C, 0xFFFF5555, drawHover), 5);
+                Text drawLabel = Text.literal("Draw Custom Cape");
+                int dlw = this.textRenderer.getWidth(drawLabel);
+                context.drawText(this.textRenderer, drawLabel, d[0] + (d[2] - dlw) / 2, d[1] + (d[3] - 8) / 2, 0xFFFFFFFF, true);
+
                 renderDoll(context, mouseX, mouseY);
 
-                int backX1 = backButtonRect[0], backY1 = backButtonRect[1];
-                int backW = backButtonRect[2], backH = backButtonRect[3];
-                boolean backHovered = mouseX >= backX1 && mouseX <= backX1 + backW && mouseY >= backY1 && mouseY <= backY1 + backH;
-                int backBg = lerpColor(0xFF0A0505, 0xFF1F0F0F, backHovered ? 1f : 0f);
-                fillRounded(context, backX1, backY1, backX1 + backW, backY1 + backH, backBg, 4);
-                Text backLabel = Text.literal("Back");
-                int blw = this.textRenderer.getWidth(backLabel);
-                context.drawText(this.textRenderer, backLabel, backX1 + (backW - blw) / 2, backY1 + (backH - 8) / 2, 0xFFFFFFFF, true);
+                drawBarButton(context, backButtonRect, "Back", mouseX, mouseY);
+                if (pageCount > 1) {
+                        drawBarButton(context, prevButtonRect, "<", mouseX, mouseY);
+                        drawBarButton(context, nextButtonRect, ">", mouseX, mouseY);
+                        String pg = (page + 1) + "/" + pageCount;
+                        int pw = this.textRenderer.getWidth(pg);
+                        context.drawText(this.textRenderer, pg, listX1 + LIST_PANEL_W / 2 - pw / 2,
+                                backButtonRect[1] - 12, 0xFF888888, false);
+                }
+        }
+
+        private void drawBarButton(DrawContext context, int[] r, String label, int mouseX, int mouseY) {
+                boolean hovered = inside(r, mouseX, mouseY);
+                fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3],
+                        lerpColor(0xFF0A0505, 0xFF1F0F0F, hovered ? 1f : 0f), 4);
+                int lw = this.textRenderer.getWidth(label);
+                context.drawText(this.textRenderer, label, r[0] + (r[2] - lw) / 2, r[1] + (r[3] - 8) / 2, 0xFFFFFFFF, true);
         }
 
         /**
          * Panel preview 3D player doll, pakai overload bawaan
          * InventoryScreen.drawEntity yang menerima bounding box
-         * (x1,y1,x2,y2) + mouseX/mouseY (bukan Quaternion manual).
-         * Ini logic asli Minecraft, jadi orientasi dijamin tegak, dan
-         * karakter otomatis "menoleh" mengikuti posisi kursor mouse
-         * saat digerakkan di atas panel — itu cara "diputar"-nya.
+         * (x1,y1,x2,y2) + mouseX/mouseY. Dimulai di bawah tombol Draw Custom Cape.
          */
         private void renderDoll(DrawContext context, int mouseX, int mouseY) {
                 MinecraftClient mc = MinecraftClient.getInstance();
                 if (mc.player == null) return;
 
-                int boxY1 = dollY1 + 10;
-                int boxY2 = dollY2 - 20;
+                int boxY1 = dollY1 + 36;
+                int boxY2 = dollY2 - 12;
                 int dollSize = 40;
 
                 InventoryScreen.drawEntity(
