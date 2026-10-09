@@ -124,6 +124,8 @@ public class N3XRConfigScreen extends Screen {
                         () -> N3XRConfig.showRealTime, v -> N3XRConfig.showRealTime = v, () -> N3XRConfig.realTimeColor, v -> N3XRConfig.realTimeColor = v, false));
                 allModules.add(new ModuleDef("Day Counter", "Shows the current in-game day.", icon("daycounter"), Category.UTILITY, true,
                         () -> N3XRConfig.showDayCounter, v -> N3XRConfig.showDayCounter = v, () -> N3XRConfig.dayCounterColor, v -> N3XRConfig.dayCounterColor = v, false));
+                allModules.add(new ModuleDef("Totem Count", "Shows how many totems are in your inventory.", icon("totemcount"), Category.COMBAT, true,
+                        () -> N3XRConfig.showTotemCount, v -> N3XRConfig.showTotemCount = v, () -> N3XRConfig.totemCountColor, v -> N3XRConfig.totemCountColor = v, false));
 
                 allModules.add(new ModuleDef("Ping", "Displays your current ping.", icon("ping"), Category.SERVER, true,
                         () -> N3XRConfig.showPing, v -> N3XRConfig.showPing = v, () -> N3XRConfig.pingColor, v -> N3XRConfig.pingColor = v, false));
