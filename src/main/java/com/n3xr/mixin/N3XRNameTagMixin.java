@@ -1,6 +1,7 @@
 package com.n3xr.mixin;
 
 import com.n3xr.nametag.N3XRNameTag;
+import com.n3xr.online.N3XRUsers;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -14,8 +15,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Ganti teks label player sendiri jadi "[ICON] nama  HP" lalu render ulang
- * lewat renderLabelIfPresent bawaan (dengan penjaga supaya nggak rekursif).
+ * Sisipkan icon N3XR di label nama: buat player sendiri (third person) dan buat
+ * player lain yang kelihatan pakai N3XR (lihat online/N3XRUsers).
+ * Dirender ulang lewat renderLabelIfPresent bawaan (dengan penjaga supaya nggak rekursif).
  */
 @Mixin(PlayerEntityRenderer.class)
 public abstract class N3XRNameTagMixin {
@@ -34,11 +36,21 @@ public abstract class N3XRNameTagMixin {
                 if (n3xr$busy) return;
 
                 MinecraftClient mc = MinecraftClient.getInstance();
-                if (player != mc.player || !N3XRNameTag.active(mc)) return;
+
+                Text replaced;
+                if (player == mc.player) {
+                        // diri sendiri (third person, modul Name Tag nyala)
+                        if (!N3XRNameTag.active(mc)) return;
+                        replaced = N3XRNameTag.build(player);
+                } else {
+                        // player lain: icon cuma kalau dia kelihatan pakai N3XR (bit di data skin-nya nyala)
+                        if (!N3XRUsers.hasFlag(player)) return;
+                        replaced = N3XRNameTag.withIcon(text);
+                }
 
                 n3xr$busy = true;
                 try {
-                        this.renderLabelIfPresent(player, N3XRNameTag.build(player), matrices, vertexConsumers, light, tickDelta);
+                        this.renderLabelIfPresent(player, replaced, matrices, vertexConsumers, light, tickDelta);
                 } finally {
                         n3xr$busy = false;
                 }
