@@ -11,8 +11,10 @@
   "N3XRPressableWidgetMixin",
   "N3XRSessionAccessor",
   "N3XRSelfLabelMixin",
+  "N3XRNameTagMixin",
+  "N3XRPlayerAccessor",
   "N3XRCapeFeatureMixin",
-  "N3XRNameTagMixin"
+  "N3XRSyncedOptionsMixin"
 ],
 	"injectors": {
 		"defaultRequire": 0
