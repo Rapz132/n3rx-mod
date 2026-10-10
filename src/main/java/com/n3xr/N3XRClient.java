@@ -143,6 +143,7 @@ public class N3XRClient implements ClientModInitializer {
                         handleResourceManager(client, now);
                         handleCombatPerformanceMode(client, now);
                         handleWeatherReducer(client, now);
+                        com.n3xr.online.N3XRUsers.tick(client);
 
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
 
