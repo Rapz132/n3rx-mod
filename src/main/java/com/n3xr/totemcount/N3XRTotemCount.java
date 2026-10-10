@@ -11,6 +11,11 @@ import net.minecraft.text.Text;
 /**
  * Module Totem Count (HUD):  [icon totem] : [jumlah totem]
  * Jumlah = semua Totem of Undying di inventory (hotbar + tas) + offhand.
+ *
+ * Posisi otomatis ditahan di dalam layar. Koordinat HUD itu dalam satuan "GUI scale",
+ * jadi posisi yang tersimpan dari layar lain (atau default yang kebesaran) bisa jatuh
+ * di luar layar dan modulnya kelihatan "hilang". Kalau itu terjadi, posisinya dibetulkan
+ * dan disimpan balik ke config, jadi HUD Editor juga menampilkannya di tempat yang bisa dipegang.
  */
 public final class N3XRTotemCount {
 
@@ -35,11 +40,26 @@ public final class N3XRTotemCount {
                 String text = ": " + countTotems(mc);
 
                 float scale = N3XRConfig.getScale("TotemCount");
+                int tw = mc.textRenderer.getWidth(text);
+
+                // ukuran kotak di layar (satuan GUI) = (2 + 16 + 2 + teks + 2) * scale, tinggi 20 * scale
+                float boxW = (20 + tw + 2) * scale;
+                float boxH = 20 * scale;
+                int sw = mc.getWindow().getScaledWidth();
+                int sh = mc.getWindow().getScaledHeight();
+
+                int minX = (int) Math.ceil(2 * scale), minY = (int) Math.ceil(2 * scale);
+                int maxX = Math.max(minX, (int) (sw - boxW));
+                int maxY = Math.max(minY, (int) (sh - boxH));
+                int x = Math.max(minX, Math.min(N3XRConfig.totemCountX, maxX));
+                int y = Math.max(minY, Math.min(N3XRConfig.totemCountY, maxY));
+                if (x != N3XRConfig.totemCountX) N3XRConfig.totemCountX = x;
+                if (y != N3XRConfig.totemCountY) N3XRConfig.totemCountY = y;
+
                 c.getMatrices().push();
-                c.getMatrices().translate(N3XRConfig.totemCountX, N3XRConfig.totemCountY, 0);
+                c.getMatrices().translate(x, y, 0);
                 c.getMatrices().scale(scale, scale, 1f);
 
-                int tw = mc.textRenderer.getWidth(text);
                 c.fill(-2, -2, 16 + 2 + tw + 2, 18, 0x90000000);
                 c.drawItem(ICON, 0, 0);
                 c.drawText(mc.textRenderer, Text.literal(text), 18, 4, N3XRConfig.totemCountColor, true);
