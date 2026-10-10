@@ -113,7 +113,7 @@ public static final java.util.Map<String, Float> moduleScale = new java.util.Has
         public static int inventoryDisplayX = 5, inventoryDisplayY = 400;
         public static int realTimeX = 5, realTimeY = 365;
         public static int dayCounterX = 5, dayCounterY = 380;
-        public static int totemCountX = 5, totemCountY = 395;
+        public static int totemCountX = 30, totemCountY = 40;
 
         public static int fpsColor = 0xFFFFFF;
         public static int cpsColor = 0xFFFFFF;
