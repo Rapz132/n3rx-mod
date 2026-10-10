@@ -187,6 +187,9 @@ public class N3XRClient implements ClientModInitializer {
 
                         if (mc.options.hudHidden) return;
 
+                        // modul yang posisinya jatuh di luar layar dipindah ke tempat kosong
+                        com.n3xr.hud.N3XRHudLayout.tick(mc);
+
                         if (N3XRConfig.showFps) renderLabel(context, mc, "FPS", "FPS: " + mc.getCurrentFps(), N3XRConfig.fpsX, N3XRConfig.fpsY, N3XRConfig.fpsColor);
                         if (N3XRConfig.showArmor) renderArmorHud(context, mc);
                         if (N3XRConfig.showCps) renderLabel(context, mc, "CPS", "CPS: " + clickTimes.size(), N3XRConfig.cpsX, N3XRConfig.cpsY, N3XRConfig.cpsColor);
