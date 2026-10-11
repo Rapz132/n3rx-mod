@@ -1,6 +1,6 @@
 package com.n3xr;
 
-import net.minecraft.class_332;
+import net.minecraft.client.gui.DrawContext;
 
 /**
  * Ikon pixel-art 9x9 yang digambar langsung pakai fill, jadi nggak
@@ -55,7 +55,7 @@ public enum N3XRIcons {
                 this.rows = rows;
         }
 
-        public void draw(class_332 context, int x, int y, int color) {
+        public void draw(DrawContext context, int x, int y, int color) {
                 int tip = (color & 0xFF000000) | 0x00FFFFFF;
                 for (int r = 0; r < rows.length; r++) {
                         String row = rows[r];
@@ -65,7 +65,7 @@ public enum N3XRIcons {
                                 if (ch == '.') { c++; continue; }
                                 int start = c;
                                 while (c < row.length() && row.charAt(c) == ch) c++;
-                                context.method_25294(x + start, y + r, x + c, y + r + 1, ch == 'T' ? tip : color);
+                                context.fill(x + start, y + r, x + c, y + r + 1, ch == 'T' ? tip : color);
                         }
                 }
         }
