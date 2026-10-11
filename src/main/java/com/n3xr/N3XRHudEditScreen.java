@@ -38,13 +38,13 @@ public class N3XRHudEditScreen extends Screen {
                 ).icon(N3XRIcons.BOLT));
 
                 this.addDrawableChild(N3XRButton.of(cx + 105, 118, 95, 18,
-                        Text.literal("Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")),
+                        Text.literal(N3XRGuiScale.label()),
                         b -> {
-                                N3XRConfig.snapEnabled = !N3XRConfig.snapEnabled;
-                                N3XRConfig.guidesEnabled = N3XRConfig.snapEnabled;
-                                b.setMessage(Text.literal("Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")));
+                                N3XRGuiScale.set(N3XRGuiScale.next());
+                                b.setMessage(Text.literal(N3XRGuiScale.label()));
+                                N3XRGuiScale.apply();
                         }
-                ).icon(N3XRIcons.MAGNET, () -> N3XRConfig.snapEnabled ? 0xFFFF6464 : 0xFF7A7A7A));
+                ).icon(N3XRIcons.FRAME));
         }
 
         @Override
