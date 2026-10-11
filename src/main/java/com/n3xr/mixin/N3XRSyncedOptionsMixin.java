@@ -10,7 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Nyalakan bit 0x80 di pengaturan skin yang dikirim client ke server, sebagai
- * "tanda" bahwa pemain ini pakai N3XR. Client N3XR lain membacanya lewat
+ * "tanda" bahwa pemain ini pakai N3XR. Kalau skin-mu skin default, 7 bit lainnya
+ * dipakai buat nomor cape cosmetic (lihat N3XRUsers.computeParts). Client N3XR lain membacanya lewat
  * N3XRUsers. Vanilla mengabaikan bit ini, jadi tampilan skin tidak berubah.
  */
 @Mixin(GameOptions.class)
@@ -26,7 +27,7 @@ public abstract class N3XRSyncedOptionsMixin {
                         o.viewDistance(),
                         o.chatVisibility(),
                         o.chatColorsEnabled(),
-                        o.playerModelParts() | N3XRUsers.FLAG,
+                        N3XRUsers.computeParts(o.playerModelParts()),
                         o.mainArm(),
                         o.filtersText(),
                         o.allowsServerListing()));
