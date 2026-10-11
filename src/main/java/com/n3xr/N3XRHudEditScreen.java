@@ -1,11 +1,11 @@
 package com.n3xr;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.class_2561;
+import net.minecraft.class_2960;
+import net.minecraft.class_332;
+import net.minecraft.class_437;
 
-public class N3XRHudEditScreen extends Screen {
+public class N3XRHudEditScreen extends class_437 {
 
         private static final int BOX_W = 80;
         private static final int BOX_H = 12;
@@ -20,49 +20,49 @@ public class N3XRHudEditScreen extends Screen {
         private float resizeStartScale;
 
         public N3XRHudEditScreen() {
-                super(Text.literal("N3XR HUD"));
+                super(class_2561.method_43470("N3XR HUD"));
         }
 
         @Override
-        protected void init() {
-                int cx = this.width / 2 - 100;
+        protected void method_25426() {
+                int cx = this.field_22789 / 2 - 100;
 
-                this.addDrawableChild(N3XRButton.of(cx, 92, 200, 20,
-                        Text.literal("\u2699 N3XR Settings"),
-                        b -> this.client.setScreen(new N3XRConfigScreen())
-                ));
+                this.method_37063(N3XRButton.of(cx, 92, 200, 20,
+                        class_2561.method_43470("N3XR Settings"),
+                        b -> this.field_22787.method_1507(new N3XRConfigScreen())
+                ).icon(N3XRIcons.GEAR));
 
-                this.addDrawableChild(N3XRButton.of(cx, 118, 95, 18,
-                        Text.literal("\u2699 Optimizer"),
-                        b -> this.client.setScreen(new N3XROptimizerScreen(this))
-                ));
+                this.method_37063(N3XRButton.of(cx, 118, 95, 18,
+                        class_2561.method_43470("Optimizer"),
+                        b -> this.field_22787.method_1507(new N3XROptimizerScreen(this))
+                ).icon(N3XRIcons.BOLT));
 
-                this.addDrawableChild(N3XRButton.of(cx + 105, 118, 95, 18,
-                        Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")),
+                this.method_37063(N3XRButton.of(cx + 105, 118, 95, 18,
+                        class_2561.method_43470("Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")),
                         b -> {
                                 N3XRConfig.snapEnabled = !N3XRConfig.snapEnabled;
                                 N3XRConfig.guidesEnabled = N3XRConfig.snapEnabled;
-                                b.setMessage(Text.literal("\u25CB Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")));
+                                b.method_25355(class_2561.method_43470("Snap " + (N3XRConfig.snapEnabled ? "ON" : "OFF")));
                         }
-                ));
+                ).icon(N3XRIcons.MAGNET, () -> N3XRConfig.snapEnabled ? 0xFFFF6464 : 0xFF7A7A7A));
         }
 
         @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-                super.render(context, mouseX, mouseY, delta);
+        public void method_25394(class_332 context, int mouseX, int mouseY, float delta) {
+                super.method_25394(context, mouseX, mouseY, delta);
 
                 int logoW = 80, logoH = 80;
-                int logoX = (this.width - logoW) / 2;
-                context.drawTexture(
-                        Identifier.of("n3xr", "textures/gui/n3xr_logo.png"),
+                int logoX = (this.field_22789 - logoW) / 2;
+                context.method_25290(
+                        class_2960.method_60655("n3xr", "textures/gui/n3xr_logo.png"),
                         logoX, 4, 0, 0, logoW, logoH, logoW, logoH
                 );
 
                 if (dragging != null && N3XRConfig.guidesEnabled) {
-                        int gcx = this.width / 2;
-                        int gcy = this.height / 2;
-                        context.fill(gcx, 0, gcx + 1, this.height, 0x55FF5555);
-                        context.fill(0, gcy, this.width, gcy + 1, 0x55FF5555);
+                        int gcx = this.field_22789 / 2;
+                        int gcy = this.field_22790 / 2;
+                        context.method_25294(gcx, 0, gcx + 1, this.field_22790, 0x55FF5555);
+                        context.method_25294(0, gcy, this.field_22789, gcy + 1, 0x55FF5555);
                 }
 
                 if (N3XRConfig.showFps) drawBox(context, "FPS", N3XRConfig.fpsX, N3XRConfig.fpsY);
@@ -85,9 +85,9 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY);
                 if (N3XRConfig.showTotemCount) drawBox(context, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY);
 
-                Text hint = Text.literal("Drag modules to reposition \u00b7 Drag \u25cf to resize \u00b7 Right Shift to close");
-                int hw = this.textRenderer.getWidth(hint);
-                context.drawText(this.textRenderer, hint, (this.width - hw) / 2, this.height - 16, 0xAAAAAA, true);
+                class_2561 hint = class_2561.method_43470("Drag modules to reposition \u00b7 Drag \u25cf to resize \u00b7 Right Shift to close");
+                int hw = this.field_22793.method_27525(hint);
+                context.method_51439(this.field_22793, hint, (this.field_22789 - hw) / 2, this.field_22790 - 16, 0xAAAAAA, true);
         }
 
         /**
@@ -96,24 +96,29 @@ public class N3XRHudEditScreen extends Screen {
          * pojok kanan-bawah yang bisa di-drag untuk memperbesar atau
          * memperkecil scale module itu langsung secara visual.
          */
-        private void drawBox(DrawContext context, String key, int x, int y) {
+        private void drawBox(class_332 context, String key, int x, int y) {
                 float scale = N3XRConfig.getScale(key);
                 int w = (int) (BOX_W * scale);
                 int h = (int) (BOX_H * scale);
 
                 boolean active = key.equals(dragging) || key.equals(resizing);
-                int borderColor = active ? 0xFFFFFFFF : 0xFFFF5555;
+                int borderColor = active ? 0xFFFFFFFF : 0xCCFF6B6B;
+                int fillColor = active ? 0x55FFFFFF : 0x40000000;
 
-                context.fill(x - 1, y - 1, x + w + 1, y, borderColor);
-                context.fill(x - 1, y + h, x + w + 1, y + h + 1, borderColor);
-                context.fill(x - 1, y - 1, x, y + h + 1, borderColor);
-                context.fill(x + w, y - 1, x + w + 1, y + h + 1, borderColor);
-                context.drawText(this.textRenderer, key, x + 3, y + 2, 0xFFFFFF, true);
+                context.method_25294(x, y, x + w, y + h, fillColor);
+                context.method_25294(x - 1, y - 1, x + w + 1, y, borderColor);
+                context.method_25294(x - 1, y + h, x + w + 1, y + h + 1, borderColor);
+                context.method_25294(x - 1, y - 1, x, y + h + 1, borderColor);
+                context.method_25294(x + w, y - 1, x + w + 1, y + h + 1, borderColor);
+                context.method_51433(this.field_22793, key, x + 3, y + 2, 0xFFFFFF, true);
 
+                // handle resize: bulat (sesuai petunjuk "Drag \u25cf to resize")
                 int hx = x + w;
                 int hy = y + h;
-                int handleColor = key.equals(resizing) ? 0xFFFFFFFF : 0xFFFF5555;
-                context.fill(hx - HANDLE_R, hy - HANDLE_R, hx + HANDLE_R, hy + HANDLE_R, handleColor);
+                int handleColor = key.equals(resizing) ? 0xFFFFFFFF : 0xFFFF6B6B;
+                int r = HANDLE_R;
+                context.method_25294(hx - r + 1, hy - r, hx + r - 1, hy + r, handleColor);
+                context.method_25294(hx - r, hy - r + 1, hx + r, hy + r - 1, handleColor);
         }
 
         private int boxW(String key) {
@@ -131,7 +136,7 @@ public class N3XRHudEditScreen extends Screen {
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean method_25402(double mouseX, double mouseY, int button) {
                 if (tryStartResize(mouseX, mouseY, "FPS", N3XRConfig.showFps, N3XRConfig.fpsX, N3XRConfig.fpsY)) return true;
                 if (tryStartResize(mouseX, mouseY, "Armor", N3XRConfig.showArmor, N3XRConfig.armorX, N3XRConfig.armorY)) return true;
                 if (tryStartResize(mouseX, mouseY, "CPS", N3XRConfig.showCps, N3XRConfig.cpsX, N3XRConfig.cpsY)) return true;
@@ -171,7 +176,7 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showInventoryDisplay && inBox(mouseX, mouseY, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) { dragging = "Inventory"; setOffset(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY); return true; }
                 if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
                 if (N3XRConfig.showTotemCount && inBox(mouseX, mouseY, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY)) { dragging = "TotemCount"; setOffset(mouseX, mouseY, N3XRConfig.totemCountX, N3XRConfig.totemCountY); return true; }
-                return super.mouseClicked(mouseX, mouseY, button);
+                return super.method_25402(mouseX, mouseY, button);
         }
 
         private boolean tryStartResize(double mouseX, double mouseY, String key, boolean visible, int x, int y) {
@@ -184,7 +189,7 @@ public class N3XRHudEditScreen extends Screen {
         }
 
         @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        public boolean method_25403(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
                 if (resizing != null) {
                         double dragDistance = mouseX - resizeStartMouseX;
                         float newScale = resizeStartScale + (float) (dragDistance * 0.01);
@@ -222,14 +227,14 @@ public class N3XRHudEditScreen extends Screen {
                         }
                         return true;
                 }
-                return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+                return super.method_25403(mouseX, mouseY, button, deltaX, deltaY);
         }
 
         @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        public boolean method_25406(double mouseX, double mouseY, int button) {
                 dragging = null;
                 resizing = null;
-                return super.mouseReleased(mouseX, mouseY, button);
+                return super.method_25406(mouseX, mouseY, button);
         }
 
         private boolean inBox(double mx, double my, String key, int x, int y) {
@@ -242,7 +247,7 @@ public class N3XRHudEditScreen extends Screen {
         }
 
         @Override
-        public boolean shouldPause() {
+        public boolean method_25421() {
                 return false;
         }
 }
