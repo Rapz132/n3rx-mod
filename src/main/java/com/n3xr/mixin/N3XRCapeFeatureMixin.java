@@ -4,6 +4,7 @@ import com.n3xr.N3XRConfig;
 import com.n3xr.cosmetic.N3XRCapeManager;
 import com.n3xr.cosmetic.N3XRCapeRenderer;
 import com.n3xr.cosmetic.N3XRExternalCapeManager;
+import com.n3xr.online.N3XRUsers;
 import com.n3xr.hats.N3XRHatManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
@@ -93,6 +94,11 @@ public abstract class N3XRCapeFeatureMixin<T extends AbstractClientPlayerEntity,
                 Identifier capeTexture = null;
                 if (isSelf && N3XRConfig.capeSelectedKey != null) {
                         capeTexture = N3XRCapeManager.getSelectedTexture();
+                }
+                // Cape cosmetic sesama pengguna N3XR (dibaca dari bit pengaturan skin-nya)
+                if (capeTexture == null && !isSelf) {
+                        String sharedKey = N3XRUsers.capeKeyOf(player);
+                        if (sharedKey != null) capeTexture = N3XRCapeManager.getTextureFor(sharedKey);
                 }
                 if (capeTexture == null) {
                         capeTexture = N3XRExternalCapeManager.getCapeTexture(player.getGameProfile().getName());
