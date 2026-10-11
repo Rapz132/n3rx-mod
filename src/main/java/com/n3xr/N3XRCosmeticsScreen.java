@@ -1,16 +1,15 @@
 package com.n3xr;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 
 /**
  * Screen sidebar untuk fitur cosmetic N3XR, dibuka lewat keybind X.
- * "Cloak" (cape) dan "Hat" sekarang fungsional — cape ambil texture
+ * "Cloak" (cape) dan "Hat" fungsional (Hat sudah diaktifkan lagi, tidak "Soon" lagi) — cape ambil texture
  * dari N3XRCapeManager, hat ambil geometri+texture dari
  * N3XRHatManager (lihat package com.n3xr.hats). Slot lain ditandai
  * "Soon".
@@ -33,7 +32,7 @@ public class N3XRCosmeticsScreen extends Screen {
         public N3XRCosmeticsScreen() {
                 super(Text.literal("N3 Cosmetics"));
 
-                items.add(new CosmeticItem("hat", "Hat", false));
+                items.add(new CosmeticItem("hat", "Hat", true));
                 items.add(new CosmeticItem("head", "Head", false));
                 items.add(new CosmeticItem("body", "Body", false));
                 items.add(new CosmeticItem("shield", "Shield", false));
