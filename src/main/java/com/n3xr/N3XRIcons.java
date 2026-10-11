@@ -35,6 +35,18 @@ public enum N3XRIcons {
                 "..XX....."
         }),
 
+        FRAME(new String[] {
+                "XXX...XXX",
+                "X.......X",
+                "X.......X",
+                ".........",
+                ".........",
+                ".........",
+                "X.......X",
+                "X.......X",
+                "XXX...XXX"
+        }),
+
         MAGNET(new String[] {
                 "TTT...TTT",
                 "TTT...TTT",
