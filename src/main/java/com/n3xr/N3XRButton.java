@@ -2,13 +2,13 @@ package com.n3xr;
 
 import java.util.function.IntSupplier;
 
-import net.minecraft.class_2561;
-import net.minecraft.class_310;
-import net.minecraft.class_327;
-import net.minecraft.class_332;
-import net.minecraft.class_4185;
+import net.minecraft.text.Text;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.ButtonWidget;
 
-public class N3XRButton extends class_4185 {
+public class N3XRButton extends ButtonWidget {
 
 	// palet: gelap kemerahan yang lembut, hover bergeser pelan ke merah
 	private static final int BG_IDLE      = 0xF0150C0E;
@@ -29,11 +29,11 @@ public class N3XRButton extends class_4185 {
 	private float hover = 0f;
 	private long lastNanos = 0L;
 
-	protected N3XRButton(int x, int y, int width, int height, class_2561 message, class_4241 onPress) {
-		super(x, y, width, height, message, onPress, field_40754);
+	protected N3XRButton(int x, int y, int width, int height, Text message, PressAction onPress) {
+		super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
 	}
 
-	public static N3XRButton of(int x, int y, int w, int h, class_2561 message, class_4241 onPress) {
+	public static N3XRButton of(int x, int y, int w, int h, Text message, PressAction onPress) {
 		return new N3XRButton(x, y, w, h, message, onPress);
 	}
 
@@ -51,76 +51,76 @@ public class N3XRButton extends class_4185 {
 	}
 
 	@Override
-	public void method_48579(class_332 context, int mouseX, int mouseY, float delta) {
-		class_327 font = class_310.method_1551().field_1772;
+	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+		TextRenderer font = MinecraftClient.getInstance().textRenderer;
 
 		long now = System.nanoTime();
 		float dt = lastNanos == 0L ? 0f : Math.min((now - lastNanos) / 1_000_000_000f, 0.1f);
 		lastNanos = now;
 
-		boolean hot = this.field_22763 && (this.method_49606() || this.method_25370());
+		boolean hot = this.active && (this.isHovered() || this.isFocused());
 		hover += ((hot ? 1f : 0f) - hover) * Math.min(1f, dt * 14f);
 
-		int x = method_46426(), y = method_46427(), w = method_25368(), h = method_25364();
+		int x = getX(), y = getY(), w = getWidth(), h = getHeight();
 		int radius = Math.min(4, h / 2);
 
 		// border tipis -> body gelap (inset 1px), keduanya berubah halus saat hover
 		int border = lerp(BORDER_IDLE, BORDER_HOVER, hover);
-		int body = this.field_22763 ? lerp(BG_IDLE, BG_HOVER, hover) : BG_DISABLED;
+		int body = this.active ? lerp(BG_IDLE, BG_HOVER, hover) : BG_DISABLED;
 		fillRounded(context, x, y, x + w, y + h, border, radius);
 		fillRounded(context, x + 1, y + 1, x + w - 1, y + h - 1, body, Math.max(0, radius - 1));
 
 		// highlight tipis di sisi atas biar ada kesan kedalaman
 		if (h >= 12) {
-			context.method_25294(x + radius, y + 1, x + w - radius, y + 2, 0x14FFFFFF);
+			context.fill(x + radius, y + 1, x + w - radius, y + 2, 0x14FFFFFF);
 		}
 
 		// garis aksen bawah: gradasi dari tepi (gelap) ke tengah (terang)
-		if (this.field_22763) {
+		if (this.active) {
 			int ax1 = x + radius, ax2 = x + w - radius, aw = ax2 - ax1;
 			int ay = y + h - 3;
 			for (int i = 0; i < aw; i++) {
 				float t = aw <= 1 ? 1f : 1f - Math.abs(2f * i / (aw - 1) - 1f);
 				int c = lerp(ACCENT_EDGE, ACCENT_MID, t * (0.55f + 0.45f * hover));
-				context.method_25294(ax1 + i, ay, ax1 + i + 1, ay + 2, c);
+				context.fill(ax1 + i, ay, ax1 + i + 1, ay + 2, c);
 			}
 		}
 
 		// isi: [ikon] [teks] dipusatkan bersama
-		class_2561 msg = this.method_25369();
-		int tw = font.method_27525(msg);
+		Text msg = this.getMessage();
+		int tw = font.getWidth(msg);
 		int iconW = icon != null ? N3XRIcons.SIZE : 0;
 		int gap = (icon != null && tw > 0) ? ICON_GAP : 0;
 		int total = iconW + gap + tw;
 		int startX = x + (w - total) / 2;
 		int contentH = h - 3;
 
-		int textColor = this.field_22763 ? lerp(TEXT_IDLE, TEXT_HOVER, hover) : 0xFF8A8A8A;
+		int textColor = this.active ? lerp(TEXT_IDLE, TEXT_HOVER, hover) : 0xFF8A8A8A;
 
 		if (icon != null) {
-			int tint = !this.field_22763 ? 0xFF6A6A6A
+			int tint = !this.active ? 0xFF6A6A6A
 				: iconTint != null ? iconTint.getAsInt()
 				: lerp(0xFFFF7070, 0xFFFFFFFF, hover);
 			icon.draw(context, startX, y + (contentH - N3XRIcons.SIZE) / 2, tint);
 		}
 
 		if (tw > 0) {
-			context.method_51439(font, msg, startX + iconW + gap, y + (contentH - 8) / 2, textColor, true);
+			context.drawText(font, msg, startX + iconW + gap, y + (contentH - 8) / 2, textColor, true);
 		}
 	}
 
-	private static void fillRounded(class_332 context, int x1, int y1, int x2, int y2, int color, int radius) {
+	private static void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
 		radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
-		if (radius <= 0) { context.method_25294(x1, y1, x2, y2, color); return; }
-		context.method_25294(x1 + radius, y1, x2 - radius, y2, color);
-		context.method_25294(x1, y1 + radius, x1 + radius, y2 - radius, color);
-		context.method_25294(x2 - radius, y1 + radius, x2, y2 - radius, color);
+		if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
+		context.fill(x1 + radius, y1, x2 - radius, y2, color);
+		context.fill(x1, y1 + radius, x1 + radius, y2 - radius, color);
+		context.fill(x2 - radius, y1 + radius, x2, y2 - radius, color);
 		for (int i = 0; i < radius; i++) {
 			int dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - (radius - i) * (radius - i)));
-			context.method_25294(x1 + dx, y1 + i, x1 + radius, y1 + i + 1, color);
-			context.method_25294(x2 - radius, y1 + i, x2 - dx, y1 + i + 1, color);
-			context.method_25294(x1 + dx, y2 - i - 1, x1 + radius, y2 - i, color);
-			context.method_25294(x2 - radius, y2 - i - 1, x2 - dx, y2 - i, color);
+			context.fill(x1 + dx, y1 + i, x1 + radius, y1 + i + 1, color);
+			context.fill(x2 - radius, y1 + i, x2 - dx, y1 + i + 1, color);
+			context.fill(x1 + dx, y2 - i - 1, x1 + radius, y2 - i, color);
+			context.fill(x2 - radius, y2 - i - 1, x2 - dx, y2 - i, color);
 		}
 	}
 
