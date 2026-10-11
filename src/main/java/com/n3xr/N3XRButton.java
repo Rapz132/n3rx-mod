@@ -26,6 +26,8 @@ public class N3XRButton extends ButtonWidget {
 	private N3XRIcons icon = null;
 	private IntSupplier iconTint = null;
 
+	private boolean invisible = false;
+
 	private float hover = 0f;
 	private long lastNanos = 0L;
 
@@ -35,6 +37,12 @@ public class N3XRButton extends ButtonWidget {
 
 	public static N3XRButton of(int x, int y, int w, int h, Text message, PressAction onPress) {
 		return new N3XRButton(x, y, w, h, message, onPress);
+	}
+
+	/** Tombol tetap bisa diklik tapi tidak menggambar apa-apa (untuk area yang digambar manual). */
+	public N3XRButton invisible() {
+		this.invisible = true;
+		return this;
 	}
 
 	/** Pasang ikon di sebelah kiri teks. */
@@ -52,6 +60,8 @@ public class N3XRButton extends ButtonWidget {
 
 	@Override
 	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+		if (invisible) return;
+
 		TextRenderer font = MinecraftClient.getInstance().textRenderer;
 
 		long now = System.nanoTime();
@@ -109,7 +119,7 @@ public class N3XRButton extends ButtonWidget {
 		}
 	}
 
-	private static void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
+	static void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
 		radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
 		if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
 		context.fill(x1 + radius, y1, x2 - radius, y2, color);
@@ -124,7 +134,7 @@ public class N3XRButton extends ButtonWidget {
 		}
 	}
 
-	private static int lerp(int a, int b, float t) {
+	static int lerp(int a, int b, float t) {
 		t = Math.max(0f, Math.min(1f, t));
 		int aa = (a >>> 24) & 0xFF, ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
 		int ba = (b >>> 24) & 0xFF, br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
