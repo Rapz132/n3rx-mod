@@ -182,7 +182,8 @@ public class N3XRClient implements ClientModInitializer {
 
                         com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-                        if (N3XRConfig.customCrosshairEnabled) renderCustomCrosshair(context, mc);
+                        // crosshair vanilla disembunyikan oleh CrosshairHideMixin; custom ikut hilang saat F1
+                        if (N3XRConfig.customCrosshairEnabled && !mc.options.hudHidden) renderCustomCrosshair(context, mc);
                         if (N3XRConfig.itemUpdateEnabled) renderItemUpdatePopup(context, mc);
 
                         if (mc.options.hudHidden) return;
