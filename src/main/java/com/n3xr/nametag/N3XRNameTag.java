@@ -10,7 +10,8 @@ import net.minecraft.util.Identifier;
 
 /**
  * Nametag N3XR di atas kepala player sendiri (third person):
- *   [ICON] [USERNAME]
+ *   [ICON] [TAG] [USERNAME]
+ * TAG (YouTube, TikTok, dll) opsional, dipilih lewat menu Cosmetics > Nametag.
  * Dirender lewat label bawaan Minecraft (lihat mixin/N3XRSelfLabelMixin
  * dan mixin/N3XRNameTagMixin), jadi posisi, background, dan efek sneak
  * sama kayak nametag player lain. Nyala/mati ikut modul "Name Tag".
@@ -36,19 +37,29 @@ public final class N3XRNameTag {
                 return !mc.options.getPerspective().isFirstPerson();
         }
 
-        /** Sisipkan icon N3XR di depan teks apa pun (nametag, tab list). */
-        public static Text withIcon(Text base) {
-                MutableText icon = Text.literal("\uE000").styled(s -> s.withFont(ICON_FONT));
-
-                // Icon dan nama jadi sibling di root kosong, JANGAN nama di-append ke icon:
-                // kalau nggak, nama ikut font icon dan hurufnya jadi kotak.
-                return Text.empty().append(icon).append(" ").append(base);
+        private static MutableText iconText() {
+                return Text.literal("\uE000").styled(s -> s.withFont(ICON_FONT));
         }
 
-        /** Nametag player sendiri: icon + nama (warna sesuai pengaturan modul Name Tag). */
+        /** Sisipkan icon N3XR di depan teks apa pun (pemain lain, tab list). Tanpa tag. */
+        public static Text withIcon(Text base) {
+                // Icon dan nama jadi sibling di root kosong, JANGAN nama di-append ke icon:
+                // kalau nggak, nama ikut font icon dan hurufnya jadi kotak.
+                return Text.empty().append(iconText()).append(" ").append(base);
+        }
+
+        /** Icon + tag pilihan sendiri (kalau ada) + teks. Dipakai buat diri sendiri. */
+        public static Text withIconAndTag(Text base) {
+                MutableText out = Text.empty().append(iconText()).append(" ");
+                Text tag = N3XRTags.selectedTagText();
+                if (tag != null) out.append(tag).append(" ");
+                return out.append(base);
+        }
+
+        /** Nametag player sendiri: icon + tag + nama (warna sesuai pengaturan modul Name Tag). */
         public static Text build(PlayerEntity player) {
                 MutableText name = player.getDisplayName().copy()
                         .styled(s -> s.withColor(TextColor.fromRgb(N3XRConfig.nameTagColor & 0xFFFFFF)));
-                return withIcon(name);
+                return withIconAndTag(name);
         }
 }
