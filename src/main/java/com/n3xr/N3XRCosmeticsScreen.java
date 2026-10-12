@@ -9,10 +9,11 @@ import net.minecraft.client.gui.screen.Screen;
 
 /**
  * Screen sidebar untuk fitur cosmetic N3XR, dibuka lewat keybind X.
- * "Cloak" (cape) dan "Hat" fungsional (Hat sudah diaktifkan lagi, tidak "Soon" lagi) — cape ambil texture
- * dari N3XRCapeManager, hat ambil geometri+texture dari
- * N3XRHatManager (lihat package com.n3xr.hats). Slot lain ditandai
- * "Soon".
+ * "Cloak" (cape) fungsional — cape ambil texture dari N3XRCapeManager.
+ * "Hat" sementara ditandai "Soon" (tidak bisa diklik); logika hat-nya
+ * (N3XRHatManager, package com.n3xr.hats) tetap ada, tinggal ubah
+ * flag implemented jadi true di constructor untuk mengaktifkannya lagi.
+ * Slot lain juga ditandai "Soon".
  */
 public class N3XRCosmeticsScreen extends Screen {
 
@@ -32,7 +33,7 @@ public class N3XRCosmeticsScreen extends Screen {
         public N3XRCosmeticsScreen() {
                 super(Text.literal("N3 Cosmetics"));
 
-                items.add(new CosmeticItem("hat", "Hat", true));
+                items.add(new CosmeticItem("hat", "Hat", false));
                 items.add(new CosmeticItem("head", "Head", false));
                 items.add(new CosmeticItem("body", "Body", false));
                 items.add(new CosmeticItem("shield", "Shield", false));
