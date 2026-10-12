@@ -14,7 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Icon N3XR (font n3xr:icons, karakter U+E000) di depan nama di tab list:
  * buat diri sendiri, dan buat player lain yang pernah terlihat pakai N3XR
- * (lihat online/N3XRUsers).
+ * (lihat online/N3XRUsers). Khusus diri sendiri, tag nametag pilihan
+ * (YouTube, TikTok, dll) ikut ditampilkan di samping icon.
  *
  * Selalu return Text yang sudah di-prefix, karena di banyak server vanilla
  * getDisplayName() balik null dan PlayerListHud fallback ke nama polos.
@@ -37,6 +38,6 @@ public abstract class N3XRPlayerListEntryMixin {
 
                 Text original = cir.getReturnValue();
                 Text base = original != null ? original : Text.literal(profile.getName());
-                cir.setReturnValue(N3XRNameTag.withIcon(base));
+                cir.setReturnValue(isSelf ? N3XRNameTag.withIconAndTag(base) : N3XRNameTag.withIcon(base));
         }
 }
