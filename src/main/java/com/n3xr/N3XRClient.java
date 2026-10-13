@@ -21,7 +21,6 @@ import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -192,7 +191,7 @@ public class N3XRClient implements ClientModInitializer {
                         com.n3xr.hud.N3XRHudLayout.tick(mc);
 
                         if (N3XRConfig.showFps) renderLabel(context, mc, "FPS", "FPS: " + mc.getCurrentFps(), N3XRConfig.fpsX, N3XRConfig.fpsY, N3XRConfig.fpsColor);
-                        if (N3XRConfig.showArmor) renderArmorHud(context, mc);
+                        if (N3XRConfig.showArmor) com.n3xr.hud.N3XRArmorHud.renderArmor(context, mc);
                         if (N3XRConfig.showCps) renderLabel(context, mc, "CPS", "CPS: " + clickTimes.size(), N3XRConfig.cpsX, N3XRConfig.cpsY, N3XRConfig.cpsColor);
                         if (N3XRConfig.showPing) renderPing(context, mc);
                         if (N3XRConfig.showKeystrokes) renderKeystrokes(context, mc);
@@ -205,7 +204,7 @@ public class N3XRClient implements ClientModInitializer {
                         if (N3XRConfig.showMemoryUsage) renderMemory(context, mc);
                         if (N3XRConfig.showCpuUsage) renderCpu(context, mc);
                         if (N3XRConfig.showBiomeInfo) renderBiome(context, mc);
-                        if (N3XRConfig.showPotions) renderPotions(context, mc);
+                        if (N3XRConfig.showPotions) com.n3xr.hud.N3XRArmorHud.renderPotions(context, mc);
                         if (N3XRConfig.showRealTime) renderRealTime(context, mc);
                         if (N3XRConfig.showInventoryDisplay) renderInventoryDisplay(context, mc);
                         if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
@@ -678,25 +677,6 @@ public class N3XRClient implements ClientModInitializer {
                 c.getMatrices().pop();
         }
 
-        private void renderArmorHud(DrawContext c, MinecraftClient mc) {
-                float scale = N3XRConfig.getScale("Armor");
-                c.getMatrices().push();
-                c.getMatrices().translate(N3XRConfig.armorX, N3XRConfig.armorY, 0);
-                c.getMatrices().scale(scale, scale, 1f);
-                c.fill(-2, -2, 18, 20 * 4 - 2, 0x90000000);
-                int y = 0;
-                for (ItemStack armor : mc.player.getArmorItems()) {
-                        if (!armor.isEmpty()) {
-                                c.drawItem(armor, 0, y);
-                                c.drawItemInSlot(mc.textRenderer, armor, 0, y);
-                        } else {
-                                c.fill(0, y, 16, y + 16, 0x40FFFFFF);
-                        }
-                        y += 20;
-                }
-                c.getMatrices().pop();
-        }
-
         private void renderPing(DrawContext c, MinecraftClient mc) {
                 int ping = 0;
                 if (mc.getNetworkHandler() != null) {
@@ -858,15 +838,6 @@ public class N3XRClient implements ClientModInitializer {
                         biomeName = biomeEntry.getKey().map(k -> k.getValue().getPath()).orElse("Unknown");
                 } catch (Exception ignored) {}
                 renderLabel(c, mc, "Biome", "Biome: " + biomeName, N3XRConfig.biomeX, N3XRConfig.biomeY, N3XRConfig.biomeColor);
-        }
-
-        private void renderPotions(DrawContext c, MinecraftClient mc) {
-                int y = N3XRConfig.potionsY;
-                for (StatusEffectInstance effect : mc.player.getStatusEffects()) {
-                        String name = effect.getEffectType().value().getName().getString();
-                        renderLabel(c, mc, "Potions", name + " " + StatusEffectUtil.getDurationText(effect, 1.0f, 20).getString(), N3XRConfig.potionsX, y, N3XRConfig.potionsColor);
-                        y += 12;
-                }
         }
 
         private void renderRealTime(DrawContext c, MinecraftClient mc) {
