@@ -152,13 +152,12 @@ public class N3XRNametagSelectScreen extends Screen {
                                 : lerpColor(0xFF0A0505, 0xFF1F0F0F, hover);
                         fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 4);
 
-                        // kotak warna tag (kosong untuk "None")
+                        // ikon pixel-art tag (kosong untuk "None")
                         int textX = r[0] + 10;
                         if (tag != null) {
-                                int sq = Math.min(8, r[3] - 6);
-                                int sy = r[1] + (r[3] - sq) / 2;
-                                context.fill(r[0] + 8, sy, r[0] + 8 + sq, sy + sq, 0xFF000000 | tag.color());
-                                textX = r[0] + 8 + sq + 6;
+                                context.drawText(this.textRenderer, N3XRTags.iconText(tag),
+                                        r[0] + 8, r[1] + (r[3] - 8) / 2, 0xFFFFFFFF, false);
+                                textX = r[0] + 8 + 8 + 6;
                         }
 
                         String label = tag == null ? "None (no tag)" : tag.label();
