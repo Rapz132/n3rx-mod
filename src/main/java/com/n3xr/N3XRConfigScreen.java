@@ -77,8 +77,8 @@ public class N3XRConfigScreen extends Screen {
                 allModules.add(new ModuleDef("CPU Usage", "Shows CPU usage.", icon("cpu"), Category.PERFORMANCE, true,
                         () -> N3XRConfig.showCpuUsage, v -> N3XRConfig.showCpuUsage = v, () -> N3XRConfig.cpuColor, v -> N3XRConfig.cpuColor = v, false));
 
-                allModules.add(new ModuleDef("Armor HUD", "Displays your armor and durability.", icon("armor"), Category.HUD, false,
-                        () -> N3XRConfig.showArmor, v -> N3XRConfig.showArmor = v, () -> 0xFFFFFF, v -> {}, false));
+                allModules.add(new ModuleDef("Armor HUD", "Displays your armor durability % and your left-hand item.", icon("armor"), Category.HUD, true,
+                        () -> N3XRConfig.showArmor, v -> N3XRConfig.showArmor = v, () -> N3XRConfig.armorColor, v -> N3XRConfig.armorColor = v, false));
                 allModules.add(new ModuleDef("Keystrokes", "Shows your keys in real-time.", icon("keystrokes"), Category.HUD, true,
                         () -> N3XRConfig.showKeystrokes, v -> N3XRConfig.showKeystrokes = v, () -> N3XRConfig.keysColor, v -> N3XRConfig.keysColor = v, true));
                 allModules.add(new ModuleDef("Name Tag", "Shows your name above your head (F5 view).", icon("nametag"), Category.HUD, true,
