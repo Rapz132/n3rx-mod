@@ -55,6 +55,8 @@ public class N3XRConfigStorage {
 		Boolean combatPerformanceModeEnabled, weatherReducerEnabled, noGlintEnabled;
 		Boolean showTotemCount;
 		Integer totemCountX, totemCountY, totemCountColor;
+		Boolean armorBackground, potionsBackground;
+		Integer armorColor;
 
 		String capeSelectedKey;
 		String hatSelectedKey;
@@ -177,6 +179,9 @@ public class N3XRConfigStorage {
 		d.totemCountX = N3XRConfig.totemCountX;
 		d.totemCountY = N3XRConfig.totemCountY;
 		d.totemCountColor = N3XRConfig.totemCountColor;
+		d.armorBackground = N3XRConfig.armorBackground;
+		d.potionsBackground = N3XRConfig.potionsBackground;
+		d.armorColor = N3XRConfig.armorColor;
 
 		d.capeSelectedKey = N3XRConfig.capeSelectedKey;
 		d.hatSelectedKey = N3XRConfig.hatSelectedKey;
@@ -331,6 +336,9 @@ public class N3XRConfigStorage {
 			if (d.totemCountX != null) N3XRConfig.totemCountX = d.totemCountX;
 			if (d.totemCountY != null) N3XRConfig.totemCountY = d.totemCountY;
 			if (d.totemCountColor != null) N3XRConfig.totemCountColor = d.totemCountColor;
+			if (d.armorBackground != null) N3XRConfig.armorBackground = d.armorBackground;
+			if (d.potionsBackground != null) N3XRConfig.potionsBackground = d.potionsBackground;
+			if (d.armorColor != null) N3XRConfig.armorColor = d.armorColor;
 
 			// null = nggak ada yang dipilih (cape/hat dilepas)
 			N3XRConfig.capeSelectedKey = d.capeSelectedKey;
