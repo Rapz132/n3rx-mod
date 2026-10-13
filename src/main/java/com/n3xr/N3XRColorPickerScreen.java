@@ -1,12 +1,11 @@
 package com.n3xr;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import net.minecraft.text.Text;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.screen.Screen;
 
 public class N3XRColorPickerScreen extends Screen {
 
@@ -18,6 +17,23 @@ public class N3XRColorPickerScreen extends Screen {
 	private TextFieldWidget hexField;
 
 	private static final int SWATCH_SIZE = 20;
+
+	private boolean hasBgToggle() {
+		return moduleName.equals("Armor HUD") || moduleName.equals("Potions");
+	}
+
+	private boolean bgOn() {
+		return moduleName.equals("Armor HUD") ? N3XRConfig.armorBackground : N3XRConfig.potionsBackground;
+	}
+
+	private void toggleBg() {
+		if (moduleName.equals("Armor HUD")) N3XRConfig.armorBackground = !N3XRConfig.armorBackground;
+		else N3XRConfig.potionsBackground = !N3XRConfig.potionsBackground;
+	}
+
+	private String bgLabel() {
+		return "Background: " + (bgOn() ? "ON" : "OFF");
+	}
 	private int swatchStartX, swatchY, swatchRowGap;
 
 	public N3XRColorPickerScreen(Screen parent, String moduleName, Supplier<Integer> getter, Consumer<Integer> setter, boolean supportsRainbow) {
@@ -44,12 +60,18 @@ public class N3XRColorPickerScreen extends Screen {
 		swatchY = 90;
 		swatchRowGap = SWATCH_SIZE + 4;
 
-		int applyY = supportsRainbow ? 175 : 150;
+		int applyY = (supportsRainbow || hasBgToggle()) ? 175 : 150;
 
 		if (supportsRainbow && moduleName.equals("Keystrokes")) {
 			this.addDrawableChild(N3XRButton.of(boxX, 150, boxW,20,
 				Text.literal("Rainbow: " + (N3XRConfig.keysRainbow ? "ON" : "OFF")),
 				b -> { N3XRConfig.keysRainbow = !N3XRConfig.keysRainbow; b.setMessage(Text.literal("Rainbow: " + (N3XRConfig.keysRainbow ? "ON" : "OFF"))); }));
+		}
+
+		if (hasBgToggle()) {
+			this.addDrawableChild(N3XRButton.of(boxX, 150, boxW, 20,
+				Text.literal(bgLabel()),
+				b -> { toggleBg(); b.setMessage(Text.literal(bgLabel())); }));
 		}
 
 		this.addDrawableChild(N3XRButton.of(boxX, applyY, boxW / 2 - 5, 20,
@@ -87,7 +109,7 @@ public class N3XRColorPickerScreen extends Screen {
 		int boxW = 280;
 		int panelX1 = cx - boxW / 2 - 10;
 		int panelX2 = cx + boxW / 2 + 10;
-		int panelY2 = supportsRainbow ? 210 : 185;
+		int panelY2 = (supportsRainbow || hasBgToggle()) ? 210 : 185;
 		context.fill(panelX1, 20, panelX2, panelY2, 0xE0140A0C);
 		context.fill(panelX1 - 1, 19, panelX2 + 1, 20, 0xFFFF5555);
 		context.fill(panelX1 - 1, panelY2, panelX2 + 1, panelY2 + 1, 0xFFFF5555);
