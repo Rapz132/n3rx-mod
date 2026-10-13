@@ -32,7 +32,7 @@ public final class N3XRHudLayout {
 
         private static final List<Mod> MODS = List.of(
                 new Mod("FPS", () -> N3XRConfig.showFps, () -> N3XRConfig.fpsX, v -> N3XRConfig.fpsX = v, () -> N3XRConfig.fpsY, v -> N3XRConfig.fpsY = v, LABEL_W, LABEL_H),
-                new Mod("Armor", () -> N3XRConfig.showArmor, () -> N3XRConfig.armorX, v -> N3XRConfig.armorX = v, () -> N3XRConfig.armorY, v -> N3XRConfig.armorY = v, 20, 80),
+                new Mod("Armor", () -> N3XRConfig.showArmor, () -> N3XRConfig.armorX, v -> N3XRConfig.armorX = v, () -> N3XRConfig.armorY, v -> N3XRConfig.armorY = v, 50, 104),
                 new Mod("CPS", () -> N3XRConfig.showCps, () -> N3XRConfig.cpsX, v -> N3XRConfig.cpsX = v, () -> N3XRConfig.cpsY, v -> N3XRConfig.cpsY = v, LABEL_W, LABEL_H),
                 new Mod("Ping", () -> N3XRConfig.showPing, () -> N3XRConfig.pingX, v -> N3XRConfig.pingX = v, () -> N3XRConfig.pingY, v -> N3XRConfig.pingY = v, LABEL_W, LABEL_H),
                 new Mod("Keys", () -> N3XRConfig.showKeystrokes, () -> N3XRConfig.keysX, v -> N3XRConfig.keysX = v, () -> N3XRConfig.keysY, v -> N3XRConfig.keysY = v, 40, 26),
@@ -108,7 +108,7 @@ public final class N3XRHudLayout {
         private static int[] rect(Mod m, int potionCount) {
                 float s = N3XRConfig.getScale(m.key());
                 int w = Math.round(m.w() * s);
-                int h = Math.round((m.key().equals("Potions") ? 12 * potionCount : m.h()) * s);
+                int h = Math.round((m.key().equals("Potions") ? N3XRArmorHud.POTION_ROW_H * potionCount : m.h()) * s);
                 return new int[]{0, 0, w, h};
         }
 
