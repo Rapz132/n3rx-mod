@@ -1,14 +1,13 @@
 package com.n3xr;
 
 import com.n3xr.hats.N3XRHatManager;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.text.Text;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.text.Text;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Screen list pilihan hat lokal, plus panel preview 3D player doll
@@ -34,6 +33,14 @@ public class N3XRHatSelectScreen extends Screen {
         private int panelBottom;
         private long lastRenderNanos = 0;
         private int[] backButtonRect;
+
+        // toggle hide armor di panel doll: 4 slot + 1 tombol "semua"
+        private static final int TOGGLE_W = 54;
+        private static final int TOGGLE_H = 16;
+        private static final int TOGGLE_STEP = 20;
+        private static final String[] SLOT_LABELS = {"Helm", "Chest", "Legs", "Boots"};
+        private final List<int[]> toggleRects = new ArrayList<>();
+        private int toggleX;
 
         public N3XRHatSelectScreen(Screen parent) {
                 super(Text.literal("Select Hat"));
@@ -71,6 +78,12 @@ public class N3XRHatSelectScreen extends Screen {
                 panelBottom = y + 40;
                 listY2 = panelBottom;
                 dollY2 = panelBottom;
+
+                toggleRects.clear();
+                toggleX = dollX2 - 8 - TOGGLE_W;
+                for (int i = 0; i < 5; i++) {
+                        toggleRects.add(new int[]{toggleX, dollY1 + 28 + i * TOGGLE_STEP, TOGGLE_W, TOGGLE_H});
+                }
 
                 int backW = 100, backH = 18;
                 backButtonRect = new int[]{
@@ -115,6 +128,15 @@ public class N3XRHatSelectScreen extends Screen {
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                for (int i = 0; i < toggleRects.size(); i++) {
+                        int[] r = toggleRects.get(i);
+                        if (mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
+                                if (i < 4) N3XRArmorHide.toggle(N3XRArmorHide.SLOTS[i]);
+                                else N3XRArmorHide.setAll(!N3XRArmorHide.allHidden());
+                                return true;
+                        }
+                }
+
                 if (backButtonRect != null
                         && mouseX >= backButtonRect[0] && mouseX <= backButtonRect[0] + backButtonRect[2]
                         && mouseY >= backButtonRect[1] && mouseY <= backButtonRect[1] + backButtonRect[3]) {
@@ -177,6 +199,7 @@ public class N3XRHatSelectScreen extends Screen {
                 }
 
                 renderDoll(context, mouseX, mouseY);
+                renderArmorToggles(context, mouseX, mouseY);
 
                 int backX1 = backButtonRect[0], backY1 = backButtonRect[1];
                 int backW = backButtonRect[2], backH = backButtonRect[3];
@@ -200,7 +223,7 @@ public class N3XRHatSelectScreen extends Screen {
                         context,
                         dollX1,
                         boxY1,
-                        dollX2,
+                        toggleX - 6,
                         boxY2,
                         dollSize,
                         1.0f,
@@ -208,6 +231,39 @@ public class N3XRHatSelectScreen extends Screen {
                         (float) mouseY,
                         mc.player
                 );
+        }
+
+        private void renderArmorToggles(DrawContext context, int mouseX, int mouseY) {
+                Text head = Text.literal("Armor").styled(st -> st.withBold(true));
+                int hw = this.textRenderer.getWidth(head);
+                context.drawText(this.textRenderer, head, toggleX + (TOGGLE_W - hw) / 2, dollY1 + 12, 0xFFFF3333, true);
+
+                for (int i = 0; i < toggleRects.size(); i++) {
+                        int[] r = toggleRects.get(i);
+                        boolean isAll = i == 4;
+                        boolean hidden = isAll ? N3XRArmorHide.allHidden() : N3XRArmorHide.isHidden(N3XRArmorHide.SLOTS[i]);
+                        boolean hovered = mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3];
+
+                        int bg;
+                        if (isAll) bg = hovered ? 0xFF2A1414 : 0xFF140A0A;
+                        else if (hidden) bg = hovered ? 0xFF6A1818 : 0xFF4A1010;
+                        else bg = hovered ? 0xFF1F0F0F : 0xFF0A0505;
+                        fillRounded(context, r[0], r[1], r[0] + r[2], r[1] + r[3], bg, 4);
+
+                        String label;
+                        int textX = r[0] + 6;
+                        if (isAll) {
+                                label = hidden ? "Show all" : "Hide all";
+                        } else {
+                                label = SLOT_LABELS[i];
+                                // titik status: hijau = armor tampil, merah = disembunyikan
+                                int dotY = r[1] + (r[3] - 4) / 2;
+                                context.fill(r[0] + 6, dotY, r[0] + 10, dotY + 4, hidden ? 0xFFFF5555 : 0xFF55FF55);
+                                textX = r[0] + 14;
+                        }
+                        int textColor = (!isAll && hidden) ? 0xFFAAAAAA : 0xFFFFFFFF;
+                        context.drawText(this.textRenderer, label, textX, r[1] + (r[3] - 8) / 2, textColor, true);
+                }
         }
 
         @Override
