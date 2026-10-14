@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
  * Makanya tiap entry di sini nyimpen referensi ke geometry builder-nya
  * masing-masing (Supplier<ModelPart>), bukan cuma path texture.
  *
- * Saat ini cuma Top Hat yang didaftarkan. Model hat lama (straw, witch,
+ * Saat ini cuma Top Hat, Horns, dan Purple Witch Hat yang didaftarkan. Model hat lama (straw, witch,
  * horn, china) masih ada di package ini tapi tidak dipakai; kalau mau
  * mengaktifkannya lagi tinggal tambah barisnya di static block HATS.
  *
@@ -34,6 +34,8 @@ public class N3XRHatManager {
 
         static {
                 HATS.add(new HatEntry("top_hat", "Top Hat", N3XRTopHatModel::getOrBuildModel));
+                HATS.add(new HatEntry("horns", "Horns", N3XRSideHornsModel::getOrBuildModel));
+                HATS.add(new HatEntry("purple_witch_hat", "Purple Witch Hat", N3XRPurpleWitchHatModel::getOrBuildModel));
                 // Hat lama, dinonaktifkan:
                 // HATS.add(new HatEntry("straw_hat", "Straw Hat", N3XRStrawHatModel::getOrBuildModel));
                 // HATS.add(new HatEntry("witch_hat", "Witch Hat", N3XRWitchHatModel::getOrBuildModel));
