@@ -1,26 +1,28 @@
 package com.n3xr.hats;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.util.Identifier;
 
 /**
  * Registry hat cosmetic N3XR — mirip pola N3XRCapeManager, tapi beda
  * satu hal penting: cape semuanya berbagi SATU bentuk geometri yang
- * sama (cuma beda texture), sedangkan tiap hat punya BENTUK sendiri
- * (mushroom, top hat, straw hat, dll semua modelnya beda). Makanya
- * tiap entry di sini nyimpen referensi ke geometry builder-nya
+ * sama (cuma beda texture), sedangkan tiap hat punya BENTUK sendiri.
+ * Makanya tiap entry di sini nyimpen referensi ke geometry builder-nya
  * masing-masing (Supplier<ModelPart>), bukan cuma path texture.
+ *
+ * Saat ini cuma Top Hat yang didaftarkan. Model hat lama (straw, witch,
+ * horn, china) masih ada di package ini tapi tidak dipakai; kalau mau
+ * mengaktifkannya lagi tinggal tambah barisnya di static block HATS.
  *
  * Cara menambah hat baru:
  * 1. Bikin class model geometri-nya sendiri di package ini
- *    (contoh: N3XRStrawHatModel.java), niru pola getOrBuildModel().
+ *    (contoh: N3XRTopHatModel.java), niru pola getOrBuildModel().
  * 2. Taruh file PNG texture-nya di:
  *    assets/n3xr/textures/hats/{key}.png
- * 3. (Opsional tapi disaranin) taruh icon 2D buat list pilihan di:
+ * 3. (Opsional) taruh icon 2D buat list pilihan di:
  *    assets/n3xr/textures/hats/icons/{key}.png
  * 4. Tambah satu baris di static block HATS di bawah ini.
  */
@@ -31,13 +33,12 @@ public class N3XRHatManager {
         private static final List<HatEntry> HATS = new ArrayList<>();
 
         static {
-                HATS.add(new HatEntry("straw_hat", "Straw Hat", N3XRStrawHatModel::getOrBuildModel));
-                HATS.add(new HatEntry("witch_hat", "Witch Hat", N3XRWitchHatModel::getOrBuildModel));
-                HATS.add(new HatEntry("horn", "Horn", N3XRHornModel::getOrBuildModel));
-                HATS.add(new HatEntry("china_hat", "China Hat", N3XRChinaHatModel::getOrBuildModel));
-                // Tambah entry lain di sini kalau model hat lain udah jadi, contoh:
-                // HATS.add(new HatEntry("mushroom_hat", "Mushroom Hat", N3XRMushroomHatModel::getOrBuildModel));
-                // HATS.add(new HatEntry("top_hat", "Top Hat", N3XRTopHatModel::getOrBuildModel));
+                HATS.add(new HatEntry("top_hat", "Top Hat", N3XRTopHatModel::getOrBuildModel));
+                // Hat lama, dinonaktifkan:
+                // HATS.add(new HatEntry("straw_hat", "Straw Hat", N3XRStrawHatModel::getOrBuildModel));
+                // HATS.add(new HatEntry("witch_hat", "Witch Hat", N3XRWitchHatModel::getOrBuildModel));
+                // HATS.add(new HatEntry("horn", "Horn", N3XRHornModel::getOrBuildModel));
+                // HATS.add(new HatEntry("china_hat", "China Hat", N3XRChinaHatModel::getOrBuildModel));
         }
 
         public static List<HatEntry> getAvailableHats() {
