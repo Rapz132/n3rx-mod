@@ -15,6 +15,7 @@
   "N3XRPressableWidgetMixin",
   "N3XRTitleScreenMixin",
   "CrosshairHideMixin",
+  "ArmorHideMixin",
   "WindowScaleMixin",
   "ChatHudMixin"
 ],
