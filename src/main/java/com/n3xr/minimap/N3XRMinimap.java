@@ -118,6 +118,14 @@ public final class N3XRMinimap {
                 save();
         }
 
+        public static void setEnabled(boolean value) {
+                load();
+                if (enabled == value) return;
+                enabled = value;
+                forceNew = true;
+                save();
+        }
+
         public static void nextZoom() { load(); zoomIndex = (zoomIndex + 1) % ZOOMS.length; save(); }
         public static void nextSize() { load(); sizeIndex = (sizeIndex + 1) % SIZES.length; save(); }
 
