@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import com.n3xr.minimap.N3XRMinimap;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.client.gui.DrawContext;
@@ -91,6 +92,9 @@ public class N3XRConfigScreen extends Screen {
                         () -> N3XRConfig.showInventoryDisplay, v -> N3XRConfig.showInventoryDisplay = v, () -> 0xFFFFFF, v -> {}, false));
                 allModules.add(new ModuleDef("Item Update", "Shows items when picked up.", icon("itemupdate"), Category.HUD, false,
                         () -> N3XRConfig.itemUpdateEnabled, v -> N3XRConfig.itemUpdateEnabled = v, () -> 0xFFFFFF, v -> {}, false));
+
+                allModules.add(new ModuleDef("Minimap", "Rotating minimap with coordinates. Drag it in the HUD editor (Right Shift).", icon("minimap"), Category.HUD, false,
+                        () -> N3XRMinimap.isEnabled(), v -> N3XRMinimap.setEnabled(v), () -> 0xFFFFFF, v -> {}, false));
 
                 allModules.add(new ModuleDef("Night Vision", "Improves visibility in the dark.", icon("nightvision"), Category.VISUAL, false,
                         () -> N3XRConfig.nightVisionEnabled, v -> N3XRConfig.nightVisionEnabled = v, () -> 0xFFFFFF, v -> {}, false));
