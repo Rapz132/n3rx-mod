@@ -2,6 +2,7 @@ package com.n3xr;
 
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import com.n3xr.minimap.N3XRMinimap;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 
@@ -45,6 +46,28 @@ public class N3XRHudEditScreen extends Screen {
                                 N3XRGuiScale.apply();
                         }
                 ).icon(N3XRIcons.FRAME));
+
+                this.addDrawableChild(N3XRButton.of(cx, 142, 64, 18,
+                        Text.literal(N3XRMinimap.toggleLabel()),
+                        b -> {
+                                N3XRMinimap.toggle();
+                                b.setMessage(Text.literal(N3XRMinimap.toggleLabel()));
+                        }
+                ));
+                this.addDrawableChild(N3XRButton.of(cx + 68, 142, 64, 18,
+                        Text.literal(N3XRMinimap.zoomLabel()),
+                        b -> {
+                                N3XRMinimap.nextZoom();
+                                b.setMessage(Text.literal(N3XRMinimap.zoomLabel()));
+                        }
+                ));
+                this.addDrawableChild(N3XRButton.of(cx + 136, 142, 64, 18,
+                        Text.literal(N3XRMinimap.sizeLabel()),
+                        b -> {
+                                N3XRMinimap.nextSize();
+                                b.setMessage(Text.literal(N3XRMinimap.sizeLabel()));
+                        }
+                ));
         }
 
         @Override
@@ -84,6 +107,7 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showInventoryDisplay) drawBox(context, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY);
                 if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY);
                 if (N3XRConfig.showTotemCount) drawBox(context, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY);
+                if (N3XRMinimap.isEnabled()) drawMinimapBox(context);
 
                 Text hint = Text.literal("Drag modules to reposition \u00b7 Drag \u25cf to resize \u00b7 Right Shift to close");
                 int hw = this.textRenderer.getWidth(hint);
@@ -119,6 +143,28 @@ public class N3XRHudEditScreen extends Screen {
                 int r = HANDLE_R;
                 context.fill(hx - r + 1, hy - r, hx + r - 1, hy + r, handleColor);
                 context.fill(hx - r, hy - r + 1, hx + r, hy + r - 1, handleColor);
+        }
+
+        private void drawMinimapBox(DrawContext context) {
+                int f = N3XRMinimap.frameSize();
+                int x = N3XRMinimap.getX(this.width);
+                int y = N3XRMinimap.getY(this.height);
+                boolean active = "Minimap".equals(dragging);
+                int borderColor = active ? 0xFFFFFFFF : 0xCCFF6B6B;
+
+                context.fill(x, y, x + f, y + f, active ? 0x55FFFFFF : 0x60203040);
+                context.fill(x - 1, y - 1, x + f + 1, y, borderColor);
+                context.fill(x - 1, y + f, x + f + 1, y + f + 1, borderColor);
+                context.fill(x - 1, y - 1, x, y + f + 1, borderColor);
+                context.fill(x + f, y - 1, x + f + 1, y + f + 1, borderColor);
+                context.drawText(this.textRenderer, "Minimap", x + 3, y + 2, 0xFFFFFF, true);
+        }
+
+        private boolean inMinimap(double mx, double my) {
+                int f = N3XRMinimap.frameSize();
+                int x = N3XRMinimap.getX(this.width);
+                int y = N3XRMinimap.getY(this.height);
+                return mx >= x && mx <= x + f && my >= y && my <= y + f;
         }
 
         private int boxW(String key) {
@@ -176,6 +222,11 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showInventoryDisplay && inBox(mouseX, mouseY, "Inventory", N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY)) { dragging = "Inventory"; setOffset(mouseX, mouseY, N3XRConfig.inventoryDisplayX, N3XRConfig.inventoryDisplayY); return true; }
                 if (N3XRConfig.showDayCounter && inBox(mouseX, mouseY, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY)) { dragging = "DayCounter"; setOffset(mouseX, mouseY, N3XRConfig.dayCounterX, N3XRConfig.dayCounterY); return true; }
                 if (N3XRConfig.showTotemCount && inBox(mouseX, mouseY, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY)) { dragging = "TotemCount"; setOffset(mouseX, mouseY, N3XRConfig.totemCountX, N3XRConfig.totemCountY); return true; }
+                if (N3XRMinimap.isEnabled() && inMinimap(mouseX, mouseY)) {
+                        dragging = "Minimap";
+                        setOffset(mouseX, mouseY, N3XRMinimap.getX(this.width), N3XRMinimap.getY(this.height));
+                        return true;
+                }
                 return super.mouseClicked(mouseX, mouseY, button);
         }
 
@@ -224,6 +275,7 @@ public class N3XRHudEditScreen extends Screen {
                                 case "Inventory" -> { N3XRConfig.inventoryDisplayX = nx; N3XRConfig.inventoryDisplayY = ny; }
                                 case "DayCounter" -> { N3XRConfig.dayCounterX = nx; N3XRConfig.dayCounterY = ny; }
                                 case "TotemCount" -> { N3XRConfig.totemCountX = nx; N3XRConfig.totemCountY = ny; }
+                                case "Minimap" -> N3XRMinimap.setPosition(nx, ny);
                         }
                         return true;
                 }
@@ -232,6 +284,7 @@ public class N3XRHudEditScreen extends Screen {
 
         @Override
         public boolean mouseReleased(double mouseX, double mouseY, int button) {
+                if ("Minimap".equals(dragging)) N3XRMinimap.save();
                 dragging = null;
                 resizing = null;
                 return super.mouseReleased(mouseX, mouseY, button);
