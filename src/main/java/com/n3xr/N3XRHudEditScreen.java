@@ -146,10 +146,12 @@ public class N3XRHudEditScreen extends Screen {
         }
 
         private int boxW(String key) {
+                if (key.equals("Keys")) return (int) (58 * N3XRConfig.getScale(key));
                 return (int) (BOX_W * N3XRConfig.getScale(key));
         }
 
         private int boxH(String key) {
+                if (key.equals("Keys")) return (int) (74 * N3XRConfig.getScale(key));
                 return (int) (BOX_H * N3XRConfig.getScale(key));
         }
 
