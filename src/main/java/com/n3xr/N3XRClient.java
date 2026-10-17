@@ -53,6 +53,7 @@ public class N3XRClient implements ClientModInitializer {
         private static KeyBinding cosmeticsKey;
         private static KeyBinding mapKey;
         private final ArrayDeque<Long> clickTimes = new ArrayDeque<>();
+        private final ArrayDeque<Long> rightClickTimes = new ArrayDeque<>();
         private final ArrayDeque<Long> tickTimes = new ArrayDeque<>();
 
         private double savedFov = -1;
@@ -157,6 +158,7 @@ public class N3XRClient implements ClientModInitializer {
                         com.n3xr.minimap.N3XRMinimap.tick(client);
 
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
+                        while (!rightClickTimes.isEmpty() && now - rightClickTimes.peekFirst() > 1000) rightClickTimes.pollFirst();
 
                         if (client.world != null) {
                                 tickTimes.addLast(now);
@@ -233,6 +235,9 @@ public class N3XRClient implements ClientModInitializer {
                                 if (previous != null) previous.invoke(window, button, action, mods);
                                 if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS) {
                                         clickTimes.addLast(System.currentTimeMillis());
+                                }
+                                if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && action == GLFW.GLFW_PRESS) {
+                                        rightClickTimes.addLast(System.currentTimeMillis());
                                 }
                         });
                 });
@@ -914,42 +919,86 @@ public class N3XRClient implements ClientModInitializer {
                 c.getMatrices().pop();
         }
 
+        // ---- Keystrokes: W A S D, LMB / RMB + CPS masing-masing, dan spacebar ----
+        private static final int KEY = 18;
+        private static final int KEY_GAP = 2;
+        private static final int MOUSE_H = 20;
+        private static final int SPACE_H = 12;
+        private static final int KEY_BG = 0x90484C56;      // abu-abu transparan
+        private static final int KEY_RADIUS = 3;
+
         private void renderKeystrokes(DrawContext c, MinecraftClient mc) {
                 float scale = N3XRConfig.getScale("Keys");
                 c.getMatrices().push();
                 c.getMatrices().translate(N3XRConfig.keysX, N3XRConfig.keysY, 0);
                 c.getMatrices().scale(scale, scale, 1f);
 
-                int size = 12, gap = 1;
-                boolean w = mc.options.forwardKey.isPressed();
-                boolean a = mc.options.leftKey.isPressed();
-                boolean s = mc.options.backKey.isPressed();
-                boolean d = mc.options.rightKey.isPressed();
-
-                drawKey(c, mc, "W", size + gap, 0, size, w);
-                drawKey(c, mc, "A", 0, size + gap, size, a);
-                drawKey(c, mc, "S", size + gap, size + gap, size, s);
-                drawKey(c, mc, "D", (size + gap) * 2, size + gap, size, d);
-
-                c.getMatrices().pop();
-        }
-
-        private void drawKey(DrawContext c, MinecraftClient mc, String label, int x, int y, int size, boolean active) {
-                int color = N3XRConfig.keysColor;
+                int color = N3XRConfig.keysColor & 0xFFFFFF;
                 if (N3XRConfig.keysRainbow) {
                         float hue = (System.currentTimeMillis() % 3000) / 3000f;
                         color = java.awt.Color.HSBtoRGB(hue, 1f, 1f) & 0xFFFFFF;
                 }
-                int bg = active ? (color | 0xC0000000) : 0x80000000;
-                int border = active ? (color | 0xFF000000) : 0xFFFFFFFF;
 
-                c.fill(x, y, x + size, y + size, bg);
-                c.fill(x, y, x + size, y + 1, border);
-                c.fill(x, y + size - 1, x + size, y + size, border);
-                c.fill(x, y, x + 1, y + size, border);
-                c.fill(x + size - 1, y, x + size, y + size, border);
+                int step = KEY + KEY_GAP;
+                int totalW = KEY * 3 + KEY_GAP * 2;
 
+                drawKey(c, mc, "W", step, 0, KEY, KEY, mc.options.forwardKey.isPressed(), color);
+                drawKey(c, mc, "A", 0, step, KEY, KEY, mc.options.leftKey.isPressed(), color);
+                drawKey(c, mc, "S", step, step, KEY, KEY, mc.options.backKey.isPressed(), color);
+                drawKey(c, mc, "D", step * 2, step, KEY, KEY, mc.options.rightKey.isPressed(), color);
+
+                int mouseY = step * 2;
+                int mw = (totalW - KEY_GAP) / 2;
+                drawMouseKey(c, mc, "LMB", clickTimes.size(), 0, mouseY, mw, MOUSE_H, mc.options.attackKey.isPressed(), color);
+                drawMouseKey(c, mc, "RMB", rightClickTimes.size(), mw + KEY_GAP, mouseY, totalW - mw - KEY_GAP, MOUSE_H, mc.options.useKey.isPressed(), color);
+
+                drawSpace(c, 0, mouseY + MOUSE_H + KEY_GAP, totalW, SPACE_H, mc.options.jumpKey.isPressed(), color);
+
+                c.getMatrices().pop();
+        }
+
+        /** Warna latar tombol: abu-abu transparan, atau warna aktif (keysColor) saat ditekan. */
+        private int keyBackground(boolean active, int color) {
+                return active ? (0xD0000000 | color) : KEY_BG;
+        }
+
+        /** Teks gelap kalau latar aktif terang, putih kalau latar gelap/abu-abu. */
+        private int keyTextColor(boolean active, int color) {
+                if (!active) return 0xFFFFFFFF;
+                int r = (color >> 16) & 0xFF, g = (color >> 8) & 0xFF, b = color & 0xFF;
+                double luma = 0.299 * r + 0.587 * g + 0.114 * b;
+                return luma > 150 ? 0xFF14161A : 0xFFFFFFFF;
+        }
+
+        private void drawKey(DrawContext c, MinecraftClient mc, String label, int x, int y, int w, int h, boolean active, int color) {
+                N3XRButton.fillRounded(c, x, y, x + w, y + h, keyBackground(active, color), KEY_RADIUS);
                 int tw = mc.textRenderer.getWidth(label);
-                c.drawText(mc.textRenderer, label, x + (size - tw) / 2, y + (size - 8) / 2, 0xFFFFFFFF, true);
+                c.drawText(mc.textRenderer, label, x + (w - tw) / 2, y + (h - 8) / 2, keyTextColor(active, color), !active);
+        }
+
+        private void drawMouseKey(DrawContext c, MinecraftClient mc, String label, int cps, int x, int y, int w, int h, boolean active, int color) {
+                N3XRButton.fillRounded(c, x, y, x + w, y + h, keyBackground(active, color), KEY_RADIUS);
+                int textColor = keyTextColor(active, color);
+
+                int lw = mc.textRenderer.getWidth(label);
+                c.drawText(mc.textRenderer, label, x + (w - lw) / 2, y + 3, textColor, !active);
+
+                // "N CPS" lebih kecil di bawah label
+                String sub = cps + " CPS";
+                float s = 0.7f;
+                int sw = mc.textRenderer.getWidth(sub);
+                c.getMatrices().push();
+                c.getMatrices().translate(x + (w - sw * s) / 2f, y + 12.5f, 0);
+                c.getMatrices().scale(s, s, 1f);
+                c.drawText(mc.textRenderer, sub, 0, 0, active ? textColor : 0xFFD8DCE4, false);
+                c.getMatrices().pop();
+        }
+
+        private void drawSpace(DrawContext c, int x, int y, int w, int h, boolean active, int color) {
+                N3XRButton.fillRounded(c, x, y, x + w, y + h, keyBackground(active, color), KEY_RADIUS);
+                int lineW = Math.min(22, w - 8);
+                int lx = x + (w - lineW) / 2;
+                int ly = y + h / 2;
+                c.fill(lx, ly, lx + lineW, ly + 1, active ? keyTextColor(true, color) : 0xFFFFFFFF);
         }
 }
