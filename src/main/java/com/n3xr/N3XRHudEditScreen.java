@@ -46,28 +46,6 @@ public class N3XRHudEditScreen extends Screen {
                                 N3XRGuiScale.apply();
                         }
                 ).icon(N3XRIcons.FRAME));
-
-                this.addDrawableChild(N3XRButton.of(cx, 142, 64, 18,
-                        Text.literal(N3XRMinimap.toggleLabel()),
-                        b -> {
-                                N3XRMinimap.toggle();
-                                b.setMessage(Text.literal(N3XRMinimap.toggleLabel()));
-                        }
-                ));
-                this.addDrawableChild(N3XRButton.of(cx + 68, 142, 64, 18,
-                        Text.literal(N3XRMinimap.zoomLabel()),
-                        b -> {
-                                N3XRMinimap.nextZoom();
-                                b.setMessage(Text.literal(N3XRMinimap.zoomLabel()));
-                        }
-                ));
-                this.addDrawableChild(N3XRButton.of(cx + 136, 142, 64, 18,
-                        Text.literal(N3XRMinimap.sizeLabel()),
-                        b -> {
-                                N3XRMinimap.nextSize();
-                                b.setMessage(Text.literal(N3XRMinimap.sizeLabel()));
-                        }
-                ));
         }
 
         @Override
