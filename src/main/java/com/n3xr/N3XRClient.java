@@ -51,6 +51,7 @@ public class N3XRClient implements ClientModInitializer {
         private static KeyBinding openSettingsKey;
         private static KeyBinding zoomKey;
         private static KeyBinding cosmeticsKey;
+        private static KeyBinding mapKey;
         private final ArrayDeque<Long> clickTimes = new ArrayDeque<>();
         private final ArrayDeque<Long> tickTimes = new ArrayDeque<>();
 
@@ -99,6 +100,9 @@ public class N3XRClient implements ClientModInitializer {
                 cosmeticsKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                         "key.n3xr.cosmetics", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X, "category.n3xr"));
 
+                mapKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                        "key.n3xr.map", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.n3xr"));
+
                 hookMouseClicks();
 
                 WorldRenderEvents.END.register(context -> {
@@ -133,6 +137,12 @@ public class N3XRClient implements ClientModInitializer {
 
                         while (cosmeticsKey.wasPressed()) {
                                 if (client.currentScreen == null) client.setScreen(new N3XRCosmeticsScreen());
+                        }
+
+                        while (mapKey.wasPressed()) {
+                                if (client.currentScreen == null && client.world != null) {
+                                        client.setScreen(new com.n3xr.minimap.N3XRWorldMapScreen(null));
+                                }
                         }
 
                         long now = System.currentTimeMillis();
