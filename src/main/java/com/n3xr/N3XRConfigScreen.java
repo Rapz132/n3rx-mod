@@ -93,7 +93,7 @@ public class N3XRConfigScreen extends Screen {
                 allModules.add(new ModuleDef("Item Update", "Shows items when picked up.", icon("itemupdate"), Category.HUD, false,
                         () -> N3XRConfig.itemUpdateEnabled, v -> N3XRConfig.itemUpdateEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
-                allModules.add(new ModuleDef("Minimap", "Rotating minimap with coordinates. Drag it in the HUD editor (Right Shift).", icon("minimap"), Category.HUD, false,
+                allModules.add(new ModuleDef("Minimap", "Rotating minimap with compass and coordinates. Gear: size, zoom, and full map (key M).", icon("minimap"), Category.HUD, true,
                         () -> N3XRMinimap.isEnabled(), v -> N3XRMinimap.setEnabled(v), () -> 0xFFFFFF, v -> {}, false));
 
                 allModules.add(new ModuleDef("Night Vision", "Improves visibility in the dark.", icon("nightvision"), Category.VISUAL, false,
@@ -312,6 +312,8 @@ public class N3XRConfigScreen extends Screen {
                                                 this.client.setScreen(new N3XRRealTimeScreen(this));
                                         } else if (m.name().equals("Motion Blur")) {
                                                 this.client.setScreen(new N3XRMotionBlurSettingsScreen(this));
+                                        } else if (m.name().equals("Minimap")) {
+                                                this.client.setScreen(new N3XRMinimapSettingsScreen(this));
                                         } else {
                                                 this.client.setScreen(new N3XRColorPickerScreen(this, m.name(), m.getColor(), m.setColor(), m.supportsRainbow()));
                                         }
