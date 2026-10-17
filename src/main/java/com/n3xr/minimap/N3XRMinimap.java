@@ -25,17 +25,21 @@ import net.minecraft.world.Heightmap;
 /**
  * Minimap N3XR: peta terrain dari atas, berputar mengikuti arah pandang
  * (arah yang kamu hadapi selalu di atas layar), dengan panah pemain di tengah,
- * titik untuk pemain lain (kuning) dan mob musuh (merah), huruf N untuk utara,
- * dan koordinat di bawahnya.
+ * titik untuk pemain lain (kuning) dan mob musuh (merah), huruf arah mata angin
+ * (N E S W), dan koordinat di bawahnya.
  *
- * Cara kerja:
- * - Warna blok diambil dari warna peta vanilla (MapColor) untuk blok paling atas
- *   di tiap kolom, dengan bayangan sederhana dari selisih tinggi (darat) atau
- *   kedalaman (air). Hanya chunk yang sudah ke-load yang digambar.
- * - Gambarnya disimpan di satu texture 128x128 (1 texel = 1 blok, utara di atas)
- *   yang diperbarui BERTAHAP: 32 baris per tick, satu putaran penuh tiap beberapa
- *   tick, supaya tidak bikin lag di HP. Rotasi dilakukan saat menggambar (GPU).
- * - Pengaturan (aktif, zoom, ukuran, posisi) disimpan di config/n3xr-minimap.properties.
+ * Pengaturan (aktif, zoom, ukuran, posisi, dan opsi tampilan) disimpan di
+ * config/n3xr-minimap.properties. Layar pengaturannya dibuka dari ikon gear di
+ * kartu module "Minimap" (N3XRMinimapSettingsScreen); peta layar penuh ada di
+ * N3XRWorldMapScreen.
+ *
+ * Cara kerja peta mini:
+ * - Warna blok diambil dari MapColor vanilla untuk blok paling atas di tiap kolom,
+ *   dengan bayangan dari selisih tinggi (darat) atau kedalaman (air). Hanya chunk
+ *   yang sudah ke-load yang digambar.
+ * - Disimpan di satu texture 128x128 (1 texel = 1 blok, utara di atas) yang
+ *   diperbarui BERTAHAP (32 baris per tick) supaya tidak lag. Rotasi dilakukan
+ *   saat menggambar.
  */
 public final class N3XRMinimap {
 
@@ -47,14 +51,18 @@ public final class N3XRMinimap {
         private static boolean enabled = false;
         private static int zoomIndex = 1;
         private static int sizeIndex = 1;
-        private static int posX = Integer.MIN_VALUE;   // MIN_VALUE = otomatis (kanan atas)
+        private static int posX = Integer.MIN_VALUE;   // MIN_VALUE = otomatis (kiri atas)
         private static int posY = Integer.MIN_VALUE;
+        private static boolean showPlayers = true;
+        private static boolean showMobs = true;
+        private static boolean showCoords = true;
+        private static boolean showCompass = true;     // true = N E S W, false = N saja
         private static boolean loaded = false;
 
         // ---------------------------------------------------------------- texture & pass
         private static final int TEX = 128;
         private static final int ROWS_PER_TICK = 32;
-        private static final int UNLOADED = 0xFF1B1612;   // ABGR: abu gelap kebiruan
+        public static final int UNLOADED = 0xFF1B1612;   // ABGR: abu gelap kebiruan
         private static final int VOID_COLOR = 0xFF101010;
         private static final Identifier TEX_ID = Identifier.of("n3xr", "minimap");
 
@@ -88,6 +96,10 @@ public final class N3XRMinimap {
                         enabled = Boolean.parseBoolean(p.getProperty("enabled", "false"));
                         zoomIndex = clampIndex(Integer.parseInt(p.getProperty("zoom", "1")), ZOOMS.length);
                         sizeIndex = clampIndex(Integer.parseInt(p.getProperty("size", "1")), SIZES.length);
+                        showPlayers = Boolean.parseBoolean(p.getProperty("show_players", "true"));
+                        showMobs = Boolean.parseBoolean(p.getProperty("show_mobs", "true"));
+                        showCoords = Boolean.parseBoolean(p.getProperty("show_coords", "true"));
+                        showCompass = Boolean.parseBoolean(p.getProperty("show_compass", "true"));
                         if (p.containsKey("x")) posX = Integer.parseInt(p.getProperty("x"));
                         if (p.containsKey("y")) posY = Integer.parseInt(p.getProperty("y"));
                 } catch (Exception ignored) {}
@@ -99,6 +111,10 @@ public final class N3XRMinimap {
                         p.setProperty("enabled", Boolean.toString(enabled));
                         p.setProperty("zoom", Integer.toString(zoomIndex));
                         p.setProperty("size", Integer.toString(sizeIndex));
+                        p.setProperty("show_players", Boolean.toString(showPlayers));
+                        p.setProperty("show_mobs", Boolean.toString(showMobs));
+                        p.setProperty("show_coords", Boolean.toString(showCoords));
+                        p.setProperty("show_compass", Boolean.toString(showCompass));
                         if (posX != Integer.MIN_VALUE) p.setProperty("x", Integer.toString(posX));
                         if (posY != Integer.MIN_VALUE) p.setProperty("y", Integer.toString(posY));
                         try (var out = Files.newBufferedWriter(file())) { p.store(out, "N3XR minimap"); }
@@ -129,7 +145,15 @@ public final class N3XRMinimap {
         public static void nextZoom() { load(); zoomIndex = (zoomIndex + 1) % ZOOMS.length; save(); }
         public static void nextSize() { load(); sizeIndex = (sizeIndex + 1) % SIZES.length; save(); }
 
-        public static String toggleLabel() { return "Map: " + (isEnabled() ? "ON" : "OFF"); }
+        public static boolean isShowPlayers() { load(); return showPlayers; }
+        public static boolean isShowMobs() { load(); return showMobs; }
+        public static boolean isShowCoords() { load(); return showCoords; }
+        public static boolean isShowCompass() { load(); return showCompass; }
+        public static void togglePlayers() { load(); showPlayers = !showPlayers; save(); }
+        public static void toggleMobs() { load(); showMobs = !showMobs; save(); }
+        public static void toggleCoords() { load(); showCoords = !showCoords; save(); }
+        public static void toggleCompass() { load(); showCompass = !showCompass; save(); }
+
         public static String zoomLabel() { load(); return "Zoom: " + ZOOMS[zoomIndex] + "x"; }
         public static String sizeLabel() { load(); return "Size: " + SIZE_NAMES[sizeIndex]; }
 
@@ -138,14 +162,14 @@ public final class N3XRMinimap {
         public static int getX(int screenW) {
                 load();
                 int f = frameSize();
-                if (posX == Integer.MIN_VALUE) return screenW - f - 6;
+                if (posX == Integer.MIN_VALUE) return 6;
                 return Math.max(0, Math.min(screenW - f, posX));
         }
 
         public static int getY(int screenH) {
                 load();
-                if (posY == Integer.MIN_VALUE) return 6;
                 int f = frameSize();
+                if (posY == Integer.MIN_VALUE) return 6;
                 return Math.max(0, Math.min(screenH - f - 14, posY));
         }
 
@@ -202,7 +226,7 @@ public final class N3XRMinimap {
                                 for (int col = 0; col < TEX; col++) {
                                         int wx = snapX - TEX / 2 + col;
                                         int wz = snapZ - TEX / 2 + row;
-                                        image.setColor(col, row, sample(world, wx, wz, row, col, ceiling, pos));
+                                        image.setColor(col, row, sample(world, wx, wz, row, col, TEX, heights, ceiling, snapY, pos));
                                 }
                         }
                         passRow = end;
@@ -211,18 +235,22 @@ public final class N3XRMinimap {
                 }
         }
 
-        /** Warna (ABGR) satu kolom blok; sekaligus mencatat tingginya di heights[]. */
-        private static int sample(ClientWorld world, int wx, int wz, int row, int col, boolean ceiling, BlockPos.Mutable pos) {
-                int idx = row * TEX + col;
+        /**
+         * Warna (ABGR) satu kolom blok; sekaligus mencatat tingginya di hs[] (lebar baris w),
+         * dipakai juga oleh peta layar penuh (N3XRWorldMapScreen).
+         */
+        public static int sample(ClientWorld world, int wx, int wz, int row, int col, int w, int[] hs,
+                                 boolean ceiling, int refY, BlockPos.Mutable pos) {
+                int idx = row * w + col;
 
                 if (!world.getChunkManager().isChunkLoaded(wx >> 4, wz >> 4)) {
-                        heights[idx] = Integer.MIN_VALUE;
+                        hs[idx] = Integer.MIN_VALUE;
                         return UNLOADED;
                 }
 
                 int bottom = world.getBottomY();
                 int y = ceiling
-                        ? Math.min(snapY + 2, world.getTopY() - 1)
+                        ? Math.min(refY + 2, world.getTopY() - 1)
                         : world.getTopY(Heightmap.Type.WORLD_SURFACE, wx, wz) - 1;
 
                 BlockState state = null;
@@ -237,7 +265,7 @@ public final class N3XRMinimap {
                 }
 
                 if (state == null || state.isAir() || state.getMapColor(world, pos) == MapColor.CLEAR) {
-                        heights[idx] = Integer.MIN_VALUE;
+                        hs[idx] = Integer.MIN_VALUE;
                         return VOID_COLOR;
                 }
 
@@ -256,12 +284,12 @@ public final class N3XRMinimap {
                         shade = Math.max(0.45f, 1.0f - depth * 0.06f);
                 } else {
                         // darat: lebih tinggi dari tetangga utara = terang, lebih rendah = gelap
-                        int hN = row > 0 ? heights[idx - TEX] : y;
+                        int hN = row > 0 ? hs[idx - w] : y;
                         if (hN == Integer.MIN_VALUE) hN = y;
                         int diff = y - hN;
                         shade = diff > 0 ? 1.15f : (diff < 0 ? 0.82f : 1.0f);
                 }
-                heights[idx] = y;
+                hs[idx] = y;
 
                 int r = clamp255(((rgb >> 16) & 0xFF) * shade);
                 int g = clamp255(((rgb >> 8) & 0xFF) * shade);
@@ -312,23 +340,25 @@ public final class N3XRMinimap {
                 double half = f / 2.0 - 3;
 
                 // pemain lain (kuning) dan mob musuh (merah)
-                for (Entity e : mc.world.getEntities()) {
-                        if (e == mc.player) continue;
-                        int color;
-                        if (e instanceof PlayerEntity) color = 0xFFFFFF55;
-                        else if (e instanceof HostileEntity) color = 0xFFFF4444;
-                        else continue;
+                if (showPlayers || showMobs) {
+                        for (Entity e : mc.world.getEntities()) {
+                                if (e == mc.player) continue;
+                                int color;
+                                if (showPlayers && e instanceof PlayerEntity) color = 0xFFFFFF55;
+                                else if (showMobs && e instanceof HostileEntity) color = 0xFFFF4444;
+                                else continue;
 
-                        double dx = (e.getX() - mc.player.getX()) * zoom;
-                        double dz = (e.getZ() - mc.player.getZ()) * zoom;
-                        double sx = dx * cos - dz * sin;
-                        double sy = dx * sin + dz * cos;
-                        if (Math.abs(sx) > half || Math.abs(sy) > half) continue;
+                                double dx = (e.getX() - mc.player.getX()) * zoom;
+                                double dz = (e.getZ() - mc.player.getZ()) * zoom;
+                                double sx = dx * cos - dz * sin;
+                                double sy = dx * sin + dz * cos;
+                                if (Math.abs(sx) > half || Math.abs(sy) > half) continue;
 
-                        int ex = (int) Math.round(x + f / 2.0 + sx);
-                        int ey = (int) Math.round(y + f / 2.0 + sy);
-                        ctx.fill(ex - 2, ey - 2, ex + 3, ey + 3, 0xFF000000);
-                        ctx.fill(ex - 1, ey - 1, ex + 2, ey + 2, color);
+                                int ex = (int) Math.round(x + f / 2.0 + sx);
+                                int ey = (int) Math.round(y + f / 2.0 + sy);
+                                ctx.fill(ex - 2, ey - 2, ex + 3, ey + 3, 0xFF000000);
+                                ctx.fill(ex - 1, ey - 1, ex + 2, ey + 2, color);
+                        }
                 }
 
                 // panah pemain di tengah (selalu menghadap atas)
@@ -341,19 +371,27 @@ public final class N3XRMinimap {
                 ctx.fill(cx - 3, cy - 1, cx + 4, cy, 0xFFFFFFFF);
                 ctx.fill(cx - 3, cy, cx + 4, cy + 1, 0xFFB0B0B0);
 
-                // huruf N di sisi utara bingkai
-                double nx = sin;
-                double ny = -cos;
-                double scale = (f / 2.0 - 6) / Math.max(Math.abs(nx), Math.abs(ny));
-                int npx = (int) Math.round(x + f / 2.0 + nx * scale);
-                int npy = (int) Math.round(y + f / 2.0 + ny * scale);
-                ctx.drawText(mc.textRenderer, "N", npx - 2, npy - 4, 0xFFFF5555, true);
+                // huruf arah mata angin di tepi bingkai, ikut berputar bersama peta
+                String[] letters = {"N", "E", "S", "W"};
+                double[][] dirs = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};   // utara, timur, selatan, barat (di ruang peta)
+                int count = showCompass ? 4 : 1;
+                for (int i = 0; i < count; i++) {
+                        double vx = dirs[i][0] * cos - dirs[i][1] * sin;
+                        double vy = dirs[i][0] * sin + dirs[i][1] * cos;
+                        double scale = (f / 2.0 - 6) / Math.max(Math.abs(vx), Math.abs(vy));
+                        int lx = (int) Math.round(x + f / 2.0 + vx * scale);
+                        int ly = (int) Math.round(y + f / 2.0 + vy * scale);
+                        int color = i == 0 ? 0xFFFF5555 : 0xFFFFFFFF;
+                        ctx.drawText(mc.textRenderer, letters[i], lx - 2, ly - 4, color, true);
+                }
 
                 // koordinat di bawah bingkai
-                String coords = mc.player.getBlockX() + ", " + mc.player.getBlockY() + ", " + mc.player.getBlockZ();
-                int cw = mc.textRenderer.getWidth(coords);
-                int tx = x + (f - cw) / 2;
-                ctx.fill(tx - 2, y + f + 3, tx + cw + 2, y + f + 13, 0x90000000);
-                ctx.drawText(mc.textRenderer, coords, tx, y + f + 4, 0xFFFFFFFF, true);
+                if (showCoords) {
+                        String coords = mc.player.getBlockX() + ", " + mc.player.getBlockY() + ", " + mc.player.getBlockZ();
+                        int cw = mc.textRenderer.getWidth(coords);
+                        int tx = x + (f - cw) / 2;
+                        ctx.fill(tx - 2, y + f + 3, tx + cw + 2, y + f + 13, 0x90000000);
+                        ctx.drawText(mc.textRenderer, coords, tx, y + f + 4, 0xFFFFFFFF, true);
+                }
         }
 }
