@@ -150,6 +150,14 @@ public class N3XRWorldMapScreen extends Screen {
                                         else continue;
                                         int ex = (int) Math.round(toScreenX(e.getX()));
                                         int ey = (int) Math.round(toScreenY(e.getZ()));
+                                        if (N3XRMinimap.isShowHeads() && e instanceof PlayerEntity && N3XRMinimap.drawHead(ctx, e, ex, ey, 10)) {
+                                                // nama di bawah kepala
+                                                String name = e.getName().getString();
+                                                int nw = this.textRenderer.getWidth(name);
+                                                ctx.fill(ex - nw / 2 - 2, ey + 7, ex + nw / 2 + 2, ey + 17, 0x90000000);
+                                                ctx.drawText(this.textRenderer, name, ex - nw / 2, ey + 8, 0xFFFFFFFF, false);
+                                                continue;
+                                        }
                                         ctx.fill(ex - 2, ey - 2, ex + 3, ey + 3, 0xFF000000);
                                         ctx.fill(ex - 1, ey - 1, ex + 2, ey + 2, color);
                                 }
