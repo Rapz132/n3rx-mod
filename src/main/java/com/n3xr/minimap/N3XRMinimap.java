@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
@@ -57,6 +58,7 @@ public final class N3XRMinimap {
         private static boolean showMobs = true;
         private static boolean showCoords = true;
         private static boolean showCompass = true;     // true = N E S W, false = N saja
+        private static boolean showHeads = true;       // pemain lain digambar sebagai kepala skin, bukan titik
         private static boolean loaded = false;
 
         // ---------------------------------------------------------------- texture & pass
@@ -100,6 +102,7 @@ public final class N3XRMinimap {
                         showMobs = Boolean.parseBoolean(p.getProperty("show_mobs", "true"));
                         showCoords = Boolean.parseBoolean(p.getProperty("show_coords", "true"));
                         showCompass = Boolean.parseBoolean(p.getProperty("show_compass", "true"));
+                        showHeads = Boolean.parseBoolean(p.getProperty("show_heads", "true"));
                         if (p.containsKey("x")) posX = Integer.parseInt(p.getProperty("x"));
                         if (p.containsKey("y")) posY = Integer.parseInt(p.getProperty("y"));
                 } catch (Exception ignored) {}
@@ -115,6 +118,7 @@ public final class N3XRMinimap {
                         p.setProperty("show_mobs", Boolean.toString(showMobs));
                         p.setProperty("show_coords", Boolean.toString(showCoords));
                         p.setProperty("show_compass", Boolean.toString(showCompass));
+                        p.setProperty("show_heads", Boolean.toString(showHeads));
                         if (posX != Integer.MIN_VALUE) p.setProperty("x", Integer.toString(posX));
                         if (posY != Integer.MIN_VALUE) p.setProperty("y", Integer.toString(posY));
                         try (var out = Files.newBufferedWriter(file())) { p.store(out, "N3XR minimap"); }
@@ -149,10 +153,12 @@ public final class N3XRMinimap {
         public static boolean isShowMobs() { load(); return showMobs; }
         public static boolean isShowCoords() { load(); return showCoords; }
         public static boolean isShowCompass() { load(); return showCompass; }
+        public static boolean isShowHeads() { load(); return showHeads; }
         public static void togglePlayers() { load(); showPlayers = !showPlayers; save(); }
         public static void toggleMobs() { load(); showMobs = !showMobs; save(); }
         public static void toggleCoords() { load(); showCoords = !showCoords; save(); }
         public static void toggleCompass() { load(); showCompass = !showCompass; save(); }
+        public static void toggleHeads() { load(); showHeads = !showHeads; save(); }
 
         public static String zoomLabel() { load(); return "Zoom: " + ZOOMS[zoomIndex] + "x"; }
         public static String sizeLabel() { load(); return "Size: " + SIZE_NAMES[sizeIndex]; }
@@ -301,6 +307,22 @@ public final class N3XRMinimap {
                 return Math.max(0, Math.min(255, (int) v));
         }
 
+        /**
+         * Gambar kepala skin pemain (wajah + layer luar) berukuran size x size piksel GUI,
+         * berpusat di (cx, cy), dengan bingkai hitam tipis. Dipakai minimap dan peta layar
+         * penuh. Return false kalau entity bukan pemain client (tidak punya skin).
+         */
+        public static boolean drawHead(DrawContext ctx, Entity e, int cx, int cy, int size) {
+                if (!(e instanceof AbstractClientPlayerEntity player)) return false;
+                Identifier skin = player.getSkinTextures().texture();
+                int x = cx - size / 2;
+                int y = cy - size / 2;
+                ctx.fill(x - 1, y - 1, x + size + 1, y + size + 1, 0xFF000000);
+                ctx.drawTexture(skin, x, y, size, size, 8.0f, 8.0f, 8, 8, 64, 64);     // wajah
+                ctx.drawTexture(skin, x, y, size, size, 40.0f, 8.0f, 8, 8, 64, 64);    // layer luar (rambut/topi)
+                return true;
+        }
+
         // ================================================================ gambar (per frame)
         public static void render(DrawContext ctx, MinecraftClient mc) {
                 if (!isEnabled() || mc.world == null || mc.player == null) return;
@@ -339,8 +361,9 @@ public final class N3XRMinimap {
                 double sin = Math.sin(rad);
                 double half = f / 2.0 - 3;
 
-                // pemain lain (kuning) dan mob musuh (merah)
+                // pemain lain (kepala skin atau titik kuning) dan mob musuh (merah)
                 if (showPlayers || showMobs) {
+                        ctx.enableScissor(x, y, x + f, y + f);
                         for (Entity e : mc.world.getEntities()) {
                                 if (e == mc.player) continue;
                                 int color;
@@ -356,9 +379,11 @@ public final class N3XRMinimap {
 
                                 int ex = (int) Math.round(x + f / 2.0 + sx);
                                 int ey = (int) Math.round(y + f / 2.0 + sy);
+                                if (showHeads && e instanceof PlayerEntity && drawHead(ctx, e, ex, ey, 8)) continue;
                                 ctx.fill(ex - 2, ey - 2, ex + 3, ey + 3, 0xFF000000);
                                 ctx.fill(ex - 1, ey - 1, ex + 2, ey + 2, color);
                         }
+                        ctx.disableScissor();
                 }
 
                 // panah pemain di tengah (selalu menghadap atas)
