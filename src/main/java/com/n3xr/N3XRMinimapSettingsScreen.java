@@ -28,7 +28,7 @@ public class N3XRMinimapSettingsScreen extends Screen {
         protected void init() {
                 int colW = 96, h = 20, gap = 8, rowStep = h + 4;
                 int cx = this.width / 2;
-                int totalH = rowStep * 5;
+                int totalH = rowStep * 6;
                 int y = Math.max(28, (this.height - totalH) / 2 + 6);
                 int leftX = cx - colW - 4;
                 int rightX = cx + 4;
@@ -60,6 +60,12 @@ public class N3XRMinimapSettingsScreen extends Screen {
                 this.addDrawableChild(N3XRButton.of(rightX, y, colW, h, Text.literal(onOff("Coords", N3XRMinimap.isShowCoords())), b -> {
                         N3XRMinimap.toggleCoords();
                         b.setMessage(Text.literal(onOff("Coords", N3XRMinimap.isShowCoords())));
+                }));
+                y += rowStep;
+
+                this.addDrawableChild(N3XRButton.of(leftX, y, colW * 2 + 8, h, Text.literal(onOff("Player Heads", N3XRMinimap.isShowHeads())), b -> {
+                        N3XRMinimap.toggleHeads();
+                        b.setMessage(Text.literal(onOff("Player Heads", N3XRMinimap.isShowHeads())));
                 }));
                 y += rowStep;
 
