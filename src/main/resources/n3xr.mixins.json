@@ -17,7 +17,9 @@
   "CrosshairHideMixin",
   "ArmorHideMixin",
   "WindowScaleMixin",
-  "ChatHudMixin"
+  "ChatHudMixin",
+  "MinecraftClientInvoker",
+  "MouseInstantClickMixin",
 ],
 	"injectors": {
 		"defaultRequire": 1
