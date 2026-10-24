@@ -104,6 +104,14 @@ public class N3XRClient implements ClientModInitializer {
                 mapKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                         "key.n3xr.map", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.n3xr"));
 
+                // cosmetic "Head": feature renderer di semua renderer player
+                net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback.EVENT.register(
+                        (entityType, entityRenderer, registrationHelper, context) -> {
+                                if (entityRenderer instanceof net.minecraft.client.render.entity.PlayerEntityRenderer playerRenderer) {
+                                        registrationHelper.register(new com.n3xr.head.N3XRHeadFeatureRenderer(playerRenderer));
+                                }
+                        });
+
                 hookMouseClicks();
 
                 WorldRenderEvents.END.register(context -> {
@@ -156,6 +164,7 @@ public class N3XRClient implements ClientModInitializer {
                         handleWeatherReducer(client, now);
                         com.n3xr.online.N3XRUsers.tick(client);
                         com.n3xr.minimap.N3XRMinimap.tick(client);
+                        com.n3xr.input.N3XRInputOptimizer.tick(client);
 
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
                         while (!rightClickTimes.isEmpty() && now - rightClickTimes.peekFirst() > 1000) rightClickTimes.pollFirst();
