@@ -104,14 +104,6 @@ public class N3XRClient implements ClientModInitializer {
                 mapKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                         "key.n3xr.map", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.n3xr"));
 
-                // cosmetic "Head": feature renderer di semua renderer player
-                net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback.EVENT.register(
-                        (entityType, entityRenderer, registrationHelper, context) -> {
-                                if (entityRenderer instanceof net.minecraft.client.render.entity.PlayerEntityRenderer playerRenderer) {
-                                        registrationHelper.register(new com.n3xr.head.N3XRHeadFeatureRenderer(playerRenderer));
-                                }
-                        });
-
                 hookMouseClicks();
 
                 WorldRenderEvents.END.register(context -> {
