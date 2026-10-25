@@ -93,6 +93,9 @@ public class N3XRConfigScreen extends Screen {
                 allModules.add(new ModuleDef("Item Update", "Shows items when picked up.", icon("itemupdate"), Category.HUD, false,
                         () -> N3XRConfig.itemUpdateEnabled, v -> N3XRConfig.itemUpdateEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
+                allModules.add(new ModuleDef("Totem Size", "Resize the totem pop animation and the totem in your hands. Gear: sizes.", icon("totemsize"), Category.COMBAT, true,
+                        () -> com.n3xr.totem.N3XRTotemSize.isEnabled(), v -> com.n3xr.totem.N3XRTotemSize.setEnabled(v), () -> 0xFFFFFF, v -> {}, false));
+
                 allModules.add(new ModuleDef("Input Optimizer", "Clicks run right when pressed instead of the next game tick. Gear: options.", icon("inputoptimizer"), Category.HUD, true,
                         () -> com.n3xr.input.N3XRInputOptimizer.isEnabled(), v -> com.n3xr.input.N3XRInputOptimizer.setEnabled(v), () -> 0xFFFFFF, v -> {}, false));
 
@@ -317,6 +320,8 @@ public class N3XRConfigScreen extends Screen {
                                                 this.client.setScreen(new N3XRMotionBlurSettingsScreen(this));
                                         } else if (m.name().equals("Minimap")) {
                                                 this.client.setScreen(new N3XRMinimapSettingsScreen(this));
+                                        } else if (m.name().equals("Totem Size")) {
+                                                this.client.setScreen(new N3XRTotemSizeSettingsScreen(this));
                                         } else if (m.name().equals("Input Optimizer")) {
                                                 this.client.setScreen(new N3XRInputOptimizerSettingsScreen(this));
                                         } else {
