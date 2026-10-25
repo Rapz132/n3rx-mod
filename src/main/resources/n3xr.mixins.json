@@ -20,6 +20,8 @@
   "ChatHudMixin",
   "MinecraftClientInvoker",
   "MouseInstantClickMixin",
+  "TotemPopScaleMixin",
+  "HeldTotemScaleMixin"
 ],
 	"injectors": {
 		"defaultRequire": 1
