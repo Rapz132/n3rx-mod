@@ -23,6 +23,7 @@ public class TotemPopScaleMixin {
             require = 0
     )
     private void n3xr$scaleTotemPop(Args args) {
+        N3XRTotemSize.popHookSeen = true;
         float factor = N3XRTotemSize.popScale();
         if (factor == 1.0f) return;
         float x = args.get(0);
