@@ -30,6 +30,10 @@ public final class N3XRTotemSize {
         private static int offPercent = 100;
         private static boolean loaded = false;
 
+        /** Diset true oleh mixin saat hook-nya benar-benar jalan (untuk diagnosa di layar pengaturan). */
+        public static volatile boolean popHookSeen = false;
+        public static volatile boolean heldHookSeen = false;
+
         private N3XRTotemSize() {}
 
         private static Path file() {
