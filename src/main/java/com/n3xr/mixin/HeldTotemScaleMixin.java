@@ -36,6 +36,7 @@ public class HeldTotemScaleMixin {
                                           VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         matrices.push();
         if (!stack.isOf(Items.TOTEM_OF_UNDYING)) return;
+        N3XRTotemSize.heldHookSeen = true;
 
         // mode FIRST_PERSON_RIGHT_HAND = tangan kanan; tangan utama = kanan kalau mainArm RIGHT
         boolean rightHandMode = mode == ModelTransformationMode.FIRST_PERSON_RIGHT_HAND;
