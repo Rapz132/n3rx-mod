@@ -3,6 +3,7 @@ package com.n3xr;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import com.n3xr.minimap.N3XRMinimap;
+import com.n3xr.nav.N3XRNavigator;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 
@@ -86,6 +87,7 @@ public class N3XRHudEditScreen extends Screen {
                 if (N3XRConfig.showDayCounter) drawBox(context, "DayCounter", N3XRConfig.dayCounterX, N3XRConfig.dayCounterY);
                 if (N3XRConfig.showTotemCount) drawBox(context, "TotemCount", N3XRConfig.totemCountX, N3XRConfig.totemCountY);
                 if (N3XRMinimap.isEnabled()) drawMinimapBox(context);
+                if (N3XRNavigator.isEnabled() && N3XRNavigator.hasTarget()) drawNavBox(context);
 
                 Text hint = Text.literal("Drag modules to reposition \u00b7 Drag \u25cf to resize \u00b7 Right Shift to close");
                 int hw = this.textRenderer.getWidth(hint);
@@ -136,6 +138,27 @@ public class N3XRHudEditScreen extends Screen {
                 context.fill(x - 1, y - 1, x, y + f + 1, borderColor);
                 context.fill(x + f, y - 1, x + f + 1, y + f + 1, borderColor);
                 context.drawText(this.textRenderer, "Minimap", x + 3, y + 2, 0xFFFFFF, true);
+        }
+
+        private void drawNavBox(DrawContext context) {
+                int x = N3XRNavigator.getX(this.width);
+                int y = N3XRNavigator.getY(this.height);
+                boolean active = "Navigator".equals(dragging);
+                int borderColor = active ? 0xFFFFFFFF : 0xCCFF6B6B;
+                int w = N3XRNavigator.NAV_W, h = N3XRNavigator.NAV_H;
+
+                context.fill(x, y, x + w, y + h, active ? 0x55FFFFFF : 0x60203040);
+                context.fill(x - 1, y - 1, x + w + 1, y, borderColor);
+                context.fill(x - 1, y + h, x + w + 1, y + h + 1, borderColor);
+                context.fill(x - 1, y - 1, x, y + h + 1, borderColor);
+                context.fill(x + w, y - 1, x + w + 1, y + h + 1, borderColor);
+                context.drawText(this.textRenderer, "Navigator", x + 3, y + 2, 0xFFFFFF, true);
+        }
+
+        private boolean inNav(double mx, double my) {
+                int x = N3XRNavigator.getX(this.width);
+                int y = N3XRNavigator.getY(this.height);
+                return mx >= x && mx <= x + N3XRNavigator.NAV_W && my >= y && my <= y + N3XRNavigator.NAV_H;
         }
 
         private boolean inMinimap(double mx, double my) {
@@ -207,6 +230,11 @@ public class N3XRHudEditScreen extends Screen {
                         setOffset(mouseX, mouseY, N3XRMinimap.getX(this.width), N3XRMinimap.getY(this.height));
                         return true;
                 }
+                if (N3XRNavigator.isEnabled() && N3XRNavigator.hasTarget() && inNav(mouseX, mouseY)) {
+                        dragging = "Navigator";
+                        setOffset(mouseX, mouseY, N3XRNavigator.getX(this.width), N3XRNavigator.getY(this.height));
+                        return true;
+                }
                 return super.mouseClicked(mouseX, mouseY, button);
         }
 
@@ -256,6 +284,7 @@ public class N3XRHudEditScreen extends Screen {
                                 case "DayCounter" -> { N3XRConfig.dayCounterX = nx; N3XRConfig.dayCounterY = ny; }
                                 case "TotemCount" -> { N3XRConfig.totemCountX = nx; N3XRConfig.totemCountY = ny; }
                                 case "Minimap" -> N3XRMinimap.setPosition(nx, ny);
+                                case "Navigator" -> N3XRNavigator.setPosition(nx, ny);
                         }
                         return true;
                 }
@@ -265,6 +294,7 @@ public class N3XRHudEditScreen extends Screen {
         @Override
         public boolean mouseReleased(double mouseX, double mouseY, int button) {
                 if ("Minimap".equals(dragging)) N3XRMinimap.save();
+                if ("Navigator".equals(dragging)) N3XRNavigator.save();
                 dragging = null;
                 resizing = null;
                 return super.mouseReleased(mouseX, mouseY, button);
