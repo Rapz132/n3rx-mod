@@ -178,6 +178,16 @@ public class N3XRWorldMapScreen extends Screen {
                         ctx.fill(px - 2, py - 2, px + 3, py + 3, 0xFFFFFFFF);
                 }
 
+                // penanda tujuan Coordinate Navigator
+                if (mc.world != null && com.n3xr.nav.N3XRNavigator.isEnabled() && com.n3xr.nav.N3XRNavigator.isShowMarker()) {
+                        double[] navT = com.n3xr.nav.N3XRNavigator.targetInCurrentDimension(mc);
+                        if (navT != null) {
+                                int mx = (int) Math.round(toScreenX(navT[0]));
+                                int my = (int) Math.round(toScreenY(navT[1]));
+                                com.n3xr.nav.N3XRNavigator.drawMarker(ctx, mx, my, 5);
+                        }
+                }
+
                 ctx.disableScissor();
 
                 // arah mata angin di tengah tiap sisi bingkai (utara selalu di atas)
