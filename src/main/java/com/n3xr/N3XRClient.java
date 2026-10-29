@@ -225,6 +225,7 @@ public class N3XRClient implements ClientModInitializer {
                         if (N3XRConfig.showDayCounter) renderDayCounter(context, mc);
                         if (N3XRConfig.showTotemCount) com.n3xr.totemcount.N3XRTotemCount.render(context, mc);
                         com.n3xr.minimap.N3XRMinimap.render(context, mc);
+                        com.n3xr.nav.N3XRNavigator.render(context, mc);
                 });
         }
 
