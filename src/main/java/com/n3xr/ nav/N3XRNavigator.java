@@ -1,6 +1,5 @@
 package com.n3xr.nav;
 
-import com.n3xr.N3XRButton;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -163,6 +162,22 @@ public final class N3XRNavigator {
                 return null;
         }
 
+        /** Persegi dengan sudut membulat (salinan lokal, karena N3XRButton.fillRounded tidak public). */
+        private static void fillRounded(DrawContext context, int x1, int y1, int x2, int y2, int color, int radius) {
+                radius = Math.min(radius, Math.min((x2 - x1) / 2, (y2 - y1) / 2));
+                if (radius <= 0) { context.fill(x1, y1, x2, y2, color); return; }
+                context.fill(x1 + radius, y1, x2 - radius, y2, color);
+                context.fill(x1, y1 + radius, x1 + radius, y2 - radius, color);
+                context.fill(x2 - radius, y1 + radius, x2, y2 - radius, color);
+                for (int i = 0; i < radius; i++) {
+                        int dx = radius - (int) Math.sqrt(Math.max(0, radius * radius - (radius - i) * (radius - i)));
+                        context.fill(x1 + dx, y1 + i, x1 + radius, y1 + i + 1, color);
+                        context.fill(x2 - radius, y1 + i, x2 - dx, y1 + i + 1, color);
+                        context.fill(x1 + dx, y2 - i - 1, x1 + radius, y2 - i, color);
+                        context.fill(x2 - radius, y2 - i - 1, x2 - dx, y2 - i, color);
+                }
+        }
+
         // ================================================================ gambar HUD
         public static void render(DrawContext ctx, MinecraftClient mc) {
                 if (!isEnabled() || !hasTarget() || mc.player == null || mc.world == null) return;
@@ -172,8 +187,8 @@ public final class N3XRNavigator {
                 int x = getX(sw);
                 int y = getY(sh);
 
-                N3XRButton.fillRounded(ctx, x - 1, y - 1, x + NAV_W + 1, y + NAV_H + 1, 0xB0B03030, 6);
-                N3XRButton.fillRounded(ctx, x, y, x + NAV_W, y + NAV_H, 0xC00E1014, 5);
+                fillRounded(ctx, x - 1, y - 1, x + NAV_W + 1, y + NAV_H + 1, 0xB0B03030, 6);
+                fillRounded(ctx, x, y, x + NAV_W, y + NAV_H, 0xC00E1014, 5);
 
                 double[] t = targetInCurrentDimension(mc);
                 if (t == null) {
