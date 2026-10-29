@@ -386,6 +386,11 @@ public final class N3XRMinimap {
                         ctx.disableScissor();
                 }
 
+                // penanda tujuan Coordinate Navigator (oranye)
+                ctx.enableScissor(x, y, x + f, y + f);
+                com.n3xr.nav.N3XRNavigator.drawMinimapMarker(ctx, mc, x, y, f, zoom, cos, sin);
+                ctx.disableScissor();
+
                 // panah pemain di tengah (selalu menghadap atas)
                 int cx = x + f / 2;
                 int cy = y + f / 2;
