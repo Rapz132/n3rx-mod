@@ -21,7 +21,8 @@
   "MinecraftClientInvoker",
   "MouseInstantClickMixin",
   "TotemPopScaleMixin",
-  "HeldTotemScaleMixin"
+  "HeldTotemScaleMixin",
+  "ItemStackTooltipDataMixin"
 ],
 	"injectors": {
 		"defaultRequire": 1
