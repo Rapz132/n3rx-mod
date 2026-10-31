@@ -104,6 +104,13 @@ public class N3XRClient implements ClientModInitializer {
                 mapKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                         "key.n3xr.map", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_M, "category.n3xr"));
 
+                // Container Preview: komponen tooltip grid + sembunyikan daftar teks bawaan
+                net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback.EVENT.register(data ->
+                        data instanceof com.n3xr.container.N3XRContainerTooltipData d
+                                ? new com.n3xr.container.N3XRContainerTooltipComponent(d) : null);
+                net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback.EVENT.register((stack, context, type, lines) ->
+                        com.n3xr.container.N3XRContainerPreview.filterLines(stack, lines));
+
                 hookMouseClicks();
 
                 WorldRenderEvents.END.register(context -> {
@@ -157,6 +164,7 @@ public class N3XRClient implements ClientModInitializer {
                         com.n3xr.online.N3XRUsers.tick(client);
                         com.n3xr.minimap.N3XRMinimap.tick(client);
                         com.n3xr.input.N3XRInputOptimizer.tick(client);
+                        com.n3xr.container.N3XRContainerPreview.tick(client);
 
                         while (!clickTimes.isEmpty() && now - clickTimes.peekFirst() > 1000) clickTimes.pollFirst();
                         while (!rightClickTimes.isEmpty() && now - rightClickTimes.peekFirst() > 1000) rightClickTimes.pollFirst();
