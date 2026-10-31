@@ -93,6 +93,9 @@ public class N3XRConfigScreen extends Screen {
                 allModules.add(new ModuleDef("Item Update", "Shows items when picked up.", icon("itemupdate"), Category.HUD, false,
                         () -> N3XRConfig.itemUpdateEnabled, v -> N3XRConfig.itemUpdateEnabled = v, () -> 0xFFFFFF, v -> {}, false));
 
+                allModules.add(new ModuleDef("Container Preview", "Shows what is inside a shulker box or ender chest in its tooltip. Gear: options.", icon("containerpreview"), Category.UTILITY, true,
+                        () -> com.n3xr.container.N3XRContainerPreview.isEnabled(), v -> com.n3xr.container.N3XRContainerPreview.setEnabled(v), () -> 0xFFFFFF, v -> {}, false));
+
                 allModules.add(new ModuleDef("Coordinate Navigator", "Arrow, distance, and coordinates to a saved destination. Gear: set the target.", icon("navigator"), Category.HUD, true,
                         () -> com.n3xr.nav.N3XRNavigator.isEnabled(), v -> com.n3xr.nav.N3XRNavigator.setEnabled(v), () -> 0xFFFFFF, v -> {}, false));
 
@@ -323,6 +326,8 @@ public class N3XRConfigScreen extends Screen {
                                                 this.client.setScreen(new N3XRMotionBlurSettingsScreen(this));
                                         } else if (m.name().equals("Minimap")) {
                                                 this.client.setScreen(new N3XRMinimapSettingsScreen(this));
+                                        } else if (m.name().equals("Container Preview")) {
+                                                this.client.setScreen(new N3XRContainerPreviewSettingsScreen(this));
                                         } else if (m.name().equals("Coordinate Navigator")) {
                                                 this.client.setScreen(new N3XRNavigatorSettingsScreen(this));
                                         } else if (m.name().equals("Totem Size")) {
